@@ -7,11 +7,8 @@
 using namespace std;		// Обеспечивает видимость имен STL
 
 // подставляет точку останова для отладчика так как на g++ не работала 
-#ifdef _MSC_VER
-    #define stop __asm nop
-#else
-    #define stop do {} while(0)
-#endif
+//#define stop do {} while(0)
+#define stop
 
 // Эта макроподстановка упрощает установку точек останова
 
@@ -44,46 +41,47 @@ int main()
 
 	unsigned char uc = 0x41; // так как 41(hex) в ASCII это A
 	uc = 'B';
-	uc = static_cast<unsigned char>(-1); // при -1 по правилу круга перекинемся на 255 так как unsigned char от 0 до 255
+	uc = static_cast<unsigned char>(-127); //0x81   при -1 по правилу круга перекинемся на 255 так как unsigned char от 0 до 255
 	stop;
 
 	int i = 1;
-	i = -1;
+	i = -1; 
 	cout << i << endl;
 
 	stop;
 
 	unsigned int ui = 1; // это unsigned int и вы присваем ему просто int нужно сделать явное привидение
-	ui = static_cast<unsigned int>(-1);
+	ui = static_cast<unsigned int>(-1); // max - 1 = 4294967295
+	cout << ui << endl;
 
-
-	//	падает warning потому что диапозон short от -32768 до -32767 поэтому можем сделать cast
+	//	падает warning потому что диапозон short от -32768 до 32767 поэтому можем сделать cast
 	//short s = 0xffff;	 // Здесь compiler генерирует warning. Измените код, чтобы убрать warning
 	//s = short(0xffff);
 	//s = 1;
 	
 	// Первый способ:
-	short s = short(0xffff);
+	short s = static_cast<short>(0xffff); // или short()
 	s = 1;
 	// Второй способ:
 	//short s;
-	//s = short(0xffff);
+	//s = static_cast<short>(0xffff);
 	//s = 1;
 
 
 
 	//==== Измените код, чтобы убрать warning
-	unsigned short us = 0xffff;
+	unsigned short us = 0xffff; //
 	us = 5;
 
 	long l = 0xffffffff;
+	cout << "long: " << l << endl; 
 	l = -128;
 
 	// Все эти константы вы должны найти в файле limits (float.h) и объяснить их смысл по комментариям
 	l = FLT_MAX_EXP;	// максимальная степень для float
 	l = DBL_MAX_EXP; // максимальная степень для DBL
 
-	l = FLT_MANT_DIG; //количество бит мантиссы float
+	l = FLT_DIG; // количество десятичных цифр точности float
 	l = DBL_DIG; // количество десятичных цифр точности double
 
 	l = FLT_MANT_DIG; //количество бит мантиссы float
@@ -101,20 +99,39 @@ int main()
 	d = DBL_MIN; // минимальный double
 	d = DBL_EPSILON; // Самая маленькая разность между двумя пер-ми типа double(погрешность)
 
-	uc = static_cast<unsigned char>(~0);		 // Побитовое отрицание ~0 = 0xffffffff он пытается перевести int -> unsigned char нужно сделать cast
-	i = ~0; // ошибки нет int -> int
+	uc = ~2; //static_cast<unsigned char>(~0); Побитовое отрицание ~0 = 0x11111111 он пытается перевести int -> unsigned char нужно сделать cast
+	i = ~0;  // ошибки нет int -> int
 	stop;
 	// Раннее (при компиляции) или неявное приведение типов данных
-	// Объясните те значения, которые вы наблюдаете в окне Autos. Определите порядок выполения присваиваний.
-	//d = f = i = s = c = 1 / 3; // будет 0 так как в самом начале присваивается к char а он от -128 до 127
-	//c = s = i = f = d = 100 / 3;
-	//c = s = i = f = d = 10 / 3;
-	//c = s = i = f = d = 1 / 3.;
+	//// Объясните те значения, которые вы наблюдаете в окне Autos. Определите порядок выполения присваиваний.
+	d = f = i = s = c = 1 / 3; // будет 0 так как в самом начале присваивается к char а он от -128 до 127
 	cout << "char: " <<  c << endl;
 	cout << "float: " << f << endl;
 	cout << "int: " << i << endl;
 	cout << "double: " << d << endl;
 	cout << "short: " << s << endl;
+	cout << '\n';
+	c = s = i = f = d = 100 / 3;
+	cout << "char: " <<  c << endl;
+	cout << "float: " << f << endl;
+	cout << "int: " << i << endl;
+	cout << "double: " << d << endl;
+	cout << "short: " << s << endl;
+	cout << '\n';
+	c = s = i = f = d = 10 / 3;
+	cout << "char: " <<  c << endl;
+	cout << "float: " << f << endl;
+	cout << "int: " << i << endl;
+	cout << "double: " << d << endl;
+	cout << "short: " << s << endl;
+	cout << '\n';
+	c = s = i = f = d = 1 / 3.;
+	cout << "char: " <<  c << endl;
+	cout << "float: " << f << endl;
+	cout << "int: " << i << endl;
+	cout << "double: " << d << endl;
+	cout << "short: " << s << endl;
+	cout << '\n';
 
 	// Пример "небрежного" использования неявного приведения типов.	 Объясните результаты.
 	i = 256;
@@ -127,11 +144,11 @@ int main()
 	stop;
 
 	// Явное приведение типов	Объясните разницу результатов в строках (3) и (4)
-	//i = 100;
-	//f = d = i / 3;							// (3) делит int на int и уже записывает в float и double
-	//f = d = (double)i / 3;		// (4)
-	//f = d = double(i) / 3;			// (4) в этим операциях одино из чисел double поэтому произойдет приведение и получим 33.333....
-	//f = d = static_cast<double>(i) / 3;		// (4)
+	i = 100;
+	f = d = i / 3;							// (3) делит int на int и уже записывает в float и double
+	f = d = (double)i / 3;		// (4)
+	f = d = double(i) / 3;			// (4) в этим операциях одно из чисел == double поэтому произойдет приведение и получим 33.333....
+	f = d = static_cast<double>(i) / 3;		// (4)
 	stop;
 
 	// Область действия, область видимости и время существования. В этом фрагменте фигурируют четыре
@@ -141,23 +158,23 @@ int main()
 	// Определите, к какой из четырех переменных идет обращение, cформулируйте область действия и область видимости
 	// каждой переменной. Для выполнения задания рекомендуется пользоваться  закладкой "Watches" или "Locals" окна
 	// "Autos". Подсказка: В окно "Watches" можно поместить сразу все переменные (n, ::n, и space::n)
-	//n = 100; // глобальная ::n
-	//space::n = 200; // из простраства имен space
-	//n++; // глобальная ::n
-	//int n;		//Где живет эта переменная ? в main()
-	//n = 10; // n в main()
-	//::n++; // глобальная ::n
+	n = 100; // глобальная ::n
+	space::n = 200; // из простраства имен space
+	n++; // глобальная ::n
+	int n;		//Где живет эта переменная ? в main()
+	n = 10; // n в main()
+	::n++; // глобальная ::n
 
-	//{//  Начало блока
-	//	int n;		// Эта переменная живет внутри блока
-	//	n = -1; // n внутри блока
-	//	n++; // n внутри блока
-	//	::n++; // глобальная ::n
-	//	space::n++; // из пространства имен space::n
-	//}		// Конец блока n в блоке уничтожилась
-	//n--; // n в main
-	//::n--; // глобальная ::n
-	//space::n--; // пространство имен space::n
+	{//  Начало блока
+		int n;		// Эта переменная живет внутри блока(локальная)
+		n = -1; // n внутри блока (локальная)
+		n++; // n внутри блока (локальная)
+		::n++; // глобальная ::n
+		space::n++; // из пространства имен space::n
+	}		// Конец блока n(локальная) в блоке уничтожилась
+	n--; // n в main
+	::n--; // глобальная ::n
+	space::n--; // пространство имен space::n
 
 	// Спецификатор класса памяти - static Выполняя задание по шагам, обратите внимание на  разное поведение
 	// переменных nLoc и nStat
@@ -180,31 +197,32 @@ int main()
 		if (outer < 10)
 			goto Again;
 	}
+
 	// Перечисления - enum. Обратите внимание на явную и неявную инициализацию констант
 	enum RANK
 	{
-		One, // 0
-		Two, // 1
-		Three, // 2
-		Four, // 3
-		Jack = 6, // 6(явно)
-		Queen, // 7
-		Ace = Queen + 3, // 10
-		Joker = 20 // 20
+		One, 							// 0
+		Two, 							// 1
+		Three, 						// 2
+		Four, 						// 3
+		Jack = 6, 				// 6(явно)
+		Queen, 						// 7
+		Ace = Queen + 3,	// 10
+		Joker = 20 				// 20
 	};
-	typedef RANK RANG; // пишем псевдоним alias
+	typedef RANK RANG; // пишем(присваиваем) псевдоним alias
 
-	RANG r = Jack; // 6
+	RANG r = Jack; 	// 6
 	if (r == Jack)
-		r = Queen; // 7
+		r = Queen; 		// 7
 
 	if (r == Queen)
 	{
 		// Любой целочисленной переменной можно присвоить enum-переменную 
-		int i = r; // i = 7
+		int i = r; 				// i = 7
 		r = RANK(i++);		// Обратное преобразование надо указывать явно // 7
-		i = r; // i = 7
-		r = RANK(++i); // 8
+		i = r; 						// i = 7 (неявно)
+		r = RANK(++i); 		// 8 в enum нет 8
 		i = r; // 8
 	}
 	RANK rr = Ace; // 10
@@ -218,7 +236,7 @@ int main()
 		b = n > 0; // true
 		b = n <= 0; // false
 		b = n > 1; // true
-
+b = -2;
 		int num = static_cast<int>(b); // bool -> int, true -> 1
 		if (b)
 			cout << "\n\t My flag is: true" << "   or: " << b
@@ -237,7 +255,7 @@ int main()
 
 	//	Раскомментируйте следующую строчку и объясните ошибку компиляции (l-value означает left value)
 		//dozen = 1; // так как dozen const int мы не можем его изменить(так как const это rvalue)
-	//	Директивы условной трансляции.(обрабатываются до компиляции, до этапа препроцессовра) Объясните значение, которое принимает переменная version.
+	//	Директивы условной трансляции.(обрабатываются до компиляции, до этапа препроцессовра, позволяет добавить некий код до компиляции) Объясните значение, которое принимает переменная version.
 	//	Что нужно сделать для того, чтобы результат был другим? (можно просто удалить define)
 	const char* version;
 //#define _MSVER400
@@ -280,7 +298,7 @@ int main()
 		cout << "\n\nShow even-odd:\n\n";
 		for (int i = 0; i < 10; i++)
 		{
-			if (i & 1)
+			if (3 & 2)//
 				cout << i << " - odd\n";
 			else
 				cout << i << " - even\n";
@@ -333,7 +351,7 @@ int main()
 		}
 	}
 	cout << '\n';
-	//cout << "Способ через ?: " << endl;
+	//cout << "Способ через ? 	: " << endl;
 	//{
 	//	double x, y;
 
@@ -358,7 +376,7 @@ int main()
     cout << "символ 'a' - выводит \"Ok\"\n";
     cout << "символ 'b' - выводит звуковой сигнал (Bell)\n";
     cout << "символ 'c' - выводит количество введенных символов\n";
-    cout << "символ 'Esc' - выводит \"to quit use 'q'\"\n";g
+    cout << "символ 'Esc' - выводит \"to quit use 'q'\"\n";
     cout << "символ 'q' - выводит \"Bye\" и выходит из цикла\n\n";
 		for (;;){
 			cin >> c;
@@ -368,6 +386,7 @@ int main()
 					cout << "\"OK\"" << endl;
 					break;
 				case 'b':
+					cout << "Bell (alert - звуковой сигнал)" << endl;
 					cout << '\a';
 					break;
 				case 'c':
@@ -392,13 +411,13 @@ int main()
 	//	Побитовые операции:  |, &, ~, ^ и сдвиги >>, <<
 	//	Поменяйте местами байты переменной flags и выведите результат в консолное окно unsigned short flags = 0xaabb;
 	//	Ваш код
-	unsigned short flags = 0xaabb;
+		unsigned short flags = 0xaabb;
 
-	cout << "До: " << hex << flags << endl;
+		cout << "До: " << hex << flags << endl;
 
-	flags = static_cast<unsigned short>((flags << 8) | (flags >> 8));
+		flags = static_cast<unsigned short>((flags << 8) | (flags >> 8));
 
-	cout << "После: " << hex << flags << endl;
+		cout << "После: " << hex << flags << endl;
 
 	//	Для вывода в шестнадцатеричном виде используйте  cout <<"\n bits = " << hex << flags;
 
@@ -408,17 +427,17 @@ int main()
         //      - обнулите 4 младших бита. Выведите результат.
 	//	cout <<endl << hex << flags << endl<<dec<<flags;    
 
-	unsigned char byte = 0x26;
-	byte |= (1 << 3);
-	cout << "установите в единицу 3-й бит: " << hex << static_cast<int>(byte) << endl;
+		unsigned char byte = 0x26;
+		byte |= (1 << 3); 
+		cout << "установите в единицу 3-й бит: " << hex << static_cast<int>(byte) << endl;
 
-	byte ^= 0x03;
-	cout << "инвертация двух младших битов: " << hex << static_cast<int>(byte) << endl;
+		byte ^= 0x03;
+		cout << "инвертация двух младших битов: " << hex << static_cast<int>(byte) << endl;
 
-	byte &= 0xf0;
-	cout << "обнулим 4 младших бита: " << hex << static_cast<int>(byte) << endl;
+		byte &= 0xf0;
+		cout << "обнулим 4 младших бита: " << hex << static_cast<int>(byte) << endl;
 
-	cout << "\nflags: hex = 0x" << hex << flags << ", dec = " << dec << flags << endl;
+		cout << "\nflags: hex = 0x" << hex << flags << ", dec = " << dec << flags << endl;
 
-	cout << "\n\n";
+		cout << "\n\n";
 }	// Конец функции main()
