@@ -17,7 +17,6 @@
 .Trashes
 .fseventsd
 
-.vscode
-.vs-code
-
+/.vscode/
+git
 /build/
