@@ -1,4 +1,6 @@
-﻿class MyString
+﻿#pragma once
+
+class MyString
 {
 private:
 	char* m_pStr;		// Элемент данных класса (адрес строки)

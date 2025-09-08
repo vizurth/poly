@@ -47,7 +47,6 @@ int MyString::GetLength()
 
 
 // Операторы
-
 MyString& MyString::operator=(const MyString& other){
 	if (this != &other){
 		Copy(other.m_pStr);
