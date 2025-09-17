@@ -10,12 +10,12 @@ public:
 	//========== Три конструктора
 	Vector (double c1, double c2);
 	Vector ();						// Default
-	Vector(const Vector& other);
+	Vector(const Vector& other); // конструктор копирования
 
 	~Vector();
 	
 	//====== Переопределение операций =====//
-	Vector& operator= (const Vector& other);	// Присвоение
+	Vector& operator= (const Vector& other);	// конструктор присваивания
 	Vector operator+ (const Vector& other);
 
 	Vector operator* (double scalar) const;

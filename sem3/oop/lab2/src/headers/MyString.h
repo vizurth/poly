@@ -7,7 +7,7 @@ private:
 public:
   MyString ();
 	MyString (char* s);	// Объявление конструктора
-	MyString(const MyString& other);
+	MyString(const MyString& other); // конструктор копирования
   ~MyString();		// Объявление деструктора
 	
 
@@ -16,5 +16,5 @@ public:
 	int GetLength();	// Объявление метода (длина строки)
 
 	// операторы
-	MyString& operator= (const MyString& other);	
+	MyString& operator= (const MyString& other); // конструктор присваивания	
 };

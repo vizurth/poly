@@ -18,13 +18,13 @@ $(BUILD_DIR):
 
 # Правило для компиляции объектных файлов
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
-	g++ -Wall -Wextra -Wpedantic -Wfatal-errors -I$(HEAD_DIR) -c -o $@ $<
+	g++ -std=c++11 -I$(HEAD_DIR) -c -o $@ $<
 
 $(TARGET):  $(OBJS) $(SRC_DIR)/main.cpp
-	g++ -g -Wall -Wextra -Wpedantic -Wfatal-errors -o $(TARGET) $(OBJS) $(SRC_DIR)/main.cpp
+	g++ -g -std=c++11  -o $(TARGET) $(OBJS) $(SRC_DIR)/main.cpp
 
 $(LEAKS_TARGET): $(OBJS) $(SRC_DIR)/main.cpp
-	g++ -g -Wall -Wextra -Wpedantic -Wfatal-errors -fsanitize=address -o $(LEAKS_TARGET) $(OBJS) $(SRC_DIR)/main.cpp
+	g++ -g -std=c++11 -Wall -Wextra -Wpedantic -Wfatal-errors -fsanitize=address -o $(LEAKS_TARGET) $(OBJS) $(SRC_DIR)/main.cpp
 
 leaks: $(LEAKS_TARGET)
 	./$(LEAKS_TARGET) < $(INPUT_FILE)
