@@ -5,14 +5,13 @@
 class Vector: public Shape{
 private:
 	double x, y;	// Координаты вектора на плоскости
-	static int Count;
 public:
 	//========== Три конструктора
 	Vector (double c1, double c2);
 	Vector ();						// Default
 	Vector(const Vector& other); // конструктор копирования
 
-	~Vector();
+	~Vector() override = default;
 	
 	//====== Переопределение операций =====//
 	Vector& operator= (const Vector& other);	// конструктор присваивания
@@ -25,13 +24,12 @@ public:
 	double operator!() const;
 	bool operator>(const Vector& other) const;
 	bool operator==(const Vector& other) const;
+	
 	void Out() const override;
-
 	void Move(Vector& v) override;
 	double Area() const override;
 
 	double GetX() const { return x; }
 	double GetY() const { return y; }
 
-	static void PrintCount();
 };

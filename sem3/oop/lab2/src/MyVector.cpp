@@ -1,27 +1,17 @@
 ﻿#include "stdafx.h"
 #include "MyVector.h"
 
-int Vector::Count = 0;
-
 Vector::Vector (double c1, double c2) {
 	x=c1;   y=c2;
-	Count++;
 }
 
 Vector::Vector () {
 	x = y = 0.;
-	Count++;
 }
 
 Vector::Vector(const Vector& other) {
 	*this = other; // используется переопределенное =
-	Count++;
 }
-
-Vector::~Vector(){
-	Count--;
-}
-
 
 void Vector::Out() const {
 	cout << "\nVector:  x = " << x << ",  y = " << y;
@@ -47,7 +37,7 @@ Vector Vector::operator+ (const Vector& other){
 }
 
 Vector Vector::operator* (double scalar) const {
-	Vector result(x * scalar, y*scalar);
+	Vector result(x * scalar, y * scalar);
 	return result;
 }
 
@@ -79,9 +69,4 @@ void Vector::Move(Vector& v){
 
 double Vector::Area() const{
 	return 0.0;
-}
-
-
-void Vector::PrintCount() {
-    std::cout << "\n Now there are " << Count << " vectors\n";
 }
