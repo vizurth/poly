@@ -51,7 +51,7 @@ int main()
 	MyString s("Dynamic strings always change their size");
 	MyString str;
 
-	str = s;
+	str = str;
 	
 	cout << "\n\n\tTest MyString operator=\n\n" << str.GetString();
 	stop

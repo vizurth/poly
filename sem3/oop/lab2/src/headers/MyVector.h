@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Shape.h"
+#include <iostream>
 
 class Vector: public Shape{
 private:
@@ -18,13 +19,16 @@ public:
 	Vector operator+ (const Vector& other);
 
 	Vector operator* (double scalar) const;
-	friend Vector operator*(double scalar, const Vector& vec);
+	
 	friend double operator*(const Vector& a, const Vector& b);
 
 	double operator!() const;
 	bool operator>(const Vector& other) const;
+	bool operator<(const Vector& other) const;
 	bool operator==(const Vector& other) const;
 	
+	friend std::ostream& operator<<(std::ostream& os, const Vector& v);
+
 	void Out() const override;
 	void Move(Vector& v) override;
 	double Area() const override;
@@ -33,3 +37,5 @@ public:
 	double GetY() const { return y; }
 
 };
+
+Vector operator*(double scalar, const Vector& vec);

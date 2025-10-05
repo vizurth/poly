@@ -1,5 +1,5 @@
-﻿#include "stdafx.h"
-#include "MyVector.h"
+﻿#include "headers/stdafx.h"
+#include "headers/MyVector.h"
 
 Vector::Vector (double c1, double c2) {
 	x=c1;   y=c2;
@@ -42,7 +42,7 @@ Vector Vector::operator* (double scalar) const {
 }
 
 Vector operator*(double scalar, const Vector& vec){
-	Vector result(vec.x * scalar, vec.y * scalar);
+	Vector result(vec.GetX() * scalar, vec.GetY() * scalar);
 	return result;
 }
 
@@ -58,6 +58,10 @@ bool Vector::operator>(const Vector& other) const{
 	return (!(*this) > (!other)); // сравниваем по длине
 }
 
+bool Vector::operator<(const Vector& other) const{
+	return (!(*this) < (!other)); // сравниваем по длине
+}
+
 bool Vector::operator==(const Vector& other) const{
 	return (fabs(x - other.x) < __DBL_EPSILON__) && (fabs(y - other.y) < __DBL_EPSILON__); // используем машинный эпсилонт
 }
@@ -69,4 +73,9 @@ void Vector::Move(Vector& v){
 
 double Vector::Area() const{
 	return 0.0;
+}
+
+std::ostream& operator<<(std::ostream& os, const Vector& v) {
+  os << "(" << v.GetX() << ", " << v.GetY() << ")";
+  return os;
 }

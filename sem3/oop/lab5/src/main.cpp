@@ -2,11 +2,11 @@
 #include <QApplication>
 
 int main(int argc, char *argv[]) {
-	QApplication a(argc, argv);
+	QApplication a(argc, argv); // создаем обьект приложения
 
-	MainWindow w;
+	MainWindow w; // создаем наш класс дочерний от QWidget
 	
-	w.show();
+	w.show(); // отображаем виджет
 
-	return a.exec();
+	return a.exec(); // запуск приложения
 } 

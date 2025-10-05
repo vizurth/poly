@@ -5,6 +5,9 @@
 #include <QSlider>
 #include <QScrollbar>
 #include <QSpinBox>
+#include <vector>
+#include <iostream> 
+#include <string> 
 
 
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
@@ -12,27 +15,20 @@ MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
 }
 void MainWindow::setupUi(){
 	auto layout = new QVBoxLayout(this);
+	std::vector<std::string> buttonNames = {"QSlider", "QLabel", "QScrollBar", "QSpinBox", "connect"};
 
-	auto addSliderButton = new QPushButton("add QSlider");
-	auto addLabelButton = new QPushButton("add QLabel");
-	auto addScrollBarButton = new QPushButton("add QScrollBar");
-	auto addSpinBoxButton = new QPushButton("add QSpinBox");
-	
-	auto connectButton = new QPushButton("connect all widgets");
-
-	layout->addWidget(addSliderButton);
-	layout->addWidget(addLabelButton);
-	layout->addWidget(addScrollBarButton);
-	layout->addWidget(addSpinBoxButton);
-
-	layout->addWidget(connectButton);
-
-	connect(addSliderButton, &QPushButton::clicked, this, [this]() {addWidget("QSlider");});
-	connect(addLabelButton, &QPushButton::clicked, this, [this]() {addWidget("QLabel");});
-	connect(addScrollBarButton, &QPushButton::clicked, this, [this]() {addWidget("QScrollBar");});
-	connect(addSpinBoxButton, &QPushButton::clicked, this, [this]() {addWidget("QSpinBox");});
-
-	connect(connectButton, &QPushButton::clicked, this, &MainWindow::connectAllWidgets);
+	for (const auto& n : buttonNames) {
+		if (n != "connect"){
+			QString buttonText = QString("add") + QString::fromStdString(n);
+			auto addButton = new QPushButton(buttonText);
+			layout->addWidget(addButton);
+			connect(addButton, &QPushButton::clicked, this, [this, n]() {addWidget(QString::fromStdString(n));});
+		} else {
+			auto connectButton = new QPushButton("connect all widgets");
+			layout->addWidget(connectButton);
+			connect(connectButton, &QPushButton::clicked, this, &MainWindow::connectAllWidgets);
+		}
+	}
 }
 
 void MainWindow::addWidget(const QString& type){

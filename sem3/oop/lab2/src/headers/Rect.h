@@ -22,4 +22,11 @@ public:
 	void Out() const override;
 	void Move(Vector& v) override;
 	double Area() const override;
+	Vector getCenter() const;
+
+	friend std::ostream& operator<<(std::ostream& os, const Rect& r) {
+    os << "(" << r.ptLT_.GetX() << ", " << r.ptLT_.GetY()  << ")";
+		os << "(" << r.ptRB_.GetX() << ", " << r.ptRB_.GetY()  << ")";
+    return os;
+  }
 };

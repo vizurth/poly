@@ -8,7 +8,7 @@ MyString::MyString() {
   Copy("");        // Выделяем память для пустой строки и копируем ее
 }
 
-void MyString::Copy (char* s)
+void MyString::Copy (const char* s)
 {
 	delete []m_pStr;
 	// Динамически выделяем требуемое количество памяти.
@@ -22,7 +22,7 @@ void MyString::Copy (char* s)
 }
 
 // Определение конструктора.
-MyString::MyString (char* s)
+MyString::MyString(const char* s)
 {
 	m_pStr = 0;
 	Copy(s);
@@ -56,4 +56,11 @@ MyString& MyString::operator=(const MyString& other){
 MyString::MyString(const MyString& other) {
     m_pStr = nullptr;
     Copy(other.m_pStr);
+}
+
+std::ostream& operator<<(std::ostream& os, const MyString& str) {
+	if (str.m_pStr) {
+		os << str.m_pStr;
+	}
+	return os;
 }

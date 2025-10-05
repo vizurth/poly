@@ -56,3 +56,10 @@ double Rect::Area() const{
 	double height = fabs(ptRB_.GetY() - ptLT_.GetY());
 	return width * height;
 }
+
+Vector Rect::getCenter() const {
+    double center_x = (ptLT_.GetX() + ptRB_.GetX()) / 2.0;
+    double center_y = (ptLT_.GetY() + ptRB_.GetY()) / 2.0;
+    return Vector(center_x, center_y);
+}
+
