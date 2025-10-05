@@ -1,2 +1,0 @@
-set(__QT_DEPLOY_TARGET_DynamicWidgetCollection_FILE /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab6/build/DynamicWidgetCollection)
-set(__QT_DEPLOY_TARGET_DynamicWidgetCollection_TYPE EXECUTABLE)
