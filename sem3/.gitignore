@@ -1,0 +1,22 @@
+.idea/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*.bak
+*.tmp
+*.DS_Store
+
+# macOS системные файлы
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+
+/.vscode/
+git
+/build/
