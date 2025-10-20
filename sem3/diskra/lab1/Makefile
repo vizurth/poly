@@ -7,7 +7,8 @@ TARGET = $(BUILD_DIR)/diskra
 
 SRCS = $(SRC_DIR)/main.cpp \
 $(SRC_DIR)/Gray.cpp \
-$(SRC_DIR)/Multiset.cpp
+$(SRC_DIR)/Multiset.cpp \
+$(SRC_DIR)/UI.cpp
 
 OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 

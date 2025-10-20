@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -27,6 +29,9 @@ public:
 	void fillByHand();
 	// автоматическое запонение множеств(A, B)
 	void fillAutomaticly(int n);
+
+	// проверка на пустоту
+	bool isEmpty() const { return elements.size() == 0; }
 
 	// вывод множества
 	void print(const string& str) const;
