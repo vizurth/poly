@@ -3,17 +3,12 @@
 void UI::printMenu() {
 	cout << "\n------------------- Меню -------------------\n";
     cout << "1. Cгенерировать универсум мультимножеств\n";
-    if (!Multiset::Universum.isEmpty()) {
-        cout << "2. Заполнить множества A и B вручную\n";
-        cout << "3. Заполнить множества A и B автоматически\n";
-    }
-    if (canUseOp){
-        cout << "4. Выполнить операции над множествами\n";
-    }
+    cout << "2. Заполнить множества A и B вручную\n";
+    cout << "3. Заполнить множества A и B автоматически\n";
+    cout << "4. Выполнить операции над множествами\n";
     cout << "5. Вывести множество\n";
     cout << "6. Выход\n";
     cout << "--------------------------------------------\n";
-
 }
 
 void UI::printSetMenu() {
@@ -89,7 +84,9 @@ void UI::handleGenerateUniverse() {
 
 void UI::handleManualFill() {
     if (Multiset::Universum.isEmpty()) {
-        cout << "Сначала создайте универсум!\n";
+        cout << "Универсум пуст — множества A и B будут пустыми.\n";
+        A.fillByHand();
+        B.fillByHand();
         return;
     }
 
@@ -98,13 +95,13 @@ void UI::handleManualFill() {
 
     cout << "\nЗаполнение множества B вручную:\n";
     B.fillByHand();
-
-    canUseOp = true;
 }
 
 void UI::handleAutoFill() {
     if (Multiset::Universum.isEmpty()) {
-        cout << "Сначала создайте универсум!\n";
+        cout << "Универсум пуст — множества A и B будут пустыми.\n";
+        A.fillAutomaticly(0);
+        B.fillAutomaticly(0);
         return;
     }
 
@@ -118,7 +115,6 @@ void UI::handleAutoFill() {
     B.fillAutomaticly(bSize);
 
     cout << "Множества A и B сгенерированы!\n";
-    canUseOp = true;
 }
 
 void UI::handleSetMenu() {
@@ -140,11 +136,6 @@ void UI::handleSetMenu() {
 }
 
 void UI::handleOpMenu() {
-    if (!canUseOp) {
-        cout << "Сначала заполните множества A и B!\n";
-        return;
-    }
-
     bool back = false;
     while (!back) {
         printOpMenu();
