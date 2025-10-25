@@ -1,0 +1,23 @@
+\documentclass[a4paper, final]{article}
+\input{settings}
+
+\begin{document}
+
+\begin{center}
+    \Huge{Билеты Высшая Математика - 3}
+\end{center}
+\pagestyle{empty}
+\begin{center}
+    \large{Тимур Адиатуллин | \href{https://t.me/timurghub}{telegram}, \href{https://github.com/vizurth}{github}} \\
+\end{center}
+\renewcommand{\cfttoctitlefont}{\bfseries} % Заголовок "Оглавление"
+\renewcommand{\cftsecfont}{\small\bfseries} % Размер шрифта для секций
+\renewcommand{\cftsubsecfont}{\small} % Размер шрифта для подразделов
+\renewcommand{\baselinestretch}{0.9}
+\setlength{\cftbeforesecskip}{2pt}
+\tableofcontents
+\newpage
+
+\foreach \n in {1,...,59}{\include{quest/\n}}
+    
+\end{document}
