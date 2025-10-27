@@ -118,7 +118,7 @@ void Multiset::fillAutomaticly(int desiredCardinality) {
         }
     }
 
-    elements = move(temp);
+    elements = std::move(temp);
     totalCardinality = desiredCardinality;
 }
 
@@ -173,26 +173,25 @@ Multiset Multiset::Complement() const {
 
 // разность
 Multiset Multiset::Diff(const Multiset& other) const {
-    Multiset result;
-    for (auto& [el, cntU] : Universum.getElements()) {
-        int cntA = elements.count(el) ? elements.at(el) : 0;
-        int cntB = other.elements.count(el) ? other.elements.at(el) : 0;
-        result.elements[el] = max(0, cntA - cntB);
-    }
+    Multiset result, right;
+	right = other.Complement();
+
+	result = this->Intersection(right);
+
     result.recount();
     return result;
 }
 
 // симметрическая разность
 Multiset Multiset::SimmDiff(const Multiset& other) const {
-    Multiset result;
-    for (auto& [el, cntU] : Universum.getElements()) {
-        int cntA = elements.count(el) ? elements.at(el) : 0;
-        int cntB = other.elements.count(el) ? other.elements.at(el) : 0;
-        result.elements[el] = abs(cntA - cntB);
-    }
-    result.recount();
-    return result;
+    Multiset result, left, right;
+
+	left = this->Union(other);
+	right = this->Intersection(other);
+	result = left.Diff(right);
+
+	result.recount();
+	return result;
 }
 
 // арифметические операции
