@@ -12,7 +12,7 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 	void addWidget(const QString& type);
 
-public slots:
+public slots: // используем слоты так как обычные можно вызывать только напрямую
 	void connectAllWidgets();
 
 private:
@@ -21,4 +21,5 @@ private:
 	void debugConnection();
 
 	QVector<QWidget*> widgets;
+	bool connWidget;
 };

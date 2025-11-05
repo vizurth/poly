@@ -6,7 +6,7 @@ int main(int argc, char *argv[]) {
 	QApplication a(argc, argv);
 
 	MainWindow w;
-	w.setWindowTitle("Dynamic Widget Collection");
+	w.setWindowTitle("Dynamic Widget Collection"); // берем из QWidget
 	w.show();
 
 	return a.exec();

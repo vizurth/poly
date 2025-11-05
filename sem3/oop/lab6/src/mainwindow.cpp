@@ -13,16 +13,17 @@
 MainWindow::MainWindow(QWidget* parent) : QWidget(parent) {
 	setupUi();
 }
+
 void MainWindow::setupUi(){
 	auto layout = new QVBoxLayout(this);
 	std::vector<std::string> buttonNames = {"QSlider", "QLabel", "QScrollBar", "QSpinBox", "connect"};
 
-	for (const auto& n : buttonNames) {
-		if (n != "connect"){
-			QString buttonText = QString("add") + QString::fromStdString(n);
+	for (const auto& name : buttonNames) {
+		if (name != "connect"){
+			QString buttonText = QString("add") + QString::fromStdString(name);
 			auto addButton = new QPushButton(buttonText);
 			layout->addWidget(addButton);
-			connect(addButton, &QPushButton::clicked, this, [this, n]() {addWidget(QString::fromStdString(n));});
+			connect(addButton, &QPushButton::clicked, this, [this, name]() {addWidget(QString::fromStdString(name));});
 		} else {
 			auto connectButton = new QPushButton("connect all widgets");
 			layout->addWidget(connectButton);
@@ -35,35 +36,59 @@ void MainWindow::addWidget(const QString& type){
 	QWidget* newWidget = nullptr;
 	const int min = 0;
 	const int max = 100;
+	int initialValue = 0;
+
+	// если уже есть виджеты и соединение активно — взять значение первого
+	if (connWidget && !widgets.isEmpty()) {
+		QWidget* first = widgets.first();
+
+		if (auto slider = qobject_cast<QSlider*>(first))
+			initialValue = slider->value();
+		else if (auto spinBox = qobject_cast<QSpinBox*>(first))
+			initialValue = spinBox->value();
+		else if (auto scroll = qobject_cast<QScrollBar*>(first))
+			initialValue = scroll->value();
+		else if (auto label = qobject_cast<QLabel*>(first))
+			initialValue = label->text().toInt();
+	}
+
 
 	if (type == "QSlider") {
 		auto slider = new QSlider(Qt::Horizontal, this);
 		slider->setRange(min, max);
+		slider->setValue(initialValue);
 		newWidget = slider;
 	} else if (type == "QLabel") {
-		newWidget = new QLabel("Label: 0", this);
+		newWidget = new QLabel(QString::number(initialValue), this);
 	} else if (type == "QScrollBar") {
 		auto scrollBar = new QScrollBar(Qt::Horizontal, this);
 		scrollBar->setRange(min, max);
+		scrollBar->setValue(initialValue);
 		newWidget = scrollBar;
 	} else if (type == "QSpinBox"){
 		auto spinBox = new QSpinBox(this);
 		spinBox->setRange(min, max);
+		spinBox->setValue(initialValue);
 		newWidget = spinBox;
 	}
 
-	if (newWidget) {
-		widgets.append(newWidget);
-		if (layout()){
-			layout()->addWidget(newWidget);
+	if (connWidget) {
+		for (QWidget* existingWidget : widgets) {
+			connectPairOfWidgets(newWidget, existingWidget);
+			connectPairOfWidgets(existingWidget, newWidget);
 		}
-		newWidget->show();
+	} 
+
+	widgets.append(newWidget);
+	if (layout()){
+		layout()->addWidget(newWidget);
 	}
+	newWidget->show();
 }
+
 void MainWindow::connectPairOfWidgets(QWidget* w1, QWidget* w2){
 	QString class1 = w1->metaObject()->className();
 	QString class2 = w2->metaObject()->className();
-
 
 	if (class1 == "QSlider" || class1 == "QScrollBar" || class1 == "QSpinBox"){
 		if (class2 == "QLabel"){
@@ -75,7 +100,8 @@ void MainWindow::connectPairOfWidgets(QWidget* w1, QWidget* w2){
 }
 
 void MainWindow::connectAllWidgets(){
-	qDebug() << "Connnection all widgets...";
+	connWidget = true;
+	qDebug() << "Connecting all widgets...";
 
 	for (int i = 0; i < widgets.size(); ++i){
 		for (int j = i + 1; j < widgets.size(); ++j){
@@ -92,11 +118,20 @@ void MainWindow::connectAllWidgets(){
 }
 
 void MainWindow::debugConnection(){
-	qDebug() << "--- Connnection Debugging ---";
-	int totalConnections = 0;
-	for (QWidget* w : widgets) {
-		qDebug() << "Widget" << w->metaObject()->className() << "at" << w << "has connection.";
-		QObject::dumpObjectInfo();
-	}
-	qDebug() << "-----------------------------";
+    qDebug() << "--- Connection Debugging ---";
+    for (QWidget* w : widgets) {
+        qDebug() << "Widget:" << w
+                 << "(" << w->metaObject()->className() << ")";
+        // выводим objectName, если есть
+        qDebug() << "  ObjectName:" << w->objectName();
+
+        // выводим сигналы и слоты
+        w->dumpObjectInfo();
+
+        // проверяем наличие активных соединений
+        const QMetaObject* mo = w->metaObject();
+        int signalCount = mo->methodCount();
+        qDebug() << "  Total methods in metaobject:" << signalCount;
+    }
+    qDebug() << "-----------------------------";
 }
