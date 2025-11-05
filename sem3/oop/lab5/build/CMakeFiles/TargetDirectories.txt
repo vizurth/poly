@@ -1,5 +1,0 @@
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab5/build/CMakeFiles/HelloWorld.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab5/build/CMakeFiles/edit_cache.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab5/build/CMakeFiles/rebuild_cache.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab5/build/CMakeFiles/HelloWorld_autogen_timestamp_deps.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab5/build/CMakeFiles/HelloWorld_autogen.dir
