@@ -15,8 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 # Список исходных файлов. 
-# В соответствии с заданием, у вас должны быть main.cpp, mainwindow.h и mainwindow.cpp.
-# Предположим, вы используете main.cpp, mainwindow.h и mainwindow.cpp
+# main.cpp, mainwindow.h
 set(SOURCE_FILES
     src/main.cpp
 )

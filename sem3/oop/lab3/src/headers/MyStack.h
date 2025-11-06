@@ -37,5 +37,4 @@ public:
         std::cout << "\nError! Index " << index << " is out of range!\n";
     }
 };
-
 #include "../tpl/MyStack.tpp"

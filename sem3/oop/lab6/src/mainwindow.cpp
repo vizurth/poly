@@ -3,7 +3,7 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QSlider>
-#include <QScrollbar>
+#include <QScrollBar>
 #include <QSpinBox>
 #include <vector>
 #include <iostream> 
@@ -21,24 +21,28 @@ void MainWindow::setupUi(){
 	for (const auto& name : buttonNames) {
 		if (name != "connect"){
 			QString buttonText = QString("add") + QString::fromStdString(name);
-			auto addButton = new QPushButton(buttonText);
+			auto addButton = new QPushButton(buttonText, this);
 			layout->addWidget(addButton);
-			connect(addButton, &QPushButton::clicked, this, [this, name]() {addWidget(QString::fromStdString(name));});
+			connect(addButton, &QPushButton::clicked, this, [this, name]() {addSomeWidget(QString::fromStdString(name));});
 		} else {
-			auto connectButton = new QPushButton("connect all widgets");
+			auto connectButton = new QPushButton("connect all widgets", this);
 			layout->addWidget(connectButton);
 			connect(connectButton, &QPushButton::clicked, this, &MainWindow::connectAllWidgets);
+
+			auto removeConnectButton = new QPushButton("remove all connect", this);
+			layout->addWidget(removeConnectButton);
+			connect(removeConnectButton, &QPushButton::clicked, this, &MainWindow::removeAllConnect);
 		}
 	}
 }
 
-void MainWindow::addWidget(const QString& type){
+void MainWindow::addSomeWidget(const QString& type){
 	QWidget* newWidget = nullptr;
 	const int min = 0;
 	const int max = 100;
 	int initialValue = 0;
 
-	// если уже есть виджеты и соединение активно — взять значение первого
+	// если уже есть виджеты и соединение активно - взять значение первого
 	if (connWidget && !widgets.isEmpty()) {
 		QWidget* first = widgets.first();
 
@@ -74,8 +78,8 @@ void MainWindow::addWidget(const QString& type){
 
 	if (connWidget) {
 		for (QWidget* existingWidget : widgets) {
-			connectPairOfWidgets(newWidget, existingWidget);
-			connectPairOfWidgets(existingWidget, newWidget);
+			connectPairOfWidgets(newWidget, existingWidget, initialValue);
+			connectPairOfWidgets(existingWidget, newWidget, initialValue);
 		}
 	} 
 
@@ -86,9 +90,34 @@ void MainWindow::addWidget(const QString& type){
 	newWidget->show();
 }
 
-void MainWindow::connectPairOfWidgets(QWidget* w1, QWidget* w2){
+void MainWindow::connectPairOfWidgets(QWidget* w1, QWidget* w2, int currValue){
 	QString class1 = w1->metaObject()->className();
 	QString class2 = w2->metaObject()->className();
+
+	if (class2 == "QLabel") {
+		auto label = qobject_cast<QLabel*>(w2);
+		if (label) {
+			label->setText(QString::number(currValue));
+		}
+	}
+	else if (class2 == "QSlider") {
+		auto slider = qobject_cast<QSlider*>(w2);
+		if (slider) {
+			slider->setValue(currValue);
+		}
+	}
+	else if (class2 == "QScrollBar") {
+		auto scroll = qobject_cast<QScrollBar*>(w2);
+		if (scroll) {
+			scroll->setValue(currValue);
+		}
+	}
+	else if (class2 == "QSpinBox") {
+		auto spin = qobject_cast<QSpinBox*>(w2);
+		if (spin) {
+			spin->setValue(currValue);
+		}
+	}
 
 	if (class1 == "QSlider" || class1 == "QScrollBar" || class1 == "QSpinBox"){
 		if (class2 == "QLabel"){
@@ -103,18 +132,45 @@ void MainWindow::connectAllWidgets(){
 	connWidget = true;
 	qDebug() << "Connecting all widgets...";
 
+	int currValue = 0;
+
+	if (!widgets.isEmpty()) {
+		QWidget* first = widgets.first();
+		if (auto slider = qobject_cast<QSlider*>(first)) {
+			currValue = slider->value();
+		}
+		else if (auto spinBox = qobject_cast<QSpinBox*>(first)) {
+			currValue = spinBox->value();
+		}
+		else if (auto scroll = qobject_cast<QScrollBar*>(first)) {
+			currValue = scroll->value();
+		}
+		else if (auto label = qobject_cast<QLabel*>(first)) {
+			currValue = label->text().toInt();
+		}
+	}
+
+
 	for (int i = 0; i < widgets.size(); ++i){
 		for (int j = i + 1; j < widgets.size(); ++j){
 			QWidget* w1 = widgets[i];
 			QWidget* w2 = widgets[j];
 
-			connectPairOfWidgets(w1, w2);
-			connectPairOfWidgets(w2, w1);
+			connectPairOfWidgets(w1, w2, currValue);
+			connectPairOfWidgets(w2, w1, currValue);
 		}
 	}
 
 	qDebug() << "All widgets connected.";
 	debugConnection();
+	
+}
+
+void MainWindow::removeAllConnect() {
+	connWidget = false;
+	for (QWidget* w : widgets) {
+		w->disconnect();
+	}
 }
 
 void MainWindow::debugConnection(){

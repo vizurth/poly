@@ -523,6 +523,7 @@ int main()
 
 		list<string> words = {"ALGEBRA", "Math", "go", "algebra", "go"};
 		set<string> lower;
+		
 		// inserter из-за пустого set'a
 		transform(words.begin(), words.end(),
 					inserter(lower, lower.begin()),

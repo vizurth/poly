@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <iomanip>
 
 using std::cout;
 using std::endl;
@@ -43,7 +44,7 @@ void printList(list<T>& lst, string s) {
 		
 		for (const auto& el : lst) {
         cout << el << " ";
-    }
+    	}
 
     cout << "\n";
 }
@@ -176,6 +177,10 @@ int main()
 	//// элементов (size()) узнать максимально возможное количество элементов (max_size()),
 	//// а также зарезервированную память (capacity()).
 
+	/*template<
+    	class T,
+    	class Allocator = std::allocator<T>
+	> class vector;*/
 	vector<int> v;
 	v.push_back(-1);
 	v.push_back(-2);
@@ -200,25 +205,25 @@ int main()
 	//// Проверим параметры вектора. Затем изменим размер вектора и его заполнение
 	//// (метод - resize()) и вновь проверим параметры.
 	
-  std::vector<double> vd(2, 222.2);
+	std::vector<double> vd(2, 222.2);
 
-  pr(vd, "Vector of doubles");
+	pr(vd, "Vector of doubles");
 
-  std::cout << "size: " << vd.size() 
-              << ", capacity: " << vd.capacity() 
-              << ", max_size: " << vd.max_size() << "\n";
+	std::cout << "size: " << vd.size() 
+				<< ", capacity: " << vd.capacity() 
+				<< ", max_size: " << vd.max_size() << "\n";
 
-  vd.resize(5, 666.6);
+	vd.resize(5, 666.6);
 
-  pr(vd, "After resize");
-  std::cout << "size: " << vd.size() 
-            << ", capacity: " << vd.capacity() 
-            << ", max_size: " << vd.max_size() << "\n";
+	pr(vd, "After resize");
+	std::cout << "size: " << vd.size() 
+				<< ", capacity: " << vd.capacity() 
+				<< ", max_size: " << vd.max_size() << "\n";
 	
 	//// Используя метод at(), а также операцию выбора [], измените значения
 	//// некоторых элементов вектора и проверьте результат.
 	vd.at(0) = 333.9; 
-  vd[3] = 999.9;  
+  	vd[3] = 999.9;  
 	pr (vd, "After at");
 	
 	//// Создайте вектор вещественных, который является копией существующего.
@@ -245,7 +250,7 @@ int main()
 	//// его вектором с координатами (1,1).
 	vector<Vector> vv(7, Vector(1,1));
 	
-	cout << "\n\nvector of Vectors\n";
+	cout << "\n\nector of Vectors\n";
 	for (int i=0;  i < vv.size();  i++)
 		vv[i].Out();
 
@@ -286,27 +291,30 @@ int main()
 	//// Второй вариант - ступенчатая матрица
 
 	const double val = 3.33;
-	const int rows = 3, cols = 2;
+	const int rows = 3, cols = 3;
 	vector<vector<double>> vdd(rows, vector<double>(cols, val));
 
 
-	std::cout << "\n\n\tRectangular matrix:\n";
-  for (size_t i = 0; i < vdd.size(); i++) {      // строки
-        for (size_t j = 0; j < vdd[i].size(); j++) // столбцы
-            std::cout << vdd[i][j] << "\t";       // табуляция для выравнивания
-        std::cout << "\n";
-  }
+	std::cout << "\n\n\tПрямоугольная матрица:\n";
+	for (size_t i = 0; i < vdd.size(); i++) {      // строки
+		for (size_t j = 0; j < vdd[i].size(); j++) // столбцы
+			std::cout << vdd[i][j] << "\t";       // табуляция для выравнивания
+		std::cout << "\n";
+	}
 	
 	////========= Ступенчатая матрица
-	for (size_t i=0;  i < vdd.size();  i++)
-		vdd[i] = vector<double>(i+1, double(i));
-	
-	cout << "\n\n\tTest vector of vector<double>\n";
+	std::cout << "\n\n\tСтупенчатая матрица:\n";
+
 	for (size_t i=0;  i < vdd.size();  i++)
 	{
-		cout << endl;
+		cout << "\t";
 		for (size_t j=0;  j < vdd[i].size();  j++)
-			cout << vdd[i][j] << " ";
+		if (j >= i) {
+			cout << fixed << setprecision(2) << setw(6) << vdd[i][j] << " ";
+		} else {
+			cout << fixed << setprecision(2) << setw(6) << 0 << " ";
+		}
+		cout << "\n";
 	}	
 	cout << endl;
 
@@ -322,7 +330,12 @@ int main()
 
 	vector<char> charVec = {'H', 'E', 'L', 'L', 'O'};
 
-
+	/*
+	template<
+		class T,
+		std::size_t N
+	> struct array;
+	*/
 	//Создайте и проинициализируйте массив из элементов char. Размер -
 	//по желанию.
 	const size_t sz = 5;
@@ -331,6 +344,7 @@ int main()
 		cMas[i] = static_cast<char>('c' + i);
 	}
 
+	pr(cMas, "charArr");
 	//Получите значение первого элемента вектора ( front() )
 
 	cout << charVec.front() << endl;
@@ -351,12 +365,14 @@ int main()
 
 	charVec.assign(cMas.begin() + 1, cMas.begin() + 3);
 
+	pr(charVec, "new char vec");
+
 	//Проверьте размер вектора, первый и последний элементы.
 
 	cout << "новый размер: " << charVec.size() << endl;
-  cout << "новый первый: " << charVec.front() << endl;
-  cout << "новый послед: " << charVec.back() << endl;
-  
+	cout << "новый первый: " << charVec.front() << endl;
+	cout << "новый послед: " << charVec.back() << endl;
+	
 	stop;
 
 
@@ -369,28 +385,43 @@ int main()
 	//массива {'K','U','K','U'}.
 
 	vector<char> vChar1 = {'A', 'B', 'C', 'D', 'E', 'F'};
-  vector<char> vChar2(8);
-  array<char, 4> charArray = {'K', 'U', 'K', 'U'};
+	vector<char> vChar2(8);
+	array<char, 4> charArray = {'K', 'U', 'K', 'U'};
 
-	for (size_t i = 0; i < vChar1.size(); ++i) {
-    if (i < 4) { 
-      vChar2.at(i * 2) = vChar1.at(i);
+    int src_idx_v1 = 0;
+    try {
+        for (size_t i = 0; i < vChar2.size(); i += 2) {
+            vChar2.at(i) = vChar1.at(src_idx_v1);
+            src_idx_v1++;
+        }
+    } catch (const std::out_of_range& e) {
+        cerr << "runtime error (at()): " << e.what() << endl;
     }
-  }
 
-	for (size_t i = 0; i < charArray.size(); ++i) {
-    vChar2[i * 2 + 1] = charArray[i];
-  }
+	try {
+		int src_idx_arr = 0;
+		for (size_t i = 1; i < vChar2.size(); i += 2) {
+			if (src_idx_arr >= charArray.size()) {
+				throw std::out_of_range("out of range");
+			}
+			vChar2[i] = charArray[src_idx_arr];
+			src_idx_arr++;
+		}
+	} catch (const std::out_of_range& e) {
+		cerr << "runtime error []: " << e.what() << endl;
+	}
+
+    pr(vChar2, "\nFinal vChar2");
 	
 	  stop;
 	//Попробуйте "выйти" за границы вектора с помощью at() и
 	//с помощью []. Обратите внимание: что происходит при
 	//попытке обращения к несуществующему элементу в обоих случаях
 	try {
-    vChar2.at(66) = 'e'; 
-  } catch (const std::out_of_range& e) {
-    std::cerr << "except catched: " << e.what() << std::endl;
-  }
+		vChar2.at(66) = 'e'; 
+	} catch (const std::out_of_range& e) {
+		std::cerr << "except catched: " << e.what() << std::endl;
+	}
 	char c = vChar2[66]; // мусор
 	// [] -> *(arr + 66)
   
@@ -409,9 +440,10 @@ int main()
 
 	//Вставьте перед каждым элементом вектора vChar2 букву 'W'
 
-for (int i = vChar2.size() - 1; i >= 0; --i)
-    vChar2.insert(vChar2.begin() + i, 'W');
+	for (int i = vChar2.size() - 1; i >= 0; --i)
+    	vChar2.insert(vChar2.begin() + i, 'W');
 	
+	pr(vChar2, "vChar2");
 	
 
 	//Вставьте перед 5-ым элементом вектора vChar2 3 буквы 'X'
@@ -425,8 +457,8 @@ for (int i = vChar2.size() - 1; i >= 0; --i)
 
 	vector<char> letters = {'a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'c'};
 	vChar2.insert(vChar2.begin() + 1, letters.begin() + 2, letters.begin() + 6);
+	pr(vChar2, "vChar2");
 
-	pr(letters, "letters");
   
 	//Сотрите c первого по десятый элементы vChar2
 	if (vChar2.size() >= 10) 
@@ -450,7 +482,10 @@ for (int i = vChar2.size() - 1; i >= 0; --i)
 	stop;
 
 ///////////////////////////////////////////////////////////////////
-
+	/*template<
+    	class T,
+    	class Allocator = std::allocator<T>
+	> class list;*/
 	////Задание 4. Списки. Операции, характерные для списков.
 	////Создайте два пустых списка из элементов Vector - ptList1 и
 	////ptList2
@@ -463,14 +498,14 @@ for (int i = vChar2.size() - 1; i >= 0; --i)
 	//push_front, insrert()
 
 	ptList1.push_back(Vector(3.3, 4.4));
-  ptList1.push_front(Vector(1.1, 2.2));
-  ptList1.push_back(Vector(5.5, 6.6));
+	ptList1.push_front(Vector(1.1, 2.2));
+	ptList1.push_back(Vector(5.5, 6.6));
 
-  ptList1.insert(ptList1.begin(), Vector(0.0, 0.0));
+  	ptList1.insert(ptList1.begin(), Vector(0.0, 0.0));
 
 	ptList2.push_back(Vector(2.0, 2.0));
-  ptList2.push_front(Vector(6.0, 8.0));
-  ptList2.push_back(Vector(4.0, 3.0));
+	ptList2.push_front(Vector(6.0, 8.0));
+	ptList2.push_back(Vector(4.0, 3.0));
 
 
 	//Отсортируйте списки - sort().
@@ -478,13 +513,13 @@ for (int i = vChar2.size() - 1; i >= 0; --i)
 	//должен быть переопределен оператор "<"
 
 	printList(ptList1, "ptList1 before sort");
-  printList(ptList2, "ptList2 before sort");
+  	printList(ptList2, "ptList2 before sort");
 
-  //ptList1.sort();
-  //ptList2.sort();
+ 	ptList1.sort();
+  	ptList2.sort();
 
-  printList(ptList1, "ptList1 after sort");
-  printList(ptList2, "ptList2 after sort");
+	printList(ptList1, "ptList1 after sort");
+	printList(ptList2, "ptList2 after sort");
   
 	stop;
 
@@ -492,8 +527,8 @@ for (int i = vChar2.size() - 1; i >= 0; --i)
 	//при этом происходит со вторым списком.
 
 	ptList1.merge(ptList2);
-  printList(ptList1, "ptList1 after merge");
-  printList(ptList2, "ptList2 after merge (now empty)");
+	printList(ptList1, "ptList1 after merge");
+	printList(ptList2, "ptList2 after merge (now empty)");
 
 
 	stop;
@@ -504,7 +539,7 @@ for (int i = vChar2.size() - 1; i >= 0; --i)
 	//в классе Vector оператор "=="
 
 	ptList1.remove(Vector(1.1, 2.2));
-  printList(ptList1, "ptList1 after removing (1.1, 2.2)");
+  	printList(ptList1, "ptList1 after removing (1.1, 2.2)");
 
 	stop;
 

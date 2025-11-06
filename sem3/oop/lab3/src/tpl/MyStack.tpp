@@ -3,7 +3,7 @@ MyStack<T, N>::MyStack() : size(-1) {}
 
 template<class T, int N>
 void MyStack<T, N>::Push(const T& elem){
-  if (size >= N - 1) { // Исправлено
+  if (size >= N - 1) {
       throw StackOverflow();
   }
   arr[++size] = elem;

@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
 project(DynamicWidgetCollection VERSION 1.0 LANGUAGES CXX)
 
-# Включаем автоматическую обработку мета-объектного компилятора (moc)
-# для обработки макроса Q_OBJECT, необходимого для сигналов/слотов Qt.
+# Включаем автоматическую обработку moc/uic/rcc
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON) # Рекомендуется, если вы в будущем будете использовать файлы ресурсов (.qrc)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
 
-# Устанавливаем современный стандарт C++ (например, C++17)
+# Стандарт C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Находим пакет Qt6 и необходимые компоненты.
-# 'Widgets' необходим для QWidget, QLabel, QPushButton.
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+# Указываем путь к Qt, если CMake его не находит сам
+# (если Qt установлен вручную, например в /Users/username/Qt)
 
-# Список исходных файлов.
-# В соответствии с заданием, у вас должны быть main.cpp, mainwindow.h и mainwindow.cpp.
-# Предположим, вы используете main.cpp, mainwindow.h и mainwindow.cpp
+# Находим нужные модули Qt
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+set(CMAKE_PREFIX_PATH "/opt/homebrew/Cellar/qt/6.9.2/lib/cmake")
+# Источники проекта
 set(SOURCE_FILES
     src/main.cpp
     src/mainwindow.cpp
@@ -26,8 +26,13 @@ set(HEADER_FILES
     src/headers/mainwindow.h
 )
 
-# Создаем исполняемый файл
+# Создаём исполняемый файл
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 
-# Привязываем библиотеки Qt6 Widgets к вашему исполняемому файлу
+# Линкуем с Qt
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets)
+
+# Для macOS: делаем нормальный .app bundle (чтобы всё собиралось корректно)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    MACOSX_BUNDLE TRUE
+)
