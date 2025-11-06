@@ -1,0 +1,5 @@
+/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab8/build/CMakeFiles/PhoneBook.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab8/build/CMakeFiles/edit_cache.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab8/build/CMakeFiles/rebuild_cache.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab8/build/CMakeFiles/PhoneBook_autogen_timestamp_deps.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab8/build/CMakeFiles/PhoneBook_autogen.dir
