@@ -11,6 +11,13 @@
 
 using namespace std;
 
+enum class ShapeType {
+	None,
+	Rectangle,
+	Ellipse,
+	Triangle
+};
+
 class MainWindow : public QWidget {
 	Q_OBJECT // MOC
 public:
@@ -28,11 +35,14 @@ private slots: // слоты для connect которые привязывае�
 private:
 	void setupUi(); // реализовавываем UI
 	void bringToFront(QWidget* widget); // поднять виджет на передний план
+	void createShapeAt(const QPointF& position, ShapeType type); // создать фигуру в указанной точке
+	void resetAddButtons(); // сбросить подсветку всех кнопок добавления
 
 private:
 	QWidget* canvas; // область для рисования фигур
 	vector<QWidget*> shapes; // коллекция виджетов-фигур
 	QWidget* selectedShape; // выделенная фигура
+	ShapeType pendingShapeType; // тип фигуры, ожидающей размещения
 
 	// UI элементы
 	QPushButton* addRectButton;
