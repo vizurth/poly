@@ -9,29 +9,30 @@
 #include <vector>
 #include <memory>
 
+using namespace std;
+
 class MainWindow : public QWidget {
 	Q_OBJECT // MOC
 public:
-	explicit MainWindow(QWidget* parent = nullptr);
-	~MainWindow();
+	MainWindow(QWidget* parent = nullptr);
 
 protected:
-	void mousePressEvent(QMouseEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override; // посмотреть зачем?
 
-private slots:
+private slots: // слоты для connect которые привязываем на кнопки
 	void onAddRectangle();
 	void onAddEllipse();
 	void onAddTriangle();
 	void onDeleteSelected();
 
 private:
-	void setupUi();
+	void setupUi(); // реализовавываем UI
 	void bringToFront(QWidget* widget); // поднять виджет на передний план
 
 private:
-	QWidget* canvas_; // область для рисования фигур
-	std::vector<QWidget*> shapes_; // коллекция виджетов-фигур
-	QWidget* selectedShape_; // выделенная фигура
+	QWidget* canvas; // область для рисования фигур
+	vector<QWidget*> shapes; // коллекция виджетов-фигур
+	QWidget* selectedShape; // выделенная фигура
 
 	// UI элементы
 	QPushButton* addRectButton;

@@ -4,7 +4,7 @@
 #include <QMouseEvent>
 
 TriangleWidget::TriangleWidget(const QPolygonF& polygon, const QColor& color, QWidget* parent)
-	: QWidget(parent), polygon_(polygon), color_(color), isSelected_(false), isDragging_(false) {
+	: QWidget(parent), polygon_(polygon), color(color), isSelected_(false), isDragging(false) {
 	// Устанавливаем геометрию виджета по ограничивающему прямоугольнику полигона
 	// Добавляем отступ для контура (максимальная ширина пера = 3)
 	QRectF boundingRect = polygon_.boundingRect();
@@ -15,32 +15,33 @@ TriangleWidget::TriangleWidget(const QPolygonF& polygon, const QColor& color, QW
 }
 
 void TriangleWidget::paintEvent(QPaintEvent* event) {
-	Q_UNUSED(event);
+	Q_UNUSED(event); // макрос чтобы обойти warning
 	QPainter painter(this);
-	painter.setRenderHint(QPainter::Antialiasing);
+	painter.setRenderHint(QPainter::Antialiasing); // включаем сглаживание
 
-	painter.setBrush(color_);
-	int penWidth = isSelected_ ? 3 : 2;
+	painter.setBrush(color); // задаём цвет заливки треугольника
+	int penWidth = 2; // устанавливаем толщину обводки
 	if (isSelected_) {
 		painter.setPen(QPen(Qt::blue, penWidth));
 	} else {
 		painter.setPen(QPen(Qt::black, penWidth));
 	}
 
-	// Преобразуем полигон в локальные координаты виджета
-	// Виджет увеличен на penPadding со всех сторон, поэтому треугольник нужно сместить
+	// получаем прямоугольник, ограничивающий исходный треугольник
 	QRectF boundingRect = polygon_.boundingRect();
-	const int penPadding = 3; // должно совпадать с конструктором
-	QPolygonF localPolygon = polygon_;
-	// Позиция виджета = boundingRect.topLeft() - QPointF(penPadding, penPadding)
-	// Поэтому для локальных координат: local = global - widgetPos = global - (boundingRect.topLeft() - QPointF(penPadding, penPadding))
+	const int penPadding = 3; // отступ от границ, чтобы контур не обрезался
+	QPolygonF localPolygon = polygon_; // создаём копию исходного полигона
+
+	// позиция виджета рассчитывается как boundingRect.topLeft() - QPointF(penPadding, penPadding)
+	// поэтому переводим точки полигона из глобальных координат в локальные координаты виджета
 	for (int i = 0; i < localPolygon.size(); ++i) {
 		localPolygon[i] = localPolygon[i] - boundingRect.topLeft() + QPointF(penPadding, penPadding);
 	}
 
-	// Рисуем треугольник (контур уже не будет обрезаться, т.к. виджет увеличен)
+	// рисуем сам треугольник (обводка не обрежется, так как у виджета есть отступ)
 	painter.drawPolygon(localPolygon);
 }
+
 
 void TriangleWidget::setSelected(bool selected) {
 	isSelected_ = selected;
@@ -49,8 +50,8 @@ void TriangleWidget::setSelected(bool selected) {
 
 void TriangleWidget::mousePressEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton) {
-		isDragging_ = true;
-		dragStartPosition_ = event->pos();
+		isDragging = true;
+		dragStartPosition = event->pos();
 		setSelected(true);
 		raise(); // поднимаем на передний план
 		emit shapeSelected(this); // уведомляем MainWindow
@@ -59,8 +60,8 @@ void TriangleWidget::mousePressEvent(QMouseEvent* event) {
 }
 
 void TriangleWidget::mouseMoveEvent(QMouseEvent* event) {
-	if (isDragging_ && (event->buttons() & Qt::LeftButton)) {
-		QPoint delta = event->pos() - dragStartPosition_;
+	if (isDragging && (event->buttons() & Qt::LeftButton)) {
+		QPoint delta = event->pos() - dragStartPosition;
 		move(pos() + delta);
 	}
 	QWidget::mouseMoveEvent(event);
@@ -68,7 +69,7 @@ void TriangleWidget::mouseMoveEvent(QMouseEvent* event) {
 
 void TriangleWidget::mouseReleaseEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton) {
-		isDragging_ = false;
+		isDragging = false;
 	}
 	QWidget::mouseReleaseEvent(event);
 }

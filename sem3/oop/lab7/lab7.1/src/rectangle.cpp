@@ -4,7 +4,7 @@
 #include <QMouseEvent>
 
 RectangleWidget::RectangleWidget(const QRectF& rect, const QColor& color, QWidget* parent)
-	: QWidget(parent), color_(color), isSelected_(false), isDragging_(false) {
+	: QWidget(parent), color(color), isSelected_(false), isDragging(false) {
 	// Устанавливаем геометрию виджета по ограничивающему прямоугольнику
 	setGeometry(rect.toRect());
 	setAttribute(Qt::WA_TransparentForMouseEvents, false); // виджет должен получать события мыши
@@ -15,8 +15,8 @@ void RectangleWidget::paintEvent(QPaintEvent* event) {
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	painter.setBrush(color_);
-	int penWidth = isSelected_ ? 3 : 2;
+	painter.setBrush(color);
+	int penWidth = 2;
 	if (isSelected_) {
 		painter.setPen(QPen(Qt::blue, penWidth));
 	} else {
@@ -39,8 +39,8 @@ void RectangleWidget::setSelected(bool selected) {
 
 void RectangleWidget::mousePressEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton) {
-		isDragging_ = true;
-		dragStartPosition_ = event->pos();
+		isDragging = true;
+		dragStartPosition = event->pos();
 		setSelected(true);
 		raise(); // поднимаем на передний план
 		emit shapeSelected(this); // уведомляем MainWindow
@@ -49,8 +49,8 @@ void RectangleWidget::mousePressEvent(QMouseEvent* event) {
 }
 
 void RectangleWidget::mouseMoveEvent(QMouseEvent* event) {
-	if (isDragging_ && (event->buttons() & Qt::LeftButton)) {
-		QPoint delta = event->pos() - dragStartPosition_;
+	if (isDragging && (event->buttons() & Qt::LeftButton)) {
+		QPoint delta = event->pos() - dragStartPosition;
 		move(pos() + delta);
 	}
 	QWidget::mouseMoveEvent(event);
@@ -58,7 +58,7 @@ void RectangleWidget::mouseMoveEvent(QMouseEvent* event) {
 
 void RectangleWidget::mouseReleaseEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton) {
-		isDragging_ = false;
+		isDragging = false;
 	}
 	QWidget::mouseReleaseEvent(event);
 }

@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"*.module.scss": "postcss",
+		"*.py": "python",
+		"*.scss": "scss",
+		"cmath": "cpp"
+	}
+}

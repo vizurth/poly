@@ -4,19 +4,18 @@
 #include <QMouseEvent>
 
 EllipseWidget::EllipseWidget(const QRectF& rect, const QColor& color, QWidget* parent)
-	: QWidget(parent), color_(color), isSelected_(false), isDragging_(false) {
-	// Устанавливаем геометрию виджета по ограничивающему прямоугольнику
-	setGeometry(rect.toRect());
-	setAttribute(Qt::WA_TransparentForMouseEvents, false);
+	: QWidget(parent), color(color), isSelected_(false), isDragging(false) {
+	setGeometry(rect.toRect()); // задаём положение и размер виджета по переданному прямоугольнику 
+	setAttribute(Qt::WA_TransparentForMouseEvents, false); // разрешаем взаимодействие с мышкой
 }
 
 void EllipseWidget::paintEvent(QPaintEvent* event) {
-	Q_UNUSED(event);
+	Q_UNUSED(event); // макрос чтобы избежать warning
 	QPainter painter(this);
-	painter.setRenderHint(QPainter::Antialiasing);
+	painter.setRenderHint(QPainter::Antialiasing); // сглаживание
 
-	painter.setBrush(color_);
-	int penWidth = isSelected_ ? 2 : 2;
+	painter.setBrush(color); // заливка
+	int penWidth = 2; // выделение при селекте
 	if (isSelected_) {
 		painter.setPen(QPen(Qt::blue, penWidth));
 	} else {
@@ -34,31 +33,31 @@ void EllipseWidget::paintEvent(QPaintEvent* event) {
 
 void EllipseWidget::setSelected(bool selected) {
 	isSelected_ = selected;
-	update();
+	update(); // перерисовка чтобы появилась синяя граница
 }
 
 void EllipseWidget::mousePressEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton) {
-		isDragging_ = true;
-		dragStartPosition_ = event->pos();
+		isDragging = true;
+		dragStartPosition = event->pos();
 		setSelected(true);
 		raise(); // поднимаем на передний план
-		emit shapeSelected(this); // уведомляем MainWindow
+		emit shapeSelected(this); // уведомляем MainWindow emit макрос для отправки сигналов
 	}
 	QWidget::mousePressEvent(event);
 }
 
 void EllipseWidget::mouseMoveEvent(QMouseEvent* event) {
-	if (isDragging_ && (event->buttons() & Qt::LeftButton)) {
-		QPoint delta = event->pos() - dragStartPosition_;
+	if (isDragging && (event->buttons() & Qt::LeftButton)) {
+		QPoint delta = event->pos() - dragStartPosition; // сдвиг корсора
 		move(pos() + delta);
 	}
-	QWidget::mouseMoveEvent(event);
+	QWidget::mouseMoveEvent(event); // проводим имент
 }
 
-void EllipseWidget::mouseReleaseEvent(QMouseEvent* event) {
+void EllipseWidget::mouseReleaseEvent(QMouseEvent* event) { // отпускаем кнопку
 	if (event->button() == Qt::LeftButton) {
-		isDragging_ = false;
+		isDragging = false;
 	}
 	QWidget::mouseReleaseEvent(event);
 }
