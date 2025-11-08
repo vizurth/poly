@@ -1,6 +1,6 @@
 CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/mainwindow.cpp \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/headers/mainwindow.h \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/mainwindow.cpp \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/headers/mainwindow.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qwidget.h \
   /opt/homebrew/include/QtWidgets/qtwidgetsglobal.h \
@@ -1081,6 +1081,14 @@ CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: \
   /opt/homebrew/include/QtWidgets/qgraphicsscene.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QGraphicsScene \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qgraphicsscene.h \
+  /opt/homebrew/lib/QtWidgets.framework/Headers/QGraphicsSceneMouseEvent \
+  /opt/homebrew/lib/QtWidgets.framework/Headers/qgraphicssceneevent.h \
+  /opt/homebrew/include/QtCore/qcoreevent.h \
+  /opt/homebrew/include/QtCore/qbasictimer.h \
+  /opt/homebrew/include/QtCore/qabstracteventdispatcher.h \
+  /opt/homebrew/include/QtCore/qeventloop.h \
+  /opt/homebrew/include/QtCore/qdeadlinetimer.h \
+  /opt/homebrew/include/QtCore/qelapsedtimer.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/include/QtWidgets/qabstractbutton.h \
@@ -1091,6 +1099,35 @@ CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: \
   /opt/homebrew/include/QtWidgets/qboxlayout.h \
   /opt/homebrew/include/QtWidgets/qgridlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QHBoxLayout \
+  /opt/homebrew/lib/QtGui.framework/Headers/QMouseEvent \
+  /opt/homebrew/lib/QtGui.framework/Headers/qevent.h \
+  /opt/homebrew/include/QtCore/qiodevice.h \
+  /opt/homebrew/include/QtCore/qurl.h \
+  /opt/homebrew/include/QtGui/qeventpoint.h \
+  /opt/homebrew/include/QtGui/qvector2d.h \
+  /opt/homebrew/include/QtGui/qvectornd.h \
+  /opt/homebrew/include/QtGui/qpointingdevice.h \
+  /opt/homebrew/include/QtGui/qinputdevice.h \
+  /opt/homebrew/include/QtGui/qscreen.h \
+  /opt/homebrew/include/QtCore/QList \
+  /opt/homebrew/lib/QtCore.framework/Headers/qlist.h \
+  /opt/homebrew/include/QtCore/QObject \
+  /opt/homebrew/lib/QtCore.framework/Headers/qobject.h \
+  /opt/homebrew/include/QtCore/QRect \
+  /opt/homebrew/lib/QtCore.framework/Headers/qrect.h \
+  /opt/homebrew/include/QtCore/QSize \
+  /opt/homebrew/lib/QtCore.framework/Headers/qsize.h \
+  /opt/homebrew/include/QtCore/QSizeF \
+  /opt/homebrew/include/QtGui/QTransform \
+  /opt/homebrew/lib/QtGui.framework/Headers/qtransform.h \
+  /opt/homebrew/include/QtCore/qnativeinterface.h \
+  /opt/homebrew/include/QtGui/qscreen_platform.h \
+  /opt/homebrew/include/QtGui/qguiapplication.h \
+  /opt/homebrew/include/QtCore/qcoreapplication.h \
+  /opt/homebrew/include/QtCore/qcoreapplication_platform.h \
+  /opt/homebrew/include/QtGui/qinputmethod.h \
+  /opt/homebrew/include/QtCore/qlocale.h \
+  /opt/homebrew/include/QtGui/qguiapplication_platform.h \
   /opt/homebrew/lib/QtCore.framework/Headers/QRandomGenerator \
   /opt/homebrew/lib/QtCore.framework/Headers/qrandom.h \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/random \
@@ -1134,18 +1171,10 @@ CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QGraphicsPolygonItem \
   /opt/homebrew/lib/QtGui.framework/Headers/QPainterPath \
   /opt/homebrew/lib/QtGui.framework/Headers/qpainterpath.h \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/headers/rectangle.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/QGraphicsSceneMouseEvent \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qgraphicssceneevent.h \
-  /opt/homebrew/include/QtCore/qcoreevent.h \
-  /opt/homebrew/include/QtCore/qbasictimer.h \
-  /opt/homebrew/include/QtCore/qabstracteventdispatcher.h \
-  /opt/homebrew/include/QtCore/qeventloop.h \
-  /opt/homebrew/include/QtCore/qdeadlinetimer.h \
-  /opt/homebrew/include/QtCore/qelapsedtimer.h \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/headers/ellipse.h \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/headers/rectangle.h \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/headers/ellipse.h \
   /opt/homebrew/lib/QtGui.framework/Headers/QBrush \
   /opt/homebrew/lib/QtGui.framework/Headers/qbrush.h \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/headers/triangle.h \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/headers/triangle.h \
   /opt/homebrew/lib/QtGui.framework/Headers/QPolygonF \
   /opt/homebrew/lib/QtGui.framework/Headers/qpolygon.h

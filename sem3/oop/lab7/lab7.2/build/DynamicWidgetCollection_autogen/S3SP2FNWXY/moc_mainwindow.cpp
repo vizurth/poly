@@ -31,6 +31,63 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_DISABLE_GCC("-Wuseless-cast")
 namespace {
+struct qt_meta_tag_ZN19CustomGraphicsSceneE_t {};
+} // unnamed namespace
+
+template <> constexpr inline auto CustomGraphicsScene::qt_create_metaobjectdata<qt_meta_tag_ZN19CustomGraphicsSceneE_t>()
+{
+    namespace QMC = QtMocConstants;
+    QtMocHelpers::StringRefStorage qt_stringData {
+        "CustomGraphicsScene"
+    };
+
+    QtMocHelpers::UintData qt_methods {
+    };
+    QtMocHelpers::UintData qt_properties {
+    };
+    QtMocHelpers::UintData qt_enums {
+    };
+    return QtMocHelpers::metaObjectData<CustomGraphicsScene, qt_meta_tag_ZN19CustomGraphicsSceneE_t>(QMC::MetaObjectFlag{}, qt_stringData,
+            qt_methods, qt_properties, qt_enums);
+}
+Q_CONSTINIT const QMetaObject CustomGraphicsScene::staticMetaObject = { {
+    QMetaObject::SuperData::link<QGraphicsScene::staticMetaObject>(),
+    qt_staticMetaObjectStaticContent<qt_meta_tag_ZN19CustomGraphicsSceneE_t>.stringdata,
+    qt_staticMetaObjectStaticContent<qt_meta_tag_ZN19CustomGraphicsSceneE_t>.data,
+    qt_static_metacall,
+    nullptr,
+    qt_staticMetaObjectRelocatingContent<qt_meta_tag_ZN19CustomGraphicsSceneE_t>.metaTypes,
+    nullptr
+} };
+
+void CustomGraphicsScene::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
+{
+    auto *_t = static_cast<CustomGraphicsScene *>(_o);
+    (void)_t;
+    (void)_c;
+    (void)_id;
+    (void)_a;
+}
+
+const QMetaObject *CustomGraphicsScene::metaObject() const
+{
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+
+void *CustomGraphicsScene::qt_metacast(const char *_clname)
+{
+    if (!_clname) return nullptr;
+    if (!strcmp(_clname, qt_staticMetaObjectStaticContent<qt_meta_tag_ZN19CustomGraphicsSceneE_t>.strings))
+        return static_cast<void*>(this);
+    return QGraphicsScene::qt_metacast(_clname);
+}
+
+int CustomGraphicsScene::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+{
+    _id = QGraphicsScene::qt_metacall(_c, _id, _a);
+    return _id;
+}
+namespace {
 struct qt_meta_tag_ZN10MainWindowE_t {};
 } // unnamed namespace
 

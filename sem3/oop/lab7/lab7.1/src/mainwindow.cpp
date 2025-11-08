@@ -73,6 +73,13 @@ void MainWindow::resetAddButtons() {
 }
 
 void MainWindow::onAddRectangle() {
+	// Если уже в режиме добавления прямоугольника - отменяем режим
+	if (pendingShapeType == ShapeType::Rectangle) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons();
+		canvas->setCursor(Qt::ArrowCursor);
+		return;
+	}
 	// Сбрасываем другие кнопки
 	resetAddButtons();
 	// Устанавливаем режим ожидания клика для добавления прямоугольника
@@ -82,6 +89,13 @@ void MainWindow::onAddRectangle() {
 }
 
 void MainWindow::onAddEllipse() {
+	// Если уже в режиме добавления эллипса - отменяем режим
+	if (pendingShapeType == ShapeType::Ellipse) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons();
+		canvas->setCursor(Qt::ArrowCursor);
+		return;
+	}
 	// Сбрасываем другие кнопки
 	resetAddButtons();
 	// Устанавливаем режим ожидания клика для добавления эллипса
@@ -91,6 +105,13 @@ void MainWindow::onAddEllipse() {
 }
 
 void MainWindow::onAddTriangle() {
+	// Если уже в режиме добавления треугольника - отменяем режим
+	if (pendingShapeType == ShapeType::Triangle) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons();
+		canvas->setCursor(Qt::ArrowCursor);
+		return;
+	}
 	// Сбрасываем другие кнопки
 	resetAddButtons();
 	// Устанавливаем режим ожидания клика для добавления треугольника
@@ -122,10 +143,8 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
 				if (!clickedOnShape) {
 					// Создаем фигуру в месте клика
 					createShapeAt(canvasPos, pendingShapeType);
-					// Сбрасываем режим добавления
-					pendingShapeType = ShapeType::None;
-					resetAddButtons(); // сбрасываем подсветку кнопок
-					canvas->setCursor(Qt::ArrowCursor); // возвращаем обычный курсор
+					// НЕ сбрасываем режим добавления - оставляем активным для следующих кликов
+					// Режим сбросится только при нажатии на другую кнопку или при отмене
 					return; // не передаем событие дальше
 				}
 			}

@@ -5,6 +5,7 @@
 #include <QGraphicsEllipseItem>
 #include <QGraphicsPolygonItem>
 #include <QPainterPath>
+#include <QGraphicsSceneMouseEvent>
 
 #include "headers/rectangle.h"
 #include "headers/ellipse.h"
@@ -19,23 +20,30 @@ namespace {
 }
 
 MainWindow::MainWindow(QWidget* parent)
-	: QWidget(parent) {
+	: QWidget(parent), pendingShapeType(ShapeType::None) {
 	setupUi();
 }
 
 void MainWindow::setupUi() {
-	scene = new QGraphicsScene(this); // контейнер для виджетов
+	scene = new CustomGraphicsScene(this); // контейнер для виджетов
 	scene->setSceneRect(0, 0, 800, 600);
+	scene->setMainWindow(this); // передаем указатель на MainWindow
 
 	view = new QGraphicsView(scene, this); // виджет который отображает содержимое scene
 	view->setDragMode(QGraphicsView::RubberBandDrag); // используется для когда зажимаем обьект
 	view->setMinimumSize(820, 620);
+	view->setMouseTracking(false);
 
 	// добавляем кнопки
 	addRectButton = new QPushButton("Add Rectangle", this);
 	addEllipseButton = new QPushButton("Add Ellipse", this);
 	addTriangleButton = new QPushButton("Add Triangle", this);
 	deleteButton = new QPushButton("Delete Selected", this);
+	
+	// Делаем кнопки добавления checkable для визуального отображения активного состояния
+	addRectButton->setCheckable(true);
+	addEllipseButton->setCheckable(true);
+	addTriangleButton->setCheckable(true);
 
 	// подключаем коннекты функция к кнопке
 	connect(addRectButton, &QPushButton::clicked, this, &MainWindow::onAddRectangle);
@@ -62,39 +70,138 @@ static QColor randomColor() {
 	return QColor::fromHsv(QRandomGenerator::global()->bounded(360), 180, 230);
 }
 
+void MainWindow::resetAddButtons() {
+	// Сбрасываем подсветку всех кнопок добавления
+	addRectButton->setChecked(false);
+	addEllipseButton->setChecked(false);
+	addTriangleButton->setChecked(false);
+}
+
 void MainWindow::onAddRectangle() {
-	const QSizeF size(120, 80);
-	QRectF rect(QPointF(-size.width() / 2.0, -size.height() / 2.0), size);
-	auto* item = new RectangleItem(rect);
-	item->setBrush(randomColor()); // цвет заливки
-	item->setPen(QPen(Qt::black, 2)); // контур
-	item->setPos(sceneCenter(scene)); // задаем позицию на view
-	item->setZValue(g_nextZ++); // увеличиваем zCount
-	scene->addItem(item); // добавляем на сцену
+	// Если уже в режиме добавления прямоугольника - отменяем режим
+	if (pendingShapeType == ShapeType::Rectangle) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons();
+		view->setCursor(Qt::ArrowCursor);
+		return;
+	}
+	// Сбрасываем другие кнопки
+	resetAddButtons();
+	// Устанавливаем режим ожидания клика для добавления прямоугольника
+	pendingShapeType = ShapeType::Rectangle;
+	addRectButton->setChecked(true); // подсвечиваем кнопку
+	view->setCursor(Qt::CrossCursor); // меняем курсор на крестик
 }
 
 void MainWindow::onAddEllipse() {
-	const QSizeF size(120, 120);
-	QRectF rect(QPointF(-size.width() / 2.0, -size.height() / 2.0), size);
-	auto* item = new EllipseItem(rect);
-	item->setBrush(randomColor()); // цвет заливки
-	item->setPen(QPen(Qt::black, 2)); // контур
-	item->setPos(sceneCenter(scene)); // задаем позицию на view
-	item->setZValue(g_nextZ++); // увеличиваем zCount
-	scene->addItem(item); // добавляем на сцену
+	// Если уже в режиме добавления эллипса - отменяем режим
+	if (pendingShapeType == ShapeType::Ellipse) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons();
+		view->setCursor(Qt::ArrowCursor);
+		return;
+	}
+	// Сбрасываем другие кнопки
+	resetAddButtons();
+	// Устанавливаем режим ожидания клика для добавления эллипса
+	pendingShapeType = ShapeType::Ellipse;
+	addEllipseButton->setChecked(true); // подсвечиваем кнопку
+	view->setCursor(Qt::CrossCursor); // меняем курсор на крестик
 }
 
 void MainWindow::onAddTriangle() {
-	const qreal side = 120.0;
-	auto* item = new TriangleItem(side);
-	item->setBrush(randomColor());
-	item->setPen(QPen(Qt::black, 2));
-	item->setPos(sceneCenter(scene));
-	item->setZValue(g_nextZ++);
-	scene->addItem(item);
+	// Если уже в режиме добавления треугольника - отменяем режим
+	if (pendingShapeType == ShapeType::Triangle) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons();
+		view->setCursor(Qt::ArrowCursor);
+		return;
+	}
+	// Сбрасываем другие кнопки
+	resetAddButtons();
+	// Устанавливаем режим ожидания клика для добавления треугольника
+	pendingShapeType = ShapeType::Triangle;
+	addTriangleButton->setChecked(true); // подсвечиваем кнопку
+	view->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+}
+
+void CustomGraphicsScene::setMainWindow(MainWindow* mw) {
+	mainWindow = mw;
+}
+
+void CustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
+	if (mainWindow && event->button() == Qt::LeftButton) {
+		// Если мы в режиме добавления фигуры
+		if (mainWindow->pendingShapeType != ShapeType::None) {
+			QPointF scenePos = event->scenePos();
+			
+			// Проверяем, что клик не на существующей фигуре
+			QGraphicsItem* itemAtPos = itemAt(scenePos, QTransform());
+			if (!itemAtPos) {
+				// Клик на пустом месте - создаем фигуру
+				mainWindow->createShapeAt(scenePos, mainWindow->pendingShapeType);
+				// НЕ сбрасываем режим добавления - оставляем активным для следующих кликов
+				event->accept(); // принимаем событие
+				return;
+			}
+		}
+	}
+	// Для всех остальных случаев передаем обработку базовому классу
+	QGraphicsScene::mousePressEvent(event);
+}
+
+void MainWindow::createShapeAt(const QPointF& scenePos, ShapeType type) {
+	QGraphicsItem* item = nullptr;
+	
+	switch (type) {
+		case ShapeType::Rectangle: {
+			const QSizeF size(120, 80);
+			QRectF rect(QPointF(-size.width() / 2.0, -size.height() / 2.0), size);
+			RectangleItem* rectItem = new RectangleItem(rect);
+			rectItem->setBrush(randomColor()); // цвет заливки
+			rectItem->setPen(QPen(Qt::black, 2)); // контур
+			rectItem->setPos(scenePos); // задаем позицию на сцене в месте клика
+			rectItem->setZValue(g_nextZ++); // увеличиваем zCount
+			scene->addItem(rectItem); // добавляем на сцену
+			item = rectItem;
+			break;
+		}
+		case ShapeType::Ellipse: {
+			const QSizeF size(120, 120);
+			QRectF rect(QPointF(-size.width() / 2.0, -size.height() / 2.0), size);
+			EllipseItem* ellipseItem = new EllipseItem(rect);
+			ellipseItem->setBrush(randomColor()); // цвет заливки
+			ellipseItem->setPen(QPen(Qt::black, 2)); // контур
+			ellipseItem->setPos(scenePos); // задаем позицию на сцене в месте клика
+			ellipseItem->setZValue(g_nextZ++); // увеличиваем zCount
+			scene->addItem(ellipseItem); // добавляем на сцену
+			item = ellipseItem;
+			break;
+		}
+		case ShapeType::Triangle: {
+			const qreal side = 120.0;
+			TriangleItem* triangleItem = new TriangleItem(side);
+			triangleItem->setBrush(randomColor());
+			triangleItem->setPen(QPen(Qt::black, 2));
+			triangleItem->setPos(scenePos); // задаем позицию на сцене в месте клика
+			triangleItem->setZValue(g_nextZ++);
+			scene->addItem(triangleItem);
+			item = triangleItem;
+			break;
+		}
+		case ShapeType::None:
+			return;
+	}
 }
 
 void MainWindow::onDeleteSelected() {
+	// Сбрасываем режим добавления при удалении
+	if (pendingShapeType != ShapeType::None) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons(); // сбрасываем подсветку кнопок
+		view->setCursor(Qt::ArrowCursor);
+	}
+	
 	const auto selected = scene->selectedItems();
 	for (QGraphicsItem* it : selected) {
 		delete it; // удаление из сцены и памяти

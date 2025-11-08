@@ -1,7 +1,7 @@
 CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o: \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/S3SP2FNWXY/moc_mainwindow.cpp \
-  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/S3SP2FNWXY/../../../src/headers/mainwindow.h \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/S3SP2FNWXY/moc_mainwindow.cpp \
+  /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/S3SP2FNWXY/../../../src/headers/mainwindow.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qwidget.h \
   /opt/homebrew/include/QtWidgets/qtwidgetsglobal.h \
@@ -1082,6 +1082,14 @@ CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_comp
   /opt/homebrew/include/QtWidgets/qgraphicsscene.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QGraphicsScene \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qgraphicsscene.h \
+  /opt/homebrew/lib/QtWidgets.framework/Headers/QGraphicsSceneMouseEvent \
+  /opt/homebrew/lib/QtWidgets.framework/Headers/qgraphicssceneevent.h \
+  /opt/homebrew/include/QtCore/qcoreevent.h \
+  /opt/homebrew/include/QtCore/qbasictimer.h \
+  /opt/homebrew/include/QtCore/qabstracteventdispatcher.h \
+  /opt/homebrew/include/QtCore/qeventloop.h \
+  /opt/homebrew/include/QtCore/qdeadlinetimer.h \
+  /opt/homebrew/include/QtCore/qelapsedtimer.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/include/QtWidgets/qabstractbutton.h \
@@ -1092,6 +1100,35 @@ CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_comp
   /opt/homebrew/include/QtWidgets/qboxlayout.h \
   /opt/homebrew/include/QtWidgets/qgridlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QHBoxLayout \
+  /opt/homebrew/lib/QtGui.framework/Headers/QMouseEvent \
+  /opt/homebrew/lib/QtGui.framework/Headers/qevent.h \
+  /opt/homebrew/include/QtCore/qiodevice.h \
+  /opt/homebrew/include/QtCore/qurl.h \
+  /opt/homebrew/include/QtGui/qeventpoint.h \
+  /opt/homebrew/include/QtGui/qvector2d.h \
+  /opt/homebrew/include/QtGui/qvectornd.h \
+  /opt/homebrew/include/QtGui/qpointingdevice.h \
+  /opt/homebrew/include/QtGui/qinputdevice.h \
+  /opt/homebrew/include/QtGui/qscreen.h \
+  /opt/homebrew/include/QtCore/QList \
+  /opt/homebrew/lib/QtCore.framework/Headers/qlist.h \
+  /opt/homebrew/include/QtCore/QObject \
+  /opt/homebrew/lib/QtCore.framework/Headers/qobject.h \
+  /opt/homebrew/include/QtCore/QRect \
+  /opt/homebrew/lib/QtCore.framework/Headers/qrect.h \
+  /opt/homebrew/include/QtCore/QSize \
+  /opt/homebrew/lib/QtCore.framework/Headers/qsize.h \
+  /opt/homebrew/include/QtCore/QSizeF \
+  /opt/homebrew/include/QtGui/QTransform \
+  /opt/homebrew/lib/QtGui.framework/Headers/qtransform.h \
+  /opt/homebrew/include/QtCore/qnativeinterface.h \
+  /opt/homebrew/include/QtGui/qscreen_platform.h \
+  /opt/homebrew/include/QtGui/qguiapplication.h \
+  /opt/homebrew/include/QtCore/qcoreapplication.h \
+  /opt/homebrew/include/QtCore/qcoreapplication_platform.h \
+  /opt/homebrew/include/QtGui/qinputmethod.h \
+  /opt/homebrew/include/QtCore/qlocale.h \
+  /opt/homebrew/include/QtGui/qguiapplication_platform.h \
   /opt/homebrew/include/QtCore/qtmochelpers.h \
   /opt/homebrew/include/QtCore/qtmocconstants.h \
   /opt/homebrew/include/QtCore/q20algorithm.h \

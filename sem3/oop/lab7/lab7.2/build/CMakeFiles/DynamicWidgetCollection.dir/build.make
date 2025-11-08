@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7
+CMAKE_SOURCE_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build
+CMAKE_BINARY_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/DynamicWidgetCollection.dir/depend.make
@@ -72,9 +72,9 @@ include CMakeFiles/DynamicWidgetCollection.dir/flags.make
 DynamicWidgetCollection_autogen/timestamp: /opt/homebrew/share/qt/libexec/moc
 DynamicWidgetCollection_autogen/timestamp: /opt/homebrew/share/qt/libexec/uic
 DynamicWidgetCollection_autogen/timestamp: CMakeFiles/DynamicWidgetCollection.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target DynamicWidgetCollection"
-	/opt/homebrew/bin/cmake -E cmake_autogen /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles/DynamicWidgetCollection_autogen.dir/AutogenInfo.json ""
-	/opt/homebrew/bin/cmake -E touch /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/timestamp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target DynamicWidgetCollection"
+	/opt/homebrew/bin/cmake -E cmake_autogen /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles/DynamicWidgetCollection_autogen.dir/AutogenInfo.json ""
+	/opt/homebrew/bin/cmake -E touch /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/timestamp
 
 CMakeFiles/DynamicWidgetCollection.dir/codegen:
 .PHONY : CMakeFiles/DynamicWidgetCollection.dir/codegen
@@ -82,44 +82,44 @@ CMakeFiles/DynamicWidgetCollection.dir/codegen:
 CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o: CMakeFiles/DynamicWidgetCollection.dir/flags.make
 CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o: DynamicWidgetCollection_autogen/mocs_compilation.cpp
 CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o: CMakeFiles/DynamicWidgetCollection.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o -MF CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o.d -o CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o -c /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o -MF CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o.d -o CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.o -c /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp
 
 CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp > CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp > CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.i
 
 CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp -o CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/mocs_compilation.cpp -o CMakeFiles/DynamicWidgetCollection.dir/DynamicWidgetCollection_autogen/mocs_compilation.cpp.s
 
 CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o: CMakeFiles/DynamicWidgetCollection.dir/flags.make
-CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o: /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/main.cpp
+CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o: /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/main.cpp
 CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o: CMakeFiles/DynamicWidgetCollection.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o -MF CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o.d -o CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o -c /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o -MF CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o.d -o CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.o -c /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/main.cpp
 
 CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/main.cpp > CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/main.cpp > CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.i
 
 CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/main.cpp -o CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/main.cpp -o CMakeFiles/DynamicWidgetCollection.dir/src/main.cpp.s
 
 CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: CMakeFiles/DynamicWidgetCollection.dir/flags.make
-CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/mainwindow.cpp
+CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/mainwindow.cpp
 CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o: CMakeFiles/DynamicWidgetCollection.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o -MF CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o.d -o CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o -c /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/mainwindow.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o -MF CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o.d -o CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.o -c /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/mainwindow.cpp
 
 CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/mainwindow.cpp > CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/mainwindow.cpp > CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.i
 
 CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/src/mainwindow.cpp -o CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/src/mainwindow.cpp -o CMakeFiles/DynamicWidgetCollection.dir/src/mainwindow.cpp.s
 
 # Object files for target DynamicWidgetCollection
 DynamicWidgetCollection_OBJECTS = \
@@ -138,7 +138,7 @@ DynamicWidgetCollection.app/Contents/MacOS/DynamicWidgetCollection: /opt/homebre
 DynamicWidgetCollection.app/Contents/MacOS/DynamicWidgetCollection: /opt/homebrew/lib/QtGui.framework/Versions/A/QtGui
 DynamicWidgetCollection.app/Contents/MacOS/DynamicWidgetCollection: /opt/homebrew/lib/QtCore.framework/Versions/A/QtCore
 DynamicWidgetCollection.app/Contents/MacOS/DynamicWidgetCollection: CMakeFiles/DynamicWidgetCollection.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable DynamicWidgetCollection.app/Contents/MacOS/DynamicWidgetCollection"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable DynamicWidgetCollection.app/Contents/MacOS/DynamicWidgetCollection"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/DynamicWidgetCollection.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -150,6 +150,6 @@ CMakeFiles/DynamicWidgetCollection.dir/clean:
 .PHONY : CMakeFiles/DynamicWidgetCollection.dir/clean
 
 CMakeFiles/DynamicWidgetCollection.dir/depend: DynamicWidgetCollection_autogen/timestamp
-	cd /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles/DynamicWidgetCollection.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles/DynamicWidgetCollection.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/DynamicWidgetCollection.dir/depend
 

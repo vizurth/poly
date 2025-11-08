@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7
+CMAKE_SOURCE_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build
+CMAKE_BINARY_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build
 
 # Utility rule file for DynamicWidgetCollection_autogen.
 
@@ -71,9 +71,9 @@ CMakeFiles/DynamicWidgetCollection_autogen: DynamicWidgetCollection_autogen/time
 DynamicWidgetCollection_autogen/timestamp: /opt/homebrew/share/qt/libexec/moc
 DynamicWidgetCollection_autogen/timestamp: /opt/homebrew/share/qt/libexec/uic
 DynamicWidgetCollection_autogen/timestamp: CMakeFiles/DynamicWidgetCollection_autogen.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target DynamicWidgetCollection"
-	/opt/homebrew/bin/cmake -E cmake_autogen /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles/DynamicWidgetCollection_autogen.dir/AutogenInfo.json ""
-	/opt/homebrew/bin/cmake -E touch /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/DynamicWidgetCollection_autogen/timestamp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC and UIC for target DynamicWidgetCollection"
+	/opt/homebrew/bin/cmake -E cmake_autogen /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles/DynamicWidgetCollection_autogen.dir/AutogenInfo.json ""
+	/opt/homebrew/bin/cmake -E touch /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/DynamicWidgetCollection_autogen/timestamp
 
 CMakeFiles/DynamicWidgetCollection_autogen.dir/codegen:
 .PHONY : CMakeFiles/DynamicWidgetCollection_autogen.dir/codegen
@@ -92,6 +92,6 @@ CMakeFiles/DynamicWidgetCollection_autogen.dir/clean:
 .PHONY : CMakeFiles/DynamicWidgetCollection_autogen.dir/clean
 
 CMakeFiles/DynamicWidgetCollection_autogen.dir/depend:
-	cd /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles/DynamicWidgetCollection_autogen.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles/DynamicWidgetCollection_autogen.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/DynamicWidgetCollection_autogen.dir/depend
 

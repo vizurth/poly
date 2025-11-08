@@ -53,10 +53,10 @@ RM = /opt/homebrew/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7
+CMAKE_SOURCE_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build
+CMAKE_BINARY_DIR = /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build
 
 # Utility rule file for DynamicWidgetCollection_autogen_timestamp_deps.
 
@@ -81,6 +81,6 @@ CMakeFiles/DynamicWidgetCollection_autogen_timestamp_deps.dir/clean:
 .PHONY : CMakeFiles/DynamicWidgetCollection_autogen_timestamp_deps.dir/clean
 
 CMakeFiles/DynamicWidgetCollection_autogen_timestamp_deps.dir/depend:
-	cd /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/build/CMakeFiles/DynamicWidgetCollection_autogen_timestamp_deps.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2 /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build /Users/timuradiatullin/narnia/spbpu/sem3/oop/lab7/lab7.2/build/CMakeFiles/DynamicWidgetCollection_autogen_timestamp_deps.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/DynamicWidgetCollection_autogen_timestamp_deps.dir/depend
 
