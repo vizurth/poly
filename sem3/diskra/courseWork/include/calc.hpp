@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <optional>
+#include <stack>
 
 using namespace std;
 
@@ -16,8 +17,6 @@ private:
     vector<string> alphabet;
     
     // Вычисленные структуры
-    vector<string> hasseVector;
-    map<string, int> hasseWeight;
     map<string, string> inverseMap;
     
     // Таблицы операций
@@ -32,9 +31,15 @@ private:
     string universum;             // "универсум" для 0*0
     string emptySet;              // "∅" для деления на 0
     
+    // Вспомогательные функции для работы с диаграммой Хассе
+    string applyPlusOneNTimes(const string& start, int n) const;
+    int countStepsFromZero(const string& elem) const;
+    string addByHasse(const string& a, const string& b) const;
+    string multiplyByHasse(const string& a, const string& b) const;
+    string subtractByHasse(const string& a, const string& b) const;
+    string divideByHasse(const string& a, const string& b) const;
+    
     // Вспомогательные функции инициализации
-    void buildHasseVector();
-    void buildHasseWeight();
     optional<string> findMultiplicativeInverse(const string& x);
     void buildInverseMap();
     void buildAddTable();
@@ -60,8 +65,6 @@ public:
                         const string& mulId = "b");
     
     // Геттеры для структур
-    const vector<string>& getHasseVector() const;
-    const map<string, int>& getHasseWeight() const;
     const map<string, string>& getInverseMap() const;
     const vector<vector<string>>& getAddTable() const;
     const vector<vector<string>>& getMulTable() const;
