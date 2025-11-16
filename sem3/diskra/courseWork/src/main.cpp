@@ -1,10 +1,12 @@
-#include "../include/calc.hpp"
+#include "../include/BigArithmeticCalc.hpp"
 #include "../include/config.hpp"
 #include "../include/UI.hpp"
 
 int main() {
-    FiniteArithmeticCalc calc(N, plusOne, alph);
+    // Создаём калькулятор большой арифметики
+    BigArithmeticCalc calc(N, plusOne, alph);
     
+    // Запускаем интерфейс
     UI ui(calc);
     ui.run();
     

@@ -10,11 +10,11 @@ const int N = 8;
 const map<string, string> plusOne = {
 		{"a", "b"},
 		{"b", "c"},
-		{"c", "e"},
-		{"d", "g"},
-		{"e", "d"},
-		{"f", "h"},
-		{"g", "f"},
+		{"c", "d"},
+		{"d", "e"},
+		{"e", "f"},
+		{"f", "g"},
+		{"g", "h"},
 		{"h", "a"},
 };
 const vector<string> alph = {"a", "b", "c", "d", "e", "f", "g", "h"};

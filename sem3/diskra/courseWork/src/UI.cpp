@@ -3,9 +3,12 @@
 #include <algorithm>
 #include <cctype>
 #include <iomanip>
+#include <iostream>
+
+using namespace std;
 
 // Конструктор
-UI::UI(FiniteArithmeticCalc& calculator) : calc(calculator) {}
+UI::UI(BigArithmeticCalc& calculator) : calc(calculator) {}
 
 // Вспомогательные функции
 
@@ -26,25 +29,29 @@ string UI::toLower(const string& str) const {
 
 void UI::displayWelcome() const {
     cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
-    cout << "║  Калькулятор конечной арифметики Z" << calc.getAlphabet().size() << "                    ║" << endl;
+    cout << "║  Калькулятор БОЛЬШОЙ конечной арифметики Z" << calc.getAlphabet().size() << "          ║" << endl;
+    cout << "║  Поддержка чисел до 8 разрядов                         ║" << endl;
     cout << "╚════════════════════════════════════════════════════════╝" << endl;
-    cout << "\nВведите 'help' для справки\n" << endl;
+    cout << "\nВведите 'help' для справки по командам" << endl;
+    cout << "Введите 'info' для информации о системе\n" << endl;
 }
 
 void UI::displayPrompt() const {
-    cout << "> ";
+    cout << "calc> ";
 }
 
 void UI::displayResult(const string& expression, const string& result) const {
-    cout << "Результат: " << expression << " = " << result << endl;
+    cout << "  ➜  " << expression << " = " << result << endl;
 }
 
 void UI::displayError(const string& message) const {
-    cout << "Ошибка: " << message << endl;
+    cout << "❌ Ошибка: " << message << endl;
 }
 
 void UI::displayGoodbye() const {
-    cout << "\nВыход из программы. До свидания!" << endl;
+    cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
+    cout << "║  Спасибо за использование калькулятора!                ║" << endl;
+    cout << "╚════════════════════════════════════════════════════════╝\n" << endl;
 }
 
 // Проверка команды выхода
@@ -61,6 +68,14 @@ void UI::handleHelp() const {
 
 void UI::handleInfo() const {
     calc.printInfo();
+}
+
+void UI::handleHasse() const {
+    calc.printHasseDiagram();
+}
+
+void UI::handleInvList() const {
+    calc.printInvertibleElements();
 }
 
 void UI::handleTables() const {
@@ -86,29 +101,58 @@ void UI::handleDivTable() const {
 void UI::handleInverse(const string& element) const {
     auto inv = calc.getInverse(element);
     if (inv.has_value()) {
-        displayResult(element + "^-1", inv.value());
+        displayResult(element + "⁻¹", inv.value());
     } else {
-        cout << "Элемент " << element << " не имеет обратного элемента" << endl;
+        cout << "  ℹ️  Элемент '" << element << "' не имеет обратного элемента" << endl;
     }
 }
 
-void UI::handleBinaryOperation(const string& operand1, const string& operation, const string& operand2) const {
+void UI::handleSmallOperation(const string& operand1, const string& operation, 
+                              const string& operand2) const {
     string result;
     
     if (operation == "+") {
-        result = calc.add(operand1, operand2);
+        result = calc.addSmall(operand1, operand2);
     } else if (operation == "-") {
-        result = calc.subtract(operand1, operand2);
+        result = calc.subtractSmall(operand1, operand2);
     } else if (operation == "*") {
-        result = calc.multiply(operand1, operand2);
+        result = calc.multiplySmall(operand1, operand2);
     } else if (operation == "/") {
-        result = calc.divide(operand1, operand2);
+        result = calc.divideSmall(operand1, operand2);
     } else {
         displayError("неизвестная операция '" + operation + "'");
         return;
     }
     
     displayResult(operand1 + " " + operation + " " + operand2, result);
+}
+
+void UI::handleBigOperation(const string& operand1, const string& operation, 
+                           const string& operand2) const {
+    string result;
+    string op_symbol;
+    
+    if (operation == "++") {
+        result = calc.add(operand1, operand2);
+        op_symbol = "+";
+    } else if (operation == "--") {
+        result = calc.subtract(operand1, operand2);
+        op_symbol = "-";
+    } else if (operation == "**") {
+        result = calc.multiply(operand1, operand2);
+        op_symbol = "*";
+    } else if (operation == "//") {
+        result = calc.divide(operand1, operand2);
+        op_symbol = "/";
+    } else {
+        displayError("неизвестная операция '" + operation + "' для больших чисел");
+        return;
+    }
+    
+    cout << "\n╔═══ Результат большой арифметики ═══╗" << endl;
+    cout << "  " << operand1 << " " << op_symbol << " " << operand2 << endl;
+    cout << "  = " << result << endl;
+    cout << "╚═════════════════════════════════════╝\n" << endl;
 }
 
 // Обработка команд
@@ -136,6 +180,18 @@ bool UI::processCommand(const string& input) {
         return true;
     }
     
+    // Диаграмма Хассе
+    if (command == "hasse" || command == "diagram") {
+        handleHasse();
+        return true;
+    }
+    
+    // Список обратимых элементов
+    if (command == "inv_list" || command == "invertible") {
+        handleInvList();
+        return true;
+    }
+    
     // Команды таблиц
     if (command == "tables" || command == "t") {
         handleTables();
@@ -160,7 +216,7 @@ bool UI::processCommand(const string& input) {
     
     // Парсинг команд с параметрами
     istringstream iss(trimmedInput);
-    string token1, operation, token2, token3;
+    string token1, operation, token2;
     
     iss >> token1;
     
@@ -175,16 +231,29 @@ bool UI::processCommand(const string& input) {
         return true;
     }
     
-    // Обычные операции (бинарные и возведение в степень)
+    // Операции
     iss >> operation >> token2;
     
     if (operation.empty() || token2.empty()) {
         displayError("неверный формат команды. Введите 'help' для справки");
         return true;
     }
-
-    // Бинарные операции
-    handleBinaryOperation(token1, operation, token2);
+    
+    // Определяем тип операции: малая (один символ) или большая (многозначная)
+    bool isSmallOp = (token1.length() == 1 && token2.length() == 1);
+    bool isBigOp = (operation == "++" || operation == "--" || 
+                    operation == "**" || operation == "//");
+    
+    if (isBigOp) {
+        // Большая арифметика
+        handleBigOperation(token1, operation, token2);
+    } else if (isSmallOp || operation.length() == 1) {
+        // Малая арифметика
+        handleSmallOperation(token1, operation, token2);
+    } else {
+        displayError("неверный формат операции. Используйте '+', '-', '*', '/' для малой арифметики или '++', '--', '**', '//' для большой");
+    }
+    
     return true;
 }
 
@@ -192,6 +261,10 @@ bool UI::processCommand(const string& input) {
 
 void UI::run() {
     displayWelcome();
+    
+    // Показываем основную информацию при запуске
+    calc.printInfo();
+    calc.printHasseDiagram();
     
     string input;
     bool running = true;

@@ -1,27 +1,33 @@
 #pragma once
 
-#include "calc.hpp"
+#include "BigArithmeticCalc.hpp"
 #include <string>
 
 using namespace std;
 
 class UI {
 private:
-    FiniteArithmeticCalc& calc;
+    BigArithmeticCalc& calc;
     
     // Вспомогательные функции
     string trim(const string& str) const;
     string toLower(const string& str) const;
     
+    // Обработчики команд
     void handleHelp() const;
     void handleInfo() const;
+    void handleHasse() const;
+    void handleInvList() const;
     void handleTables() const;
     void handleAddTable() const;
     void handleMulTable() const;
     void handleSubTable() const;
     void handleDivTable() const;
     void handleInverse(const string& element) const;
-    void handleBinaryOperation(const string& operand1, const string& operation, const string& operand2) const;
+    void handleSmallOperation(const string& operand1, const string& operation, 
+                             const string& operand2) const;
+    void handleBigOperation(const string& operand1, const string& operation, 
+                           const string& operand2) const;
     
     // Отображение интерфейса
     void displayWelcome() const;
@@ -36,7 +42,7 @@ private:
 
 public:
     // Конструктор
-    explicit UI(FiniteArithmeticCalc& calculator);
+    explicit UI(BigArithmeticCalc& calculator);
     
     // Основной метод запуска интерфейса
     void run();

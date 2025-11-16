@@ -6,7 +6,7 @@ BUILD_DIR = build
 TARGET = $(BUILD_DIR)/diskra
 
 SRCS = $(SRC_DIR)/main.cpp \
-$(SRC_DIR)/calc.cpp \
+$(SRC_DIR)/BigArithmeticCalc.cpp \
 $(SRC_DIR)/UI.cpp
 
 OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
