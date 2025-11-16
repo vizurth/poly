@@ -1,5 +1,0 @@
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab6/build/CMakeFiles/DynamicWidgetCollection.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab6/build/CMakeFiles/edit_cache.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab6/build/CMakeFiles/rebuild_cache.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab6/build/CMakeFiles/DynamicWidgetCollection_autogen_timestamp_deps.dir
-/Users/timuradiatullin/narnia/spbpu/sem3/oop/lab6/build/CMakeFiles/DynamicWidgetCollection_autogen.dir
