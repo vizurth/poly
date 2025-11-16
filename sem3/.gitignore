@@ -1,22 +1,28 @@
+# IDE
 .idea/
 *.iml
 *.iws
 *.ipr
+.vscode/
+
+# Build
+/build/
+
+# Temporary files
 *.swp
-*.swo
+*.SWO
 *.bak
 *.tmp
-*.DS_Store
 
-# macOS системные файлы
+# macOS system files
 .DS_Store
 .AppleDouble
-.LSOverride
+.LS0verride
 ._*
 .Spotlight-V100
 .Trashes
 .fseventsd
 
-/.vscode/
-git
-/build/
+# Git itself
+.git
+
