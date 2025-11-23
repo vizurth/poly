@@ -29,7 +29,7 @@ string UI::toLower(const string& str) const {
 
 void UI::displayWelcome() const {
     cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
-    cout << "║  Калькулятор БОЛЬШОЙ конечной арифметики Z" << calc.getAlphabet().size() << "          ║" << endl;
+    cout << "║  Калькулятор БОЛЬШОЙ конечной арифметики Z" << calc.getAlphabet().size() << "            ║" << endl;
     cout << "║  Поддержка чисел до 8 разрядов                         ║" << endl;
     cout << "╚════════════════════════════════════════════════════════╝" << endl;
     cout << "\nВведите 'help' для справки по командам" << endl;
@@ -149,10 +149,9 @@ void UI::handleBigOperation(const string& operand1, const string& operation,
         return;
     }
     
-    cout << "\n╔═══ Результат большой арифметики ═══╗" << endl;
-    cout << "  " << operand1 << " " << op_symbol << " " << operand2 << endl;
-    cout << "  = " << result << endl;
-    cout << "╚═════════════════════════════════════╝\n" << endl;
+    cout << "\n════ Результат большой арифметики ════" << endl;
+    cout << "  " << operand1 << " " << op_symbol << " " << operand2 << " = " << result << endl;
+	cout << "═══════════════════════════════════════\n" << endl;
 }
 
 // Обработка команд

@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <optional>
+#include <tuple>
 
 using namespace std;
 
@@ -20,6 +21,10 @@ private:
     
     // Вычисленные структуры
     map<string, string> inverseMap;
+    
+    // Таблицы для больших операций (с переносами)
+    map<tuple<string, string, string>, pair<string, string>> additionTableWithCarry;
+    map<string, string> negationMap;  // x + neg(x) = additiveIdentity
     
     // Таблицы операций (для малой арифметики)
     vector<vector<string>> addTable;
@@ -50,6 +55,16 @@ private:
     void buildMulTable();
     void buildSubTable();
     void buildDivTable();
+    
+    // Построение таблиц для больших операций
+    void buildAdditionTableWithCarry();
+    void buildNegationMap();
+    
+    // Вспомогательные функции для работы с символами
+    string nextSymbol(const string& current) const;
+    string prevSymbol(const string& current) const;
+    int getSymbolValue(const string& symbol) const;  // Возвращает позицию в цикле (0..N-1)
+    int compareSymbols(const string& a, const string& b) const;
     
     // ============ БОЛЬШАЯ АРИФМЕТИКА (8 разрядов) ============
     
@@ -91,8 +106,8 @@ public:
     BigArithmeticCalc(int n, 
                      const map<string, string>& rule, 
                      const vector<string>& alph,
-                     const string& addId = "0",
-                     const string& mulId = "1");
+                     const string& addId = "a",
+                     const string& mulId = "b");
     
     // Геттеры
     const map<string, string>& getInverseMap() const;
