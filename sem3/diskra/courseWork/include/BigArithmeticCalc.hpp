@@ -35,9 +35,6 @@ private:
     
     // ============ МАЛАЯ АРИФМЕТИКА (1 разряд) ============
     
-    // Применить plusOne N раз
-    string applyPlusOneNTimes(const string& start, int n) const;
-    
     // Базовые операции через диаграмму Хассе
     string addByHasse(const string& a, const string& b) const;
     string multiplyByHasse(const string& a, const string& b) const;
@@ -86,7 +83,6 @@ private:
     
     // ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
     
-    int getIndex(const string& elem) const;
     bool isValidElement(const string& elem) const;
     void printTable(const vector<vector<string>>& table) const;
     
@@ -95,8 +91,8 @@ public:
     BigArithmeticCalc(int n, 
                      const map<string, string>& rule, 
                      const vector<string>& alph,
-                     const string& addId = "a",
-                     const string& mulId = "b");
+                     const string& addId = "0",
+                     const string& mulId = "1");
     
     // Геттеры
     const map<string, string>& getInverseMap() const;

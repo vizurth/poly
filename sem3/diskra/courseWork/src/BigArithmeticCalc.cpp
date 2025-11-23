@@ -7,6 +7,80 @@
 
 using namespace std;
 
+namespace {
+	// Возвращает:
+	// -1, если a < b в циклическом порядке кольца
+	//  0, если a == b
+	//  1, если a > b
+	int compareElementsHelper(const map<string, string>& plusOneRule, int N,
+						const string& a, const string& b,
+						const string& additiveIdentity) {
+		if (a == b) return 0;
+		
+		// Считаем расстояние от нуля до a
+		string current = additiveIdentity;
+		int dist_a = 0;
+		while (current != a && dist_a < N) {
+			current = plusOneRule.at(current);
+			dist_a++;
+		}
+		
+		// Считаем расстояние от нуля до b
+		current = additiveIdentity;
+		int dist_b = 0;
+		while (current != b && dist_b < N) {
+			current = plusOneRule.at(current);
+			dist_b++;
+		}
+		
+		if (dist_a < dist_b) return -1;
+		if (dist_a > dist_b) return 1;
+	}
+
+	// Проверяет, прошли ли мы хотя бы один полный цикл кольца,
+	// начиная от start и двигаясь по plusOneRule
+	// Проверяет, замкнётся ли цикл при сложении a + b
+	// Проверяет, будет ли оборачивание при сложении a + b в кольце
+	bool willWrapAround(const map<string, string>& plusOneRule,
+							const string& a, const string& b,
+							const string& additiveIdentity) {
+		// Прибавление нуля никогда не даёт переноса
+		if (b == additiveIdentity) {
+			return false;
+		}
+		
+		// Начинаем с нуля: 0 + b где b ∈ {0,1,...,N-1}
+		// Результат всегда будет b < N, переноса нет
+		if (a == additiveIdentity) {
+			return false;
+		}
+		
+		// Симулируем сложение a + b через b шагов по правилу +1
+		string current = a;
+		string counter = additiveIdentity;
+		
+		// Делаем ровно b шагов
+		while (counter != b) {
+			// Шаг 1: увеличиваем счётчик (считаем сколько прибавили)
+			counter = plusOneRule.at(counter);
+			
+			// Шаг 2: увеличиваем текущее значение (a + 1, a + 2, ..., a + b)
+			current = plusOneRule.at(current);
+			
+			// Шаг 3: ПРОВЕРКА ПЕРЕНОСА
+			// Если после шага мы оказались в нуле, значит прошли полный цикл
+			// (так как начинали НЕ с нуля)
+			if (current == additiveIdentity) {
+				return true;  // Обёртывание произошло!
+			}
+		}
+		
+		// Прошли все b шагов и ни разу не попали в ноль
+		// Значит, остались в пределах одного "оборота" диаграммы
+		return false;
+	}
+}
+
 // ============ КОНСТРУКТОР ============
 
 BigArithmeticCalc::BigArithmeticCalc(int n, 
@@ -25,20 +99,6 @@ BigArithmeticCalc::BigArithmeticCalc(int n,
 }
 
 // ============ МАЛАЯ АРИФМЕТИКА (1 разряд) ============
-
-string BigArithmeticCalc::applyPlusOneNTimes(const string& start, int n) const {
-    if (n < 0) {
-        n = n % N;
-        if (n < 0) n += N;
-    }
-    n = n % N;
-    
-    string current = start;
-    for (int i = 0; i < n; ++i) {
-        current = plusOneRule.at(current);
-    }
-    return current;
-}
 
 string BigArithmeticCalc::addByHasse(const string& a, const string& b) const {
     if (b == additiveIdentity) return a;
@@ -76,6 +136,7 @@ string BigArithmeticCalc::multiplyByHasse(const string& a, const string& b) cons
 }
 
 string BigArithmeticCalc::subtractByHasse(const string& a, const string& b) const {
+    // Ищем c такое, что addByHasse(b, c) == a
     for (const auto& candidate : alphabet) {
         if (addByHasse(b, candidate) == a) {
             return candidate;
@@ -168,7 +229,7 @@ bool BigArithmeticCalc::isValidNumber(const string& num) const {
 string BigArithmeticCalc::normalize(const string& num) const {
     if (num.empty()) return additiveIdentity;
     
-    // Удаляем ведущие нули
+    // Удаляем ведущие нули (аддитивная единица)
     size_t firstNonZero = 0;
     while (firstNonZero < num.length() && 
            string(1, num[firstNonZero]) == additiveIdentity) {
@@ -189,15 +250,15 @@ string BigArithmeticCalc::normalize(const string& num) const {
     return result;
 }
 
-string BigArithmeticCalc::addBig(const string& a, const string& b) const {
+// DONE
+string BigArithmeticCalc::addBig(const string& a, const string& b) const { 
     if (!isValidNumber(a) || !isValidNumber(b)) {
         return "ERR: Invalid number";
     }
     
-    // Работаем справа налево (младшие разряды справа)
     string num1 = a;
     string num2 = b;
-    
+
     // Выравниваем длины
     while (num1.length() < num2.length()) {
         num1 = additiveIdentity + num1;
@@ -205,97 +266,92 @@ string BigArithmeticCalc::addBig(const string& a, const string& b) const {
     while (num2.length() < num1.length()) {
         num2 = additiveIdentity + num2;
     }
-    
+
     string result;
     string carry = additiveIdentity;
-    
+
     // Складываем справа налево
-    for (int i = num1.length() - 1; i >= 0; --i) {
+    for (int i = static_cast<int>(num1.length()) - 1; i >= 0; --i) {
         string digit1(1, num1[i]);
         string digit2(1, num2[i]);
-        
-        // digit1 + digit2
+
+        // Шаг 1: складываем два разряда
         string sum = addByHasse(digit1, digit2);
         
-        // sum + carry
-        sum = addByHasse(sum, carry);
+        // Шаг 2: добавляем предыдущий перенос
+        string sumWithCarry = addByHasse(sum, carry);
         
-        // Проверяем перенос (если сумма "обернулась")
-        // Упрощенно: если результат меньше одного из слагаемых
-        int idx_sum = getIndex(sum);
-        int idx_d1 = getIndex(digit1);
+        // Шаг 3: определяем новый перенос
+        // Перенос есть, если:
+        // - digit1 + digit2 дал перенос, ИЛИ
+        // - sum + carry дал перенос
+        bool wrap1 = willWrapAround(plusOneRule, digit1, digit2, additiveIdentity);
+        bool wrap2 = willWrapAround(plusOneRule, digit1, digit2, additiveIdentity);
         
-        if (idx_sum < idx_d1) {
-            carry = multiplicativeIdentity;
-        } else {
-            carry = additiveIdentity;
-        }
+        cout << "wrap1(" << digit1 << "+" << digit2 << "):" << wrap1 
+             << " wrap2(" << sum << "+" << carry << "):" << wrap2 << endl;
         
-        result = sum + result;
+        carry = (wrap1 || wrap2) ? multiplicativeIdentity : additiveIdentity;
+        
+        result = sumWithCarry + result;
+        
+        cout << digit1 << " + " << digit2 << " + carry:" << carry 
+             << " = " << sumWithCarry << endl;
     }
-    
-    // Если есть перенос, добавляем старший разряд
+
+    // Если остался перенос, добавляем старший разряд
     if (carry != additiveIdentity && result.length() < 8) {
         result = carry + result;
     }
-    
+
     return normalize(result);
 }
 
+// DONE
 string BigArithmeticCalc::subtractBig(const string& a, const string& b) const {
     if (!isValidNumber(a) || !isValidNumber(b)) {
         return "ERR: Invalid number";
     }
-    
+
+    // Выравниваем длины чисел
     string num1 = a;
     string num2 = b;
-    
-    // Выравниваем длины
-    while (num1.length() < num2.length()) {
-        num1 = additiveIdentity + num1;
-    }
-    while (num2.length() < num1.length()) {
-        num2 = additiveIdentity + num2;
-    }
-    
+    while (num1.length() < num2.length()) num1 = additiveIdentity + num1;
+    while (num2.length() < num1.length()) num2 = additiveIdentity + num2;
+
     string result;
-    string borrow = additiveIdentity;
-    
-    for (int i = num1.length() - 1; i >= 0; --i) {
+    string borrow = additiveIdentity;  // 0 в начале
+
+    // Идём справа налево по разрядам
+    for (int i = static_cast<int>(num1.length()) - 1; i >= 0; --i) {
         string digit1(1, num1[i]);
         string digit2(1, num2[i]);
-        
-        // digit1 - borrow
+
+        // Учитываем borrow из предыдущего разряда
         if (borrow != additiveIdentity) {
-            digit1 = subtractByHasse(digit1, borrow);
+            digit1 = subtractByHasse(digit1, multiplicativeIdentity);
         }
-        
-        // Проверяем, нужен ли заём
-        int idx1 = getIndex(digit1);
-        int idx2 = getIndex(digit2);
-        
-        string diff;
-        if (idx1 < idx2) {
+
+        // Проверяем, нужен ли новый borrow
+        int cmp = compareElementsHelper(plusOneRule, N, digit1, digit2, additiveIdentity);
+		cout << digit1 << ", " << digit2 << "=" << cmp << endl;
+        if (cmp < 0) {
             // Нужен заём из старшего разряда
-            // Добавляем N к digit1
-            string increased = digit1;
-            for (int k = 0; k < N; ++k) {
-                increased = plusOneRule.at(increased);
-                if (k == N - 1) break;
-            }
-            diff = subtractByHasse(increased, digit2);
             borrow = multiplicativeIdentity;
         } else {
-            diff = subtractByHasse(digit1, digit2);
             borrow = additiveIdentity;
         }
-        
+
+        // Вычитаем текущий разряд (subtractByHasse корректно делает mod N)
+        string diff = subtractByHasse(digit1, digit2);
+		cout << digit1 << "-" << digit2 << "=" << diff << "borrow: " << borrow << endl;
         result = diff + result;
     }
-    
+
     return normalize(result);
 }
 
+// DONE
 string BigArithmeticCalc::multiplyByDigit(const string& num, const string& digit) const {
     if (digit == additiveIdentity) return additiveIdentity;
     if (digit == multiplicativeIdentity) return num;
@@ -304,6 +360,8 @@ string BigArithmeticCalc::multiplyByDigit(const string& num, const string& digit
     string counter = additiveIdentity;
     
     while (counter != digit) {
+		cout << "ADDING " << result << " + " << num << endl;
+		cout << "COUNTER: " << counter << endl;
         result = addBig(result, num);
         counter = plusOneRule.at(counter);
     }
@@ -312,6 +370,7 @@ string BigArithmeticCalc::multiplyByDigit(const string& num, const string& digit
 }
 
 string BigArithmeticCalc::multiplyBig(const string& a, const string& b) const {
+	cout << "MULTIPLYING " << a << " * " << b << endl;
     if (!isValidNumber(a) || !isValidNumber(b)) {
         return "ERR: Invalid number";
     }
@@ -326,16 +385,37 @@ string BigArithmeticCalc::multiplyBig(const string& a, const string& b) const {
     for (int i = b.length() - 1; i >= 0; --i) {
         string digit(1, b[i]);
         string partial = multiplyByDigit(a, digit);
+		cout << a << "*" << digit << "=" << partial << endl;
         
         // Сдвигаем на позицию
         int shift = b.length() - 1 - i;
         partial = shiftLeft(partial, shift);
-        
+		// cout << result << endl;
         result = addBig(result, partial);
+        // cout << a << "*" << digit << "=" << partial << " shift: " << shift << " result: " << result << endl;
     }
     
     return normalize(result);
 }
+
+
+
+string BigArithmeticCalc::shiftLeft(const string& num, int positions) const {
+    if (positions == 0 || num == additiveIdentity) return num;
+
+    string result = num;
+    for (int i = 0; i < positions; ++i) {
+        result += additiveIdentity; // добавляем младший разряд справа
+    }
+
+    // Ограничиваем до 8 разрядов, оставляя старшие
+    if (static_cast<int>(result.length()) > 8) {
+        result = result.substr(result.length() - 8);
+    }
+
+    return normalize(result);
+}
+
 
 int BigArithmeticCalc::compareBig(const string& a, const string& b) const {
     string na = normalize(a);
@@ -346,12 +426,8 @@ int BigArithmeticCalc::compareBig(const string& a, const string& b) const {
     }
     
     for (size_t i = 0; i < na.length(); ++i) {
-        int idx_a = getIndex(string(1, na[i]));
-        int idx_b = getIndex(string(1, nb[i]));
-        
-        if (idx_a != idx_b) {
-            return idx_a > idx_b ? 1 : -1;
-        }
+        int cmp = compareElementsHelper(plusOneRule, N, string(1, na[i]), string(1, nb[i]), additiveIdentity);
+        if (cmp != 0) return cmp;
     }
     
     return 0; // равны
@@ -376,7 +452,7 @@ pair<string, string> BigArithmeticCalc::divideBig(const string& a, const string&
     }
     
     // Деление столбиком
-    int shift = a.length() - b.length();
+    int shift = static_cast<int>(a.length()) - static_cast<int>(b.length());
     string shifted_b = shiftLeft(b, shift);
     
     for (int i = shift; i >= 0; --i) {
@@ -406,20 +482,10 @@ pair<string, string> BigArithmeticCalc::divideBig(const string& a, const string&
     return {normalize(quotient), normalize(remainder)};
 }
 
-string BigArithmeticCalc::shiftLeft(const string& num, int positions) const {
-    if (positions == 0 || num == additiveIdentity) return num;
-    
-    string result = num;
-    for (int i = 0; i < positions; ++i) {
-        result = result + additiveIdentity;
-    }
-    
-    return result.length() > 8 ? result.substr(0, 8) : result;
-}
 
 string BigArithmeticCalc::shiftRight(const string& num, int positions) const {
     if (positions == 0 || num.empty()) return num;
-    if (positions >= (int)num.length()) return additiveIdentity;
+    if (positions >= static_cast<int>(num.length())) return additiveIdentity;
     
     return num.substr(0, num.length() - positions);
 }
@@ -450,6 +516,7 @@ string BigArithmeticCalc::add(const string& a, const string& b) const {
     return addBig(a, b);
 }
 
+// FIXME: я не ебу что тут не так
 string BigArithmeticCalc::multiply(const string& a, const string& b) const {
     return multiplyBig(a, b);
 }
@@ -465,15 +532,11 @@ string BigArithmeticCalc::divide(const string& a, const string& b) const {
 
 // ============ УТИЛИТЫ ============
 
-int BigArithmeticCalc::getIndex(const string& elem) const {
-    for (int i = 0; i < N; ++i) {
-        if (alphabet[i] == elem) return i;
-    }
-    return -1;
-}
-
 bool BigArithmeticCalc::isValidElement(const string& elem) const {
-    return getIndex(elem) != -1;
+    for (const auto& x : alphabet) {
+        if (x == elem) return true;
+    }
+    return false;
 }
 
 bool BigArithmeticCalc::isInvertible(const string& elem) const {
