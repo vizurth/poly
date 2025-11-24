@@ -11,7 +11,6 @@ using namespace std;
 UI::UI(BigArithmeticCalc& calculator) : calc(calculator) {}
 
 // Вспомогательные функции
-
 string UI::trim(const string& str) const {
     size_t first = str.find_first_not_of(' ');
     if (first == string::npos) return "";
@@ -55,13 +54,11 @@ void UI::displayGoodbye() const {
 }
 
 // Проверка команды выхода
-
 bool UI::isExitCommand(const string& command) const {
     return command == "exit" || command == "quit" || command == "q";
 }
 
 // Обработчики команд
-
 void UI::handleHelp() const {
     calc.printHelp();
 }
@@ -107,41 +104,21 @@ void UI::handleInverse(const string& element) const {
     }
 }
 
-void UI::handleSmallOperation(const string& operand1, const string& operation, 
-                              const string& operand2) const {
-    string result;
-    
-    if (operation == "+") {
-        result = calc.addSmall(operand1, operand2);
-    } else if (operation == "-") {
-        result = calc.subtractSmall(operand1, operand2);
-    } else if (operation == "*") {
-        result = calc.multiplySmall(operand1, operand2);
-    } else if (operation == "/") {
-        result = calc.divideSmall(operand1, operand2);
-    } else {
-        displayError("неизвестная операция '" + operation + "'");
-        return;
-    }
-    
-    displayResult(operand1 + " " + operation + " " + operand2, result);
-}
-
 void UI::handleBigOperation(const string& operand1, const string& operation, 
                            const string& operand2) const {
     string result;
     string op_symbol;
     
-    if (operation == "++") {
+    if (operation == "+") {
         result = calc.add(operand1, operand2);
         op_symbol = "+";
-    } else if (operation == "--") {
+    } else if (operation == "-") {
         result = calc.subtract(operand1, operand2);
         op_symbol = "-";
-    } else if (operation == "**") {
+    } else if (operation == "*") {
         result = calc.multiply(operand1, operand2);
         op_symbol = "*";
-    } else if (operation == "//") {
+    } else if (operation == "/") {
         result = calc.divide(operand1, operand2);
         op_symbol = "/";
     } else {
@@ -155,7 +132,6 @@ void UI::handleBigOperation(const string& operand1, const string& operation,
 }
 
 // Обработка команд
-
 bool UI::processCommand(const string& input) {
     string trimmedInput = trim(input);
     if (trimmedInput.empty()) return true;
@@ -238,26 +214,20 @@ bool UI::processCommand(const string& input) {
         return true;
     }
     
-    // Определяем тип операции: малая (один символ) или большая (многозначная)
-    bool isSmallOp = (token1.length() == 1 && token2.length() == 1);
-    bool isBigOp = (operation == "++" || operation == "--" || 
-                    operation == "**" || operation == "//");
+    bool isBigOp = (operation == "+" || operation == "-" || 
+                    operation == "*" || operation == "/");
     
     if (isBigOp) {
         // Большая арифметика
         handleBigOperation(token1, operation, token2);
-    } else if (isSmallOp || operation.length() == 1) {
-        // Малая арифметика
-        handleSmallOperation(token1, operation, token2);
     } else {
-        displayError("неверный формат операции. Используйте '+', '-', '*', '/' для малой арифметики или '++', '--', '**', '//' для большой");
+        displayError("неверный формат операции. Используйте '+', '-', '*', '/' для большой");
     }
     
     return true;
 }
 
 // Основной метод запуска
-
 void UI::run() {
     displayWelcome();
     

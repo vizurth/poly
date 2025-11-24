@@ -30,31 +30,19 @@ string BigArithmeticCalc::prevSymbol(const string& current) const {
     return prev;
 }
 
-int BigArithmeticCalc::getSymbolValue(const string& symbol) const {
-    // Возвращает позицию символа в цикле (0..N-1)
-    int value = 0;
-    string current = additiveIdentity;
-    
-    while (current != symbol && value < N) {
-        current = nextSymbol(current);
-        value++;
-    }
-    
-    return value;
-}
-
 int BigArithmeticCalc::compareSymbols(const string& a, const string& b) const {
     if (a == b) return 0;
-    
-    int val_a = getSymbolValue(a);
-    int val_b = getSymbolValue(b);
-    
-    if (val_a < val_b) return -1;
-    if (val_a > val_b) return 1;
-    return 0;
-}
 
-// ============ КОНСТРУКТОР ============
+	string current = additiveIdentity;
+
+	while (true) {
+		if (current == a) return -1;
+		if (current == b) return 1;
+		current = nextSymbol(current);
+		if (current == additiveIdentity) break;
+	}
+	return 0;
+}
 
 BigArithmeticCalc::BigArithmeticCalc(int n, 
                     const map<string, string>& rule, 
@@ -73,7 +61,7 @@ BigArithmeticCalc::BigArithmeticCalc(int n,
     buildDivTable();
 }
 
-// ============ МАЛАЯ АРИФМЕТИКА (1 разряд) ============
+// ============ МАЛАЯ АРИФМЕТИКА ============
 
 string BigArithmeticCalc::addByHasse(const string& a, const string& b) const {
     if (b == additiveIdentity) return a;
@@ -111,7 +99,7 @@ string BigArithmeticCalc::multiplyByHasse(const string& a, const string& b) cons
 }
 
 string BigArithmeticCalc::subtractByHasse(const string& a, const string& b) const {
-    // Ищем c такое, что addByHasse(b, c) == a
+    // ищем с такое, что addByHasse(b, c) == a
     for (const auto& candidate : alphabet) {
         if (addByHasse(b, candidate) == a) {
             return candidate;
@@ -204,22 +192,60 @@ void BigArithmeticCalc::buildNegationMap() {
 }
 
 void BigArithmeticCalc::buildAdditionTableWithCarry() {
-    // Строим таблицу сложения с переносами: (c1, c2, carry_in) -> (sum, carry_out)
+    // Новая логика: определяем перенос через сравнение результатов
+    // Перенос возникает, когда при сложении мы "проходим" через additiveIdentity
+    
     for (const auto& c1 : alphabet) {
         for (const auto& c2 : alphabet) {
             for (const auto& carry_in : alphabet) {
-                // Складываем три символа: c1 + c2 + carry_in
+                // Складываем: (c1 + c2) + carry_in
                 string sum1 = addByHasse(c1, c2);
-                string sum = addByHasse(sum1, carry_in);
+                string final_sum = addByHasse(sum1, carry_in);
                 
-                // Определяем перенос
-                // Считаем общее значение в десятичной системе
-                int total = getSymbolValue(c1) + getSymbolValue(c2) + getSymbolValue(carry_in);
+                // Определяем, был ли перенос
+                // Перенос есть, если:
+                // 1. c2 != additiveIdentity и sum1 < c1 (первое сложение перешло через ноль)
+                // 2. carry_in != additiveIdentity и final_sum < sum1 (второе сложение перешло через ноль)
                 
-                // Если сумма >= N, есть перенос
-                string carry_out = (total >= N) ? multiplicativeIdentity : additiveIdentity;
+                bool carry1 = false;
+                bool carry2 = false;
                 
-                additionTableWithCarry[make_tuple(c1, c2, carry_in)] = make_pair(sum, carry_out);
+                // Проверяем первый перенос: c1 + c2
+                if (c2 != additiveIdentity) {
+                    // Идем от c1 на c2 шагов и проверяем, прошли ли через additiveIdentity
+                    string temp = c1;
+                    string counter = additiveIdentity;
+                    while (counter != c2) {
+                        string old_temp = temp;
+                        temp = nextSymbol(temp);
+                        counter = nextSymbol(counter);
+                        
+                        // Если прошли через additiveIdentity
+                        if (old_temp != additiveIdentity && temp == additiveIdentity) {
+                            carry1 = true;
+                        }
+                    }
+                }
+                
+                // Проверяем второй перенос: sum1 + carry_in
+                if (carry_in != additiveIdentity) {
+                    string temp = sum1;
+                    string counter = additiveIdentity;
+                    while (counter != carry_in) {
+                        string old_temp = temp;
+                        temp = nextSymbol(temp);
+                        counter = nextSymbol(counter);
+                        
+                        if (old_temp != additiveIdentity && temp == additiveIdentity) {
+                            carry2 = true;
+                        }
+                    }
+                }
+                
+                // Если был хотя бы один перенос, выставляем carry_out = multiplicativeIdentity
+                string carry_out = (carry1 || carry2) ? multiplicativeIdentity : additiveIdentity;
+                
+                additionTableWithCarry[make_tuple(c1, c2, carry_in)] = make_pair(final_sum, carry_out);
             }
         }
     }

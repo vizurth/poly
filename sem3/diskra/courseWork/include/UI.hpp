@@ -24,8 +24,6 @@ private:
     void handleSubTable() const;
     void handleDivTable() const;
     void handleInverse(const string& element) const;
-    void handleSmallOperation(const string& operand1, const string& operation, 
-                             const string& operand2) const;
     void handleBigOperation(const string& operand1, const string& operation, 
                            const string& operand2) const;
     

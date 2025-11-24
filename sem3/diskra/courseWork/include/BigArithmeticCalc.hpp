@@ -63,7 +63,6 @@ private:
     // Вспомогательные функции для работы с символами
     string nextSymbol(const string& current) const;
     string prevSymbol(const string& current) const;
-    int getSymbolValue(const string& symbol) const;  // Возвращает позицию в цикле (0..N-1)
     int compareSymbols(const string& a, const string& b) const;
     
     // ============ БОЛЬШАЯ АРИФМЕТИКА (8 разрядов) ============
@@ -106,8 +105,8 @@ public:
     BigArithmeticCalc(int n, 
                      const map<string, string>& rule, 
                      const vector<string>& alph,
-                     const string& addId = "a",
-                     const string& mulId = "b");
+                     const string& addId = "0",
+                     const string& mulId = "1");
     
     // Геттеры
     const map<string, string>& getInverseMap() const;
