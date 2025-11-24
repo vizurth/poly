@@ -55,7 +55,7 @@ void UI::displayGoodbye() const {
 
 // Проверка команды выхода
 bool UI::isExitCommand(const string& command) const {
-    return command == "exit" || command == "quit" || command == "q";
+    return command == "exit" || command == "quit";
 }
 
 // Обработчики команд
@@ -69,10 +69,6 @@ void UI::handleInfo() const {
 
 void UI::handleHasse() const {
     calc.printHasseDiagram();
-}
-
-void UI::handleInvList() const {
-    calc.printInvertibleElements();
 }
 
 void UI::handleTables() const {
@@ -93,15 +89,6 @@ void UI::handleSubTable() const {
 
 void UI::handleDivTable() const {
     calc.printDivTable();
-}
-
-void UI::handleInverse(const string& element) const {
-    auto inv = calc.getInverse(element);
-    if (inv.has_value()) {
-        displayResult(element + "⁻¹", inv.value());
-    } else {
-        cout << "  ℹ️  Элемент '" << element << "' не имеет обратного элемента" << endl;
-    }
 }
 
 void UI::handleBigOperation(const string& operand1, const string& operation, 
@@ -144,47 +131,41 @@ bool UI::processCommand(const string& input) {
     }
     
     // Команда помощи
-    if (command == "help" || command == "h") {
+    if (command == "help") {
         handleHelp();
         return true;
     }
     
     // Команда информации
-    if (command == "info" || command == "i") {
+    if (command == "info") {
         handleInfo();
         return true;
     }
     
     // Диаграмма Хассе
-    if (command == "hasse" || command == "diagram") {
+    if (command == "hasse") {
         handleHasse();
         return true;
     }
     
-    // Список обратимых элементов
-    if (command == "inv_list" || command == "invertible") {
-        handleInvList();
-        return true;
-    }
-    
     // Команды таблиц
-    if (command == "tables" || command == "t") {
+    if (command == "tables") {
         handleTables();
         return true;
     }
-    if (command == "add_table" || command == "at") {
+    if (command == "add_table") {
         handleAddTable();
         return true;
     }
-    if (command == "mul_table" || command == "mt") {
+    if (command == "mul_table") {
         handleMulTable();
         return true;
     }
-    if (command == "sub_table" || command == "st") {
+    if (command == "sub_table") {
         handleSubTable();
         return true;
     }
-    if (command == "div_table" || command == "dt") {
+    if (command == "div_table") {
         handleDivTable();
         return true;
     }
@@ -194,17 +175,7 @@ bool UI::processCommand(const string& input) {
     string token1, operation, token2;
     
     iss >> token1;
-    
-    // Команда inv (обратный элемент)
-    if (toLower(token1) == "inv") {
-        iss >> token2;
-        if (token2.empty()) {
-            displayError("не указан элемент для поиска обратного");
-            return true;
-        }
-        handleInverse(token2);
-        return true;
-    }
+
     
     // Операции
     iss >> operation >> token2;

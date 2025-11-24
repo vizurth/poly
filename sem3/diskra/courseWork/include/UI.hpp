@@ -17,7 +17,6 @@ private:
     void handleHelp() const;
     void handleInfo() const;
     void handleHasse() const;
-    void handleInvList() const;
     void handleTables() const;
     void handleAddTable() const;
     void handleMulTable() const;
@@ -40,7 +39,7 @@ private:
 
 public:
     // Конструктор
-    explicit UI(BigArithmeticCalc& calculator);
+    UI(BigArithmeticCalc& calculator);
     
     // Основной метод запуска интерфейса
     void run();

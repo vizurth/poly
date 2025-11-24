@@ -17,19 +17,6 @@ string BigArithmeticCalc::nextSymbol(const string& current) const {
     return it->second;
 }
 
-string BigArithmeticCalc::prevSymbol(const string& current) const {
-    // Находим предыдущий символ в цикле
-    string prev = additiveIdentity;
-    string curr = additiveIdentity;
-    
-    while (curr != current) {
-        prev = curr;
-        curr = nextSymbol(curr);
-    }
-    
-    return prev;
-}
-
 int BigArithmeticCalc::compareSymbols(const string& a, const string& b) const {
     if (a == b) return 0;
 
@@ -70,8 +57,8 @@ string BigArithmeticCalc::addByHasse(const string& a, const string& b) const {
     string result = a;
     
     while (counter != b) {
-        result = plusOneRule.at(result);
-        counter = plusOneRule.at(counter);
+        result = nextSymbol(result);
+        counter = nextSymbol(counter);
     }
     
     return result;
@@ -92,7 +79,7 @@ string BigArithmeticCalc::multiplyByHasse(const string& a, const string& b) cons
     
     while (counter != b) {
         result = addByHasse(result, a);
-        counter = plusOneRule.at(counter);
+        counter = nextSymbol(counter);
     }
     
     return result;
@@ -134,6 +121,7 @@ optional<string> BigArithmeticCalc::findMultiplicativeInverse(const string& x) {
     return nullopt;
 }
 
+// Построение вспомогательных таблиц
 void BigArithmeticCalc::buildInverseMap() {
     for (const auto& elem : alphabet) {
         auto inv = findMultiplicativeInverse(elem);
@@ -191,14 +179,12 @@ void BigArithmeticCalc::buildNegationMap() {
     }
 }
 
+// Основная таблица сложения с переносами
 void BigArithmeticCalc::buildAdditionTableWithCarry() {
-    // Новая логика: определяем перенос через сравнение результатов
-    // Перенос возникает, когда при сложении мы "проходим" через additiveIdentity
-    
+
     for (const auto& c1 : alphabet) {
         for (const auto& c2 : alphabet) {
             for (const auto& carry_in : alphabet) {
-                // Складываем: (c1 + c2) + carry_in
                 string sum1 = addByHasse(c1, c2);
                 string final_sum = addByHasse(sum1, carry_in);
                 
@@ -250,9 +236,37 @@ void BigArithmeticCalc::buildAdditionTableWithCarry() {
         }
     }
 }
+// Debug
+void BigArithmeticCalc::printAdditionTableWithCarry() const {
+    for (const auto& c1 : alphabet) {
+        for (const auto& c2 : alphabet) {
+            for (const auto& carry_in : alphabet) {
+
+                auto key = make_tuple(c1, c2, carry_in);
+                auto it = additionTableWithCarry.find(key);
+
+                if (it == additionTableWithCarry.end()) {
+                    cout << "No entry for (" << c1 << ", " << c2 << ", " << carry_in << ")\n";
+                    continue;
+                }
+
+                const auto& [sum, carry_out] = it->second;
+
+                cout << "c1=" << c1
+                     << "  c2=" << c2
+                     << "  carry_in=" << carry_in
+                     << "  => sum=" << sum 
+                     << "  carry_out=" << carry_out
+                     << "\n";
+            }
+        }
+        cout << "-----------------------------\n";
+    }
+}
+
 
 // ============ БОЛЬШАЯ АРИФМЕТИКА (8 разрядов) ============
-
+// проверка не вылезает ли строка за пределы алфавита
 bool BigArithmeticCalc::isValidNumber(const string& num) const {
     if (num.empty()) return false;
     for (char c : num) {
@@ -260,14 +274,13 @@ bool BigArithmeticCalc::isValidNumber(const string& num) const {
     }
     return true;
 }
-
+// Удаление ведущих нулей и ограничение до 8 разрядов
 string BigArithmeticCalc::normalize(const string& num) const {
     if (num.empty()) return additiveIdentity;
     
     // Удаляем ведущие нули (аддитивная единица)
     size_t firstNonZero = 0;
-    while (firstNonZero < num.length() && 
-           string(1, num[firstNonZero]) == additiveIdentity) {
+    while (firstNonZero < num.length() && string(1, num[firstNonZero]) == additiveIdentity) {
         firstNonZero++;
     }
     
@@ -448,25 +461,6 @@ string BigArithmeticCalc::multiplyBig(const string& a, const string& b) const {
     return normalize(result);
 }
 
-
-
-string BigArithmeticCalc::shiftLeft(const string& num, int positions) const {
-    if (positions == 0 || num == additiveIdentity) return num;
-
-    string result = num;
-    for (int i = 0; i < positions; ++i) {
-        result += additiveIdentity; // добавляем младший разряд справа
-    }
-
-    // Ограничиваем до 8 разрядов, оставляя старшие
-    if (static_cast<int>(result.length()) > 8) {
-        result = result.substr(result.length() - 8);
-    }
-
-    return normalize(result);
-}
-
-
 int BigArithmeticCalc::compareBig(const string& a, const string& b) const {
     string na = normalize(a);
     string nb = normalize(b);
@@ -547,36 +541,7 @@ pair<string, string> BigArithmeticCalc::divideBig(const string& a, const string&
     return {quotient, remainder};
 }
 
-
-string BigArithmeticCalc::shiftRight(const string& num, int positions) const {
-    if (positions == 0 || num.empty()) return num;
-    if (positions >= static_cast<int>(num.length())) return additiveIdentity;
-    
-    return num.substr(0, num.length() - positions);
-}
-
 // ============ ПУБЛИЧНЫЕ ОПЕРАЦИИ ============
-
-string BigArithmeticCalc::addSmall(const string& a, const string& b) const {
-    if (!isValidElement(a) || !isValidElement(b)) return "ERR";
-    return addByHasse(a, b);
-}
-
-string BigArithmeticCalc::multiplySmall(const string& a, const string& b) const {
-    if (!isValidElement(a) || !isValidElement(b)) return "ERR";
-    return multiplyByHasse(a, b);
-}
-
-string BigArithmeticCalc::subtractSmall(const string& a, const string& b) const {
-    if (!isValidElement(a) || !isValidElement(b)) return "ERR";
-    return subtractByHasse(a, b);
-}
-
-string BigArithmeticCalc::divideSmall(const string& a, const string& b) const {
-    if (!isValidElement(a) || !isValidElement(b)) return "ERR";
-    return divideByHasse(a, b);
-}
-
 string BigArithmeticCalc::add(const string& a, const string& b) const {
     return addBig(a, b);
 }
@@ -603,40 +568,7 @@ bool BigArithmeticCalc::isValidElement(const string& elem) const {
     return false;
 }
 
-bool BigArithmeticCalc::isInvertible(const string& elem) const {
-    return inverseMap.find(elem) != inverseMap.end();
-}
-
-optional<string> BigArithmeticCalc::getInverse(const string& elem) const {
-    auto it = inverseMap.find(elem);
-    if (it != inverseMap.end()) {
-        return it->second;
-    }
-    return nullopt;
-}
-
 // ============ ГЕТТЕРЫ ============
-
-const map<string, string>& BigArithmeticCalc::getInverseMap() const {
-    return inverseMap;
-}
-
-const vector<vector<string>>& BigArithmeticCalc::getAddTable() const {
-    return addTable;
-}
-
-const vector<vector<string>>& BigArithmeticCalc::getMulTable() const {
-    return mulTable;
-}
-
-const vector<vector<string>>& BigArithmeticCalc::getSubTable() const {
-    return subTable;
-}
-
-const vector<vector<string>>& BigArithmeticCalc::getDivTable() const {
-    return divTable;
-}
-
 const vector<string>& BigArithmeticCalc::getAlphabet() const {
     return alphabet;
 }
@@ -707,28 +639,9 @@ void BigArithmeticCalc::printHasseDiagram() const {
         if (i < N - 1) {
             cout << " → ";
         }
-        current = plusOneRule.at(current);
+        current = nextSymbol(current);
     }
     cout << " → " << additiveIdentity << " (цикл)" << endl;
-    
-    cout << "\n════════════════════════════════════════════════════════\n" << endl;
-}
-
-void BigArithmeticCalc::printInvertibleElements() const {
-    cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
-    cout << "║              ОБРАТИМЫЕ ЭЛЕМЕНТЫ                        ║" << endl;
-    cout << "╚════════════════════════════════════════════════════════╝\n" << endl;
-    
-    if (inverseMap.empty()) {
-        cout << "Нет обратимых элементов\n" << endl;
-        return;
-    }
-    
-    cout << "Всего обратимых: " << inverseMap.size() << "\n" << endl;
-    
-    for (const auto& [elem, inv] : inverseMap) {
-        cout << "  " << elem << "⁻¹ = " << inv << endl;
-    }
     
     cout << "\n════════════════════════════════════════════════════════\n" << endl;
 }
@@ -753,28 +666,21 @@ void BigArithmeticCalc::printInfo() const {
 }
 
 void BigArithmeticCalc::printHelp() const {
+	printAdditionTableWithCarry();
     cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
     cout << "║                      ПОМОЩЬ                            ║" << endl;
     cout << "╚════════════════════════════════════════════════════════╝" << endl;
     
     cout << "\nДоступные команды:\n" << endl;
-    cout << "  МАЛАЯ АРИФМЕТИКА (1 разряд):" << endl;
-    cout << "    <элемент> + <элемент>   - сложение" << endl;
-    cout << "    <элемент> - <элемент>   - вычитание" << endl;
-    cout << "    <элемент> * <элемент>   - умножение" << endl;
-    cout << "    <элемент> / <элемент>   - деление" << endl;
-    
     cout << "\n  БОЛЬШАЯ АРИФМЕТИКА (до 8 разрядов):" << endl;
-    cout << "    <число> ++ <число>       - сложение больших чисел" << endl;
-    cout << "    <число> -- <число>       - вычитание больших чисел" << endl;
-    cout << "    <число> ** <число>       - умножение больших чисел" << endl;
-    cout << "    <число> // <число>       - деление больших чисел" << endl;
+    cout << "    <число> + <число>       - сложение больших чисел" << endl;
+    cout << "    <число> - <число>       - вычитание больших чисел" << endl;
+    cout << "    <число> * <число>       - умножение больших чисел" << endl;
+    cout << "    <число> / <число>       - деление больших чисел" << endl;
     
     cout << "\n  ИНФОРМАЦИЯ:" << endl;
     cout << "    info                    - информация об арифметике" << endl;
     cout << "    hasse                   - диаграмма Хассе" << endl;
-    cout << "    inv_list                - список обратимых элементов" << endl;
-    cout << "    inv <элемент>           - обратный элемент" << endl;
     cout << "    tables                  - все таблицы операций" << endl;
     cout << "    add_table               - таблица сложения" << endl;
     cout << "    mul_table               - таблица умножения" << endl;
@@ -784,8 +690,7 @@ void BigArithmeticCalc::printHelp() const {
     cout << "    exit / quit             - выход" << endl;
     
     cout << "\nПримеры:" << endl;
-    cout << "  Малая: b + c, h * d" << endl;
-    cout << "  Большая: abc ++ def, gh -- cd, abcd ** ef, hgfedcba // abc" << endl;
+    cout << "  abc + def, gh - cd, abcd * ef, hgfedcba / abc" << endl;
     
     cout << "\n════════════════════════════════════════════════════════\n" << endl;
 }

@@ -38,7 +38,7 @@ private:
     string universum;             // "универсум" для a*a
     string emptySet;              // "∅" для деления на a
     
-    // ============ МАЛАЯ АРИФМЕТИКА (1 разряд) ============
+    // ============ МАЛАЯ АРИФМЕТИКА ============
     
     // Базовые операции через диаграмму Хассе
     string addByHasse(const string& a, const string& b) const;
@@ -62,27 +62,21 @@ private:
     
     // Вспомогательные функции для работы с символами
     string nextSymbol(const string& current) const;
-    string prevSymbol(const string& current) const;
     int compareSymbols(const string& a, const string& b) const;
+	void printAdditionTableWithCarry() const;
     
-    // ============ БОЛЬШАЯ АРИФМЕТИКА (8 разрядов) ============
+    // ============ БОЛЬШАЯ АРИФМЕТИКА ============
     
     // Проверка: является ли строка валидным числом
     bool isValidNumber(const string& num) const;
     
     // Нормализация: удаление ведущих нулей
     string normalize(const string& num) const;
-    
-    // Сложение больших чисел (столбиком с переносом)
+
+    // Операции стобликом
     string addBig(const string& a, const string& b) const;
-    
-    // Вычитание больших чисел (столбиком с займом)
     string subtractBig(const string& a, const string& b) const;
-    
-    // Умножение больших чисел (столбиком)
     string multiplyBig(const string& a, const string& b) const;
-    
-    // Деление больших чисел (столбиком)
     pair<string, string> divideBig(const string& a, const string& b) const;
     
     // Умножение большого числа на однозначное
@@ -91,12 +85,7 @@ private:
     // Сравнение больших чисел
     int compareBig(const string& a, const string& b) const;
     
-    // Сдвиги (умножение/деление на "основание")
-    string shiftLeft(const string& num, int positions) const;
-    string shiftRight(const string& num, int positions) const;
-    
-    // ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
-    
+	// Проверка: является ли элемент алфавита валидны    
     bool isValidElement(const string& elem) const;
     void printTable(const vector<vector<string>>& table) const;
     
@@ -105,35 +94,19 @@ public:
     BigArithmeticCalc(int n, 
                      const map<string, string>& rule, 
                      const vector<string>& alph,
-                     const string& addId = "0",
-                     const string& mulId = "1");
+                     const string& addId = "a",
+                     const string& mulId = "b");
     
     // Геттеры
-    const map<string, string>& getInverseMap() const;
-    const vector<vector<string>>& getAddTable() const;
-    const vector<vector<string>>& getMulTable() const;
-    const vector<vector<string>>& getSubTable() const;
-    const vector<vector<string>>& getDivTable() const;
     const vector<string>& getAlphabet() const;
     
-    // ============ ОПЕРАЦИИ МАЛОЙ АРИФМЕТИКИ ============
-    
-    string addSmall(const string& a, const string& b) const;
-    string multiplySmall(const string& a, const string& b) const;
-    string subtractSmall(const string& a, const string& b) const;
-    string divideSmall(const string& a, const string& b) const;
-    
-    // ============ ОПЕРАЦИИ БОЛЬШОЙ АРИФМЕТИКИ (8 разрядов) ============
+    // ============ ОПЕРАЦИИ БОЛЬШОЙ АРИФМЕТИКИ ============
     
     string add(const string& a, const string& b) const;
     string multiply(const string& a, const string& b) const;
     string subtract(const string& a, const string& b) const;
-    string divide(const string& a, const string& b) const; // возвращает "Q|R"
+    string divide(const string& a, const string& b) const; 
     
-    // ============ ПРОВЕРКИ И УТИЛИТЫ ============
-    
-    bool isInvertible(const string& elem) const;
-    optional<string> getInverse(const string& elem) const;
     
     // Вывод таблиц и информации
     void printAddTable() const;
@@ -143,6 +116,5 @@ public:
     void printAllTables() const;
     void printInfo() const;
     void printHasseDiagram() const;
-    void printInvertibleElements() const;
     void printHelp() const;
 };
