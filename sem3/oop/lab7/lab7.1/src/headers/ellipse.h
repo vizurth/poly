@@ -6,7 +6,7 @@
 #include <QColor>
 #include <QRectF>
 
-// Виджет-эллипс, перегружает paintEvent и mouse events
+// виджет-эллипс, перегружает paintEvent и mouse events
 // Для определения границ вписываем в прямоугольник
 class EllipseWidget : public QWidget {
 	Q_OBJECT

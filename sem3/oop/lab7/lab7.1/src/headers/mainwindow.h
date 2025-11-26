@@ -24,7 +24,8 @@ public:
 	MainWindow(QWidget* parent = nullptr);
 
 protected:
-	void mousePressEvent(QMouseEvent* event) override; // посмотреть зачем?
+	void mousePressEvent(QMouseEvent* event) override; // обработка кликов вне canvas
+	bool eventFilter(QObject* watched, QEvent* event) override; // перехват событий на canvas
 
 private slots: // слоты для connect которые привязываем на кнопки
 	void onAddRectangle();
@@ -37,6 +38,7 @@ private:
 	void bringToFront(QWidget* widget); // поднять виджет на передний план
 	void createShapeAt(const QPointF& position, ShapeType type); // создать фигуру в указанной точке
 	void resetAddButtons(); // сбросить подсветку всех кнопок добавления
+	void updateShapesMouseTransparency(); // включить/выключить кликабельность фигур в зависимости от режима добавления
 
 private:
 	QWidget* canvas; // область для рисования фигур

@@ -5,8 +5,8 @@
 
 TriangleWidget::TriangleWidget(const QPolygonF& polygon, const QColor& color, QWidget* parent)
 	: QWidget(parent), polygon_(polygon), color(color), isSelected_(false), isDragging(false) {
-	// Устанавливаем геометрию виджета по ограничивающему прямоугольнику полигона
-	// Добавляем отступ для контура (максимальная ширина пера = 3)
+	// устанавливаем геометрию виджета по ограничивающему прямоугольнику полигона
+	// добавляем отступ для контура (максимальная ширина пера = 3)
 	QRectF boundingRect = polygon_.boundingRect();
 	const int penPadding = 3; // максимальная ширина пера
 	QRectF paddedRect = boundingRect.adjusted(-penPadding, -penPadding, penPadding, penPadding);

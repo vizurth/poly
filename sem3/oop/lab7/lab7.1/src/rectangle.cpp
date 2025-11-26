@@ -5,7 +5,7 @@
 
 RectangleWidget::RectangleWidget(const QRectF& rect, const QColor& color, QWidget* parent)
 	: QWidget(parent), color(color), isSelected_(false), isDragging(false) {
-	// Устанавливаем геометрию виджета по ограничивающему прямоугольнику
+	// устанавливаем геометрию виджета по ограничивающему прямоугольнику
 	setGeometry(rect.toRect());
 	setAttribute(Qt::WA_TransparentForMouseEvents, false); // виджет должен получать события мыши
 }
@@ -23,8 +23,8 @@ void RectangleWidget::paintEvent(QPaintEvent* event) {
 		painter.setPen(QPen(Qt::black, penWidth));
 	}
 
-	// Рисуем прямоугольник с отступом от краев, чтобы контур не обрезался
-	// Отступ равен половине ширины пера
+	// рисуем прямоугольник с отступом от краев, чтобы контур не обрезался
+	// отступ равен половине ширины пера
 	qreal penHalf = penWidth / 2.0;
 	QRectF drawRect(penHalf, penHalf, 
 	                width() - penWidth, 

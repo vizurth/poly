@@ -22,8 +22,8 @@ void EllipseWidget::paintEvent(QPaintEvent* event) {
 		painter.setPen(QPen(Qt::black, penWidth));
 	}
 
-	// Рисуем эллипс с отступом от краев, чтобы контур не обрезался
-	// Отступ равен половине ширины пера
+	// рисуем эллипс с отступом от краев, чтобы контур не обрезался
+	// отступ равен половине ширины пера
 	qreal penHalf = penWidth / 2.0;
 	QRectF drawRect(penHalf, penHalf, 
 	                width() - penWidth, 

@@ -21,11 +21,13 @@ MainWindow::MainWindow(QWidget* parent)
 
 
 void MainWindow::setupUi() {
-	// Создаем canvas - область для размещения фигур
+	// создаем canvas - область для размещения фигур
 	canvas = new QWidget(this);
 	canvas->setMinimumSize(800, 600);
 	canvas->setStyleSheet("background-color: white;");
 	canvas->setMouseTracking(false);
+	// перехватываем события мыши на canvas через eventFilter
+	canvas->installEventFilter(this);
 
 	// добавляем кнопки
 	addRectButton = new QPushButton("Add Rectangle", this);
@@ -33,7 +35,7 @@ void MainWindow::setupUi() {
 	addTriangleButton = new QPushButton("Add Triangle", this);
 	deleteButton = new QPushButton("Delete Selected", this);
 	
-	// Делаем кнопки добавления checkable для визуального отображения активного состояния
+	// делаем кнопки добавления checkable для визуального отображения активного состояния
 	addRectButton->setCheckable(true);
 	addEllipseButton->setCheckable(true);
 	addTriangleButton->setCheckable(true);
@@ -66,91 +68,82 @@ void MainWindow::bringToFront(QWidget* widget) { // поднимаем видж�
 }
 
 void MainWindow::resetAddButtons() {
-	// Сбрасываем подсветку всех кнопок добавления
+	// сбрасываем подсветку всех кнопок добавления
 	addRectButton->setChecked(false);
 	addEllipseButton->setChecked(false);
 	addTriangleButton->setChecked(false);
 }
 
+void MainWindow::updateShapesMouseTransparency() {
+	// в режиме добавления фигур делаем существующие фигуры "прозрачными" для мыши,
+	// чтобы клики проходили на холст и не вызывали выделение/перетаскивание
+	const bool transparent = (pendingShapeType != ShapeType::None);
+	for (QWidget* shape : shapes) {
+		if (shape) {
+			shape->setAttribute(Qt::WA_TransparentForMouseEvents, transparent);
+		}
+	}
+}
+
 void MainWindow::onAddRectangle() {
-	// Если уже в режиме добавления прямоугольника - отменяем режим
+	// если уже в режиме добавления прямоугольника - отменяем режим
 	if (pendingShapeType == ShapeType::Rectangle) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons();
 		canvas->setCursor(Qt::ArrowCursor);
+		updateShapesMouseTransparency();
 		return;
 	}
-	// Сбрасываем другие кнопки
+	// сбрасываем другие кнопки
 	resetAddButtons();
-	// Устанавливаем режим ожидания клика для добавления прямоугольника
+	// устанавливаем режим ожидания клика для добавления прямоугольника
 	pendingShapeType = ShapeType::Rectangle;
 	addRectButton->setChecked(true); // подсвечиваем кнопку
 	canvas->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+	updateShapesMouseTransparency();
 }
 
 void MainWindow::onAddEllipse() {
-	// Если уже в режиме добавления эллипса - отменяем режим
+	// если уже в режиме добавления эллипса - отменяем режим
 	if (pendingShapeType == ShapeType::Ellipse) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons();
 		canvas->setCursor(Qt::ArrowCursor);
+		updateShapesMouseTransparency();
 		return;
 	}
-	// Сбрасываем другие кнопки
+	// сбрасываем другие кнопки
 	resetAddButtons();
-	// Устанавливаем режим ожидания клика для добавления эллипса
+	// устанавливаем режим ожидания клика для добавления эллипса
 	pendingShapeType = ShapeType::Ellipse;
 	addEllipseButton->setChecked(true); // подсвечиваем кнопку
 	canvas->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+	updateShapesMouseTransparency();
 }
 
 void MainWindow::onAddTriangle() {
-	// Если уже в режиме добавления треугольника - отменяем режим
+	// если уже в режиме добавления треугольника - отменяем режим
 	if (pendingShapeType == ShapeType::Triangle) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons();
 		canvas->setCursor(Qt::ArrowCursor);
+		updateShapesMouseTransparency();
 		return;
 	}
-	// Сбрасываем другие кнопки
+	// сбрасываем другие кнопки
 	resetAddButtons();
-	// Устанавливаем режим ожидания клика для добавления треугольника
+	// устанавливаем режим ожидания клика для добавления треугольника
 	pendingShapeType = ShapeType::Triangle;
 	addTriangleButton->setChecked(true); // подсвечиваем кнопку
 	canvas->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+	updateShapesMouseTransparency();
 }
 
 void MainWindow::mousePressEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton) {
 		QWidget* clickedWidget = childAt(event->pos());
 		
-		// Если мы в режиме добавления фигуры
-		if (pendingShapeType != ShapeType::None) {
-			// Проверяем, что клик был именно на canvas (не на кнопке)
-			QPoint canvasPos = canvas->mapFromParent(event->pos());
-			if (canvas->rect().contains(canvasPos)) {
-				// Проверяем, что клик не на существующей фигуре
-				bool clickedOnShape = false;
-				for (QWidget* shape : shapes) {
-					// Преобразуем координаты клика в координаты фигуры
-					QPoint shapePos = shape->mapFromParent(event->pos());
-					if (shape->rect().contains(shapePos)) {
-						clickedOnShape = true;
-						break;
-					}
-				}
-				
-				if (!clickedOnShape) {
-					// Создаем фигуру в месте клика
-					createShapeAt(canvasPos, pendingShapeType);
-					// НЕ сбрасываем режим добавления - оставляем активным для следующих кликов
-					// Режим сбросится только при нажатии на другую кнопку или при отмене
-					return; // не передаем событие дальше
-				}
-			}
-		}
-		
-		// Если кликнули на кнопку или вне canvas в режиме добавления - отменяем режим
+		// если кликнули на кнопку или вне canvas в режиме добавления - отменяем режим
 		if (pendingShapeType != ShapeType::None) {
 			if (clickedWidget != canvas && 
 			    clickedWidget != addRectButton && 
@@ -159,18 +152,19 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
 			    clickedWidget != deleteButton) {
 				QPoint canvasPos = canvas->mapFromParent(event->pos());
 				if (!canvas->rect().contains(canvasPos)) {
-					// Клик вне canvas - отменяем режим добавления
+					// клик вне canvas отменяем режим добавления
 					pendingShapeType = ShapeType::None;
 					resetAddButtons(); // сбрасываем подсветку кнопок
 					canvas->setCursor(Qt::ArrowCursor);
+					updateShapesMouseTransparency();
 				}
 			}
 		}
 		
-		// Клик по canvas - снимаем выделение
+		// клик по canvas снимаем выделение
 		if (clickedWidget == canvas || clickedWidget == nullptr) {
 			selectedShape = nullptr;
-			// Снимаем выделение со всех фигур
+			// снимаем выделение со всех фигур
 			for (QWidget* shape : shapes) {
 				if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
 					rect->setSelected(false);
@@ -185,20 +179,71 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
 	QWidget::mousePressEvent(event);
 }
 
+bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
+	// обрабатываем клики именно по canvas
+	if (watched == canvas && event->type() == QEvent::MouseButtonPress) {
+		auto* mouseEvent = static_cast<QMouseEvent*>(event);
+
+		if (mouseEvent->button() == Qt::LeftButton) {
+			const QPoint canvasPos = mouseEvent->pos(); // координаты относительно canvas
+
+			// в режиме добавления фигур создаём фигуру только при клике по пустому месту
+			if (pendingShapeType != ShapeType::None) {
+				bool clickedOnShape = false;
+
+				for (QWidget* shape : shapes) {
+					if (!shape) continue;
+
+					// geometry() фигуры в координатах родителя (canvas),поэтому можно напрямую проверять contains(canvasPos)
+					if (shape->geometry().contains(canvasPos)) {
+						clickedOnShape = true;
+						break;
+					}
+				}
+
+				if (!clickedOnShape) {
+					createShapeAt(canvasPos, pendingShapeType);
+				}
+
+				// в любом случае не даём canvas обрабатывать событие дальше
+				return true;
+			}
+
+			// не режим добавления — клик по холсту просто снимает выделение
+			selectedShape = nullptr;
+			for (QWidget* shape : shapes) {
+				if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
+					rect->setSelected(false);
+				} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
+					ellipse->setSelected(false);
+				} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
+					triangle->setSelected(false);
+				}
+			}
+
+			// считаем, что событие обработано
+			return true;
+		}
+	}
+
+	// остальные события передаём стандартной реализации
+	return QWidget::eventFilter(watched, event);
+}
+
 void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 	QWidget* widget = nullptr;
 	
 	switch (type) {
 		case ShapeType::Rectangle: {
 			const QSizeF size(120, 80);
-			// Позиция - центр фигуры
+			// позиция центр фигуры
 			QRectF rect(position.x() - size.width() / 2.0,
 			           position.y() - size.height() / 2.0,
 			           size.width(), size.height());
 			widget = new RectangleWidget(rect, randomColor(), canvas);
 			auto* rectWidget = qobject_cast<RectangleWidget*>(widget);
 			connect(rectWidget, &RectangleWidget::shapeSelected, this, [this](RectangleWidget* w) {
-				// Снимаем выделение с других фигур
+				// снимаем выделение с других фигур
 				for (QWidget* shape : shapes) {
 					if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
 						if (rect != w) rect->setSelected(false);
@@ -214,14 +259,14 @@ void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 		}
 		case ShapeType::Ellipse: {
 			const QSizeF size(120, 120);
-			// Позиция - центр фигуры
+			// позиция центр фигуры
 			QRectF rect(position.x() - size.width() / 2.0,
 			           position.y() - size.height() / 2.0,
 			           size.width(), size.height());
 			widget = new EllipseWidget(rect, randomColor(), canvas);
 			auto* ellipseWidget = qobject_cast<EllipseWidget*>(widget);
 			connect(ellipseWidget, &EllipseWidget::shapeSelected, this, [this](EllipseWidget* w) {
-				// Снимаем выделение с других фигур
+				// снимаем выделение с других фигур
 				for (QWidget* shape : shapes) {
 					if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
 						rect->setSelected(false);
@@ -238,7 +283,7 @@ void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 		case ShapeType::Triangle: {
 			const qreal side = 120.0;
 			const qreal h = side * std::sqrt(3.0) / 2.0;
-			// Позиция - центр треугольника (центр описанной окружности)
+			// позиция центр треугольника (центр описанной окружности)
 			QPolygonF poly;
 			poly << QPointF(position.x(), position.y() - h * 2.0 / 3.0)  // верхняя вершина
 			     << QPointF(position.x() - side / 2.0, position.y() + h / 3.0)  // левая нижняя
@@ -246,7 +291,7 @@ void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 			widget = new TriangleWidget(poly, randomColor(), canvas);
 			auto* triangleWidget = qobject_cast<TriangleWidget*>(widget);
 			connect(triangleWidget, &TriangleWidget::shapeSelected, this, [this](TriangleWidget* w) {
-				// Снимаем выделение с других фигур
+				// снимаем выделение с других фигур
 				for (QWidget* shape : shapes) {
 					if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
 						rect->setSelected(false);
@@ -265,6 +310,10 @@ void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 	}
 	
 	if (widget) {
+		// Новая фигура должна подчиняться текущему режиму (кликабельна или "прозрачна" для мыши)
+		const bool transparent = (pendingShapeType != ShapeType::None);
+		widget->setAttribute(Qt::WA_TransparentForMouseEvents, transparent);
+
 		widget->show();
 		shapes.push_back(widget);
 		bringToFront(widget);
@@ -272,28 +321,28 @@ void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 }
 
 void MainWindow::onDeleteSelected() {
-	// Сбрасываем режим добавления при удалении
+	// сбрасываем режим добавления при удалении
 	if (pendingShapeType != ShapeType::None) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons(); // сбрасываем подсветку кнопок
 		canvas->setCursor(Qt::ArrowCursor);
 	}
 	
-	// Удаляем выделенную фигуру или последнюю добавленную
+	// удаляем выделенную фигуру или последнюю добавленную
 	if (shapes.empty()) {
 		return;
 	}
 	
 	QWidget* toDelete = shapes.back();
 	if (selectedShape) {
-		// Ищем выделенную фигуру
+		// ищем выделенную фигуру
 		auto it = std::find(shapes.begin(), shapes.end(), selectedShape);
 		if (it != shapes.end()) {
 			toDelete = *it;
 		}
 	}
 	
-	// Удаляем из вектора
+	// удаляем из вектора
 	shapes.erase(std::remove(shapes.begin(), shapes.end(), toDelete), shapes.end());
 	delete toDelete;
 	if (selectedShape == toDelete) {
