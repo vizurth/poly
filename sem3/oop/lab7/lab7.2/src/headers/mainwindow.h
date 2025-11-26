@@ -4,6 +4,7 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsItem>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -13,7 +14,8 @@ enum class ShapeType {
 	None,
 	Rectangle,
 	Ellipse,
-	Triangle
+	Triangle,
+	Star
 };
 
 // Forward declaration
@@ -43,12 +45,14 @@ private slots:
 	void onAddRectangle();
 	void onAddEllipse();
 	void onAddTriangle();
+	void onAddStar();
 	void onDeleteSelected();
 
 private:
 	void setupUi();
 	void createShapeAt(const QPointF& scenePos, ShapeType type); // создать фигуру в указанной точке сцены
 	void resetAddButtons(); // сбросить подсветку всех кнопок добавления
+	void setItemsSelectable(bool enabled); // включить/выключить возможность выделения фигур
 
 	friend class CustomGraphicsScene; // разрешаем CustomGraphicsScene доступ к приватным членам
 	
@@ -60,5 +64,6 @@ private:
 	QPushButton* addRectButton;
 	QPushButton* addEllipseButton;
 	QPushButton* addTriangleButton;
+	QPushButton* addStarButton;
 	QPushButton* deleteButton;
 };

@@ -10,6 +10,7 @@
 #include "headers/rectangle.h"
 #include "headers/ellipse.h"
 #include "headers/triangle.h"
+#include "headers/star.h"
 
 namespace {
 	static qreal g_nextZ = 1.0;
@@ -38,17 +39,20 @@ void MainWindow::setupUi() {
 	addRectButton = new QPushButton("Add Rectangle", this);
 	addEllipseButton = new QPushButton("Add Ellipse", this);
 	addTriangleButton = new QPushButton("Add Triangle", this);
+	addStarButton = new QPushButton("Add Star", this);
 	deleteButton = new QPushButton("Delete Selected", this);
 	
 	// Делаем кнопки добавления checkable для визуального отображения активного состояния
 	addRectButton->setCheckable(true);
 	addEllipseButton->setCheckable(true);
 	addTriangleButton->setCheckable(true);
+	addStarButton->setCheckable(true);
 
 	// подключаем коннекты функция к кнопке
 	connect(addRectButton, &QPushButton::clicked, this, &MainWindow::onAddRectangle);
 	connect(addEllipseButton, &QPushButton::clicked, this, &MainWindow::onAddEllipse);
 	connect(addTriangleButton, &QPushButton::clicked, this, &MainWindow::onAddTriangle);
+	connect(addStarButton, &QPushButton::clicked, this, &MainWindow::onAddStar);
 	connect(deleteButton, &QPushButton::clicked, this, &MainWindow::onDeleteSelected);
 
 	// создаем горизонтальный layout
@@ -56,6 +60,7 @@ void MainWindow::setupUi() {
 	buttonsLayout->addWidget(addRectButton);
 	buttonsLayout->addWidget(addEllipseButton);
 	buttonsLayout->addWidget(addTriangleButton);
+	buttonsLayout->addWidget(addStarButton);
 	buttonsLayout->addWidget(deleteButton);
 	buttonsLayout->addStretch(1);
 
@@ -75,6 +80,14 @@ void MainWindow::resetAddButtons() {
 	addRectButton->setChecked(false);
 	addEllipseButton->setChecked(false);
 	addTriangleButton->setChecked(false);
+	addStarButton->setChecked(false);
+}
+
+void MainWindow::setItemsSelectable(bool enabled) {
+	if (!scene) return;
+	for (QGraphicsItem* item : scene->items()) {
+		item->setFlag(QGraphicsItem::ItemIsSelectable, enabled);
+	}
 }
 
 void MainWindow::onAddRectangle() {
@@ -82,7 +95,9 @@ void MainWindow::onAddRectangle() {
 	if (pendingShapeType == ShapeType::Rectangle) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons();
+		setItemsSelectable(true); // возвращаем возможность выделения фигур
 		view->setCursor(Qt::ArrowCursor);
+		view->setDragMode(QGraphicsView::RubberBandDrag); // возвращаем режим выделения
 		return;
 	}
 	// Сбрасываем другие кнопки
@@ -90,7 +105,9 @@ void MainWindow::onAddRectangle() {
 	// Устанавливаем режим ожидания клика для добавления прямоугольника
 	pendingShapeType = ShapeType::Rectangle;
 	addRectButton->setChecked(true); // подсвечиваем кнопку
+	setItemsSelectable(false); // запрещаем выделение фигур в режиме добавления
 	view->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+	view->setDragMode(QGraphicsView::NoDrag); // отключаем выделение
 }
 
 void MainWindow::onAddEllipse() {
@@ -98,7 +115,9 @@ void MainWindow::onAddEllipse() {
 	if (pendingShapeType == ShapeType::Ellipse) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons();
+		setItemsSelectable(true); // возвращаем возможность выделения фигур
 		view->setCursor(Qt::ArrowCursor);
+		view->setDragMode(QGraphicsView::RubberBandDrag); // возвращаем режим выделения
 		return;
 	}
 	// Сбрасываем другие кнопки
@@ -106,7 +125,9 @@ void MainWindow::onAddEllipse() {
 	// Устанавливаем режим ожидания клика для добавления эллипса
 	pendingShapeType = ShapeType::Ellipse;
 	addEllipseButton->setChecked(true); // подсвечиваем кнопку
+	setItemsSelectable(false); // запрещаем выделение фигур в режиме добавления
 	view->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+	view->setDragMode(QGraphicsView::NoDrag); // отключаем выделение
 }
 
 void MainWindow::onAddTriangle() {
@@ -114,7 +135,9 @@ void MainWindow::onAddTriangle() {
 	if (pendingShapeType == ShapeType::Triangle) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons();
+		setItemsSelectable(true); // возвращаем возможность выделения фигур
 		view->setCursor(Qt::ArrowCursor);
+		view->setDragMode(QGraphicsView::RubberBandDrag); // возвращаем режим выделения
 		return;
 	}
 	// Сбрасываем другие кнопки
@@ -122,7 +145,29 @@ void MainWindow::onAddTriangle() {
 	// Устанавливаем режим ожидания клика для добавления треугольника
 	pendingShapeType = ShapeType::Triangle;
 	addTriangleButton->setChecked(true); // подсвечиваем кнопку
+	setItemsSelectable(false); // запрещаем выделение фигур в режиме добавления
 	view->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+	view->setDragMode(QGraphicsView::NoDrag); // отключаем выделение
+}
+
+void MainWindow::onAddStar() {
+	// Если уже в режиме добавления звезды - отменяем режим
+	if (pendingShapeType == ShapeType::Star) {
+		pendingShapeType = ShapeType::None;
+		resetAddButtons();
+		setItemsSelectable(true); // возвращаем возможность выделения фигур
+		view->setCursor(Qt::ArrowCursor);
+		view->setDragMode(QGraphicsView::RubberBandDrag); // возвращаем режим выделения
+		return;
+	}
+	// Сбрасываем другие кнопки
+	resetAddButtons();
+	// Устанавливаем режим ожидания клика для добавления звезды
+	pendingShapeType = ShapeType::Star;
+	addStarButton->setChecked(true); // подсвечиваем кнопку
+	setItemsSelectable(false); // запрещаем выделение фигур в режиме добавления
+	view->setCursor(Qt::CrossCursor); // меняем курсор на крестик
+	view->setDragMode(QGraphicsView::NoDrag); // отключаем выделение
 }
 
 void CustomGraphicsScene::setMainWindow(MainWindow* mw) {
@@ -140,10 +185,10 @@ void CustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event) {
 			if (!itemAtPos) {
 				// Клик на пустом месте - создаем фигуру
 				mainWindow->createShapeAt(scenePos, mainWindow->pendingShapeType);
-				// НЕ сбрасываем режим добавления - оставляем активным для следующих кликов
-				event->accept(); // принимаем событие
-				return;
 			}
+			// В любом случае принимаем событие, чтобы фигуры не выделялись
+			event->accept();
+			return;
 		}
 	}
 	// Для всех остальных случаев передаем обработку базовому классу
@@ -189,8 +234,26 @@ void MainWindow::createShapeAt(const QPointF& scenePos, ShapeType type) {
 			item = triangleItem;
 			break;
 		}
+		case ShapeType::Star: {
+			const qreal outerRadius = 60.0;
+			const qreal innerRadius = 25.0;
+			StarItem* starItem = new StarItem(outerRadius, innerRadius, 5);
+			starItem->setBrush(randomColor());
+			starItem->setPen(QPen(Qt::black, 2));
+			starItem->setPos(scenePos); // задаем позицию на сцене в месте клика
+			starItem->setZValue(g_nextZ++);
+			scene->addItem(starItem);
+			item = starItem;
+			break;
+		}
 		case ShapeType::None:
 			return;
+	}
+
+	// Если мы находимся в режиме добавления фигуры, делаем только что созданный элемент
+	// тоже невыделяемым, чтобы клики по нему не приводили к выделению
+	if (item && pendingShapeType != ShapeType::None) {
+		item->setFlag(QGraphicsItem::ItemIsSelectable, false);
 	}
 }
 
@@ -199,7 +262,9 @@ void MainWindow::onDeleteSelected() {
 	if (pendingShapeType != ShapeType::None) {
 		pendingShapeType = ShapeType::None;
 		resetAddButtons(); // сбрасываем подсветку кнопок
+		setItemsSelectable(true); // возвращаем возможность выделения фигур
 		view->setCursor(Qt::ArrowCursor);
+		view->setDragMode(QGraphicsView::RubberBandDrag); // возвращаем режим выделения
 	}
 	
 	const auto selected = scene->selectedItems();
@@ -207,4 +272,3 @@ void MainWindow::onDeleteSelected() {
 		delete it; // удаление из сцены и памяти
 	}
 }
-
