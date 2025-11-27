@@ -17,7 +17,7 @@ void EllipseWidget::paintEvent(QPaintEvent* event) {
 	painter.setBrush(color); // заливка
 	int penWidth = 2; // выделение при селекте
 	if (isSelected_) {
-		painter.setPen(QPen(Qt::blue, penWidth));
+		painter.setPen(QPen(Qt::red, penWidth));
 	} else {
 		painter.setPen(QPen(Qt::black, penWidth));
 	}

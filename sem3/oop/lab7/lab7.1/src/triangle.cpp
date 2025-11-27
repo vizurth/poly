@@ -22,27 +22,26 @@ void TriangleWidget::paintEvent(QPaintEvent* event) {
 	painter.setBrush(color); // задаём цвет заливки треугольника
 	int penWidth = 2; // устанавливаем толщину обводки
 	if (isSelected_) {
-		painter.setPen(QPen(Qt::blue, penWidth));
+		painter.setPen(QPen(Qt::red, penWidth));
 	} else {
 		painter.setPen(QPen(Qt::black, penWidth));
 	}
 
-	// получаем прямоугольник, ограничивающий исходный треугольник
+	// получаем прямоугольник который граница треугольника
 	QRectF boundingRect = polygon_.boundingRect();
 	const int penPadding = 3; // отступ от границ, чтобы контур не обрезался
+	
+	// рассчитываем новые точки виджета с учетом отступов
 	QPolygonF localPolygon = polygon_; // создаём копию исходного полигона
-
-	// позиция виджета рассчитывается как boundingRect.topLeft() - QPointF(penPadding, penPadding)
-	// поэтому переводим точки полигона из глобальных координат в локальные координаты виджета
 	for (int i = 0; i < localPolygon.size(); ++i) {
 		localPolygon[i] = localPolygon[i] - boundingRect.topLeft() + QPointF(penPadding, penPadding);
 	}
 
-	// рисуем сам треугольник (обводка не обрежется, так как у виджета есть отступ)
+	// рисуем сам треугольник
 	painter.drawPolygon(localPolygon);
 }
 
-
+ 
 void TriangleWidget::setSelected(bool selected) {
 	isSelected_ = selected;
 	update();

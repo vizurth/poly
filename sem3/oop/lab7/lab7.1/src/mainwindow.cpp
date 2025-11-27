@@ -75,8 +75,7 @@ void MainWindow::resetAddButtons() {
 }
 
 void MainWindow::updateShapesMouseTransparency() {
-	// в режиме добавления фигур делаем существующие фигуры "прозрачными" для мыши,
-	// чтобы клики проходили на холст и не вызывали выделение/перетаскивание
+	// в режиме добавления фигур делаем существующие фигуры прозрачными для мыши чтобы клики проходили на холст и не вызывали выделение/перетаскивание
 	const bool transparent = (pendingShapeType != ShapeType::None);
 	for (QWidget* shape : shapes) {
 		if (shape) {
@@ -139,6 +138,19 @@ void MainWindow::onAddTriangle() {
 	updateShapesMouseTransparency();
 }
 
+void MainWindow::clearSelection() {
+	selectedShape = nullptr;
+	for (QWidget* shape : shapes) {
+		if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
+			rect->setSelected(false);
+		} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
+			ellipse->setSelected(false);
+		} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
+			triangle->setSelected(false);
+		}
+	}
+}
+
 void MainWindow::mousePressEvent(QMouseEvent* event) {
 	if (event->button() == Qt::LeftButton) {
 		QWidget* clickedWidget = childAt(event->pos());
@@ -163,17 +175,7 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
 		
 		// клик по canvas снимаем выделение
 		if (clickedWidget == canvas || clickedWidget == nullptr) {
-			selectedShape = nullptr;
-			// снимаем выделение со всех фигур
-			for (QWidget* shape : shapes) {
-				if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
-					rect->setSelected(false);
-				} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
-					ellipse->setSelected(false);
-				} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
-					triangle->setSelected(false);
-				}
-			}
+			clearSelection();
 		}
 	}
 	QWidget::mousePressEvent(event);
@@ -194,7 +196,7 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
 				for (QWidget* shape : shapes) {
 					if (!shape) continue;
 
-					// geometry() фигуры в координатах родителя (canvas),поэтому можно напрямую проверять contains(canvasPos)
+					// geometry() фигуры в координатах canvas поэтому можно проверить если на этой позиции фигура
 					if (shape->geometry().contains(canvasPos)) {
 						clickedOnShape = true;
 						break;
@@ -209,19 +211,9 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
 				return true;
 			}
 
-			// не режим добавления — клик по холсту просто снимает выделение
-			selectedShape = nullptr;
-			for (QWidget* shape : shapes) {
-				if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
-					rect->setSelected(false);
-				} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
-					ellipse->setSelected(false);
-				} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
-					triangle->setSelected(false);
-				}
-			}
+		    // клик по холсту просто снимает выделение
+			clearSelection();
 
-			// считаем, что событие обработано
 			return true;
 		}
 	}
@@ -232,85 +224,22 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event) {
 
 void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 	QWidget* widget = nullptr;
-	
+
 	switch (type) {
-		case ShapeType::Rectangle: {
-			const QSizeF size(120, 80);
-			// позиция центр фигуры
-			QRectF rect(position.x() - size.width() / 2.0,
-			           position.y() - size.height() / 2.0,
-			           size.width(), size.height());
-			widget = new RectangleWidget(rect, randomColor(), canvas);
-			auto* rectWidget = qobject_cast<RectangleWidget*>(widget);
-			connect(rectWidget, &RectangleWidget::shapeSelected, this, [this](RectangleWidget* w) {
-				// снимаем выделение с других фигур
-				for (QWidget* shape : shapes) {
-					if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
-						if (rect != w) rect->setSelected(false);
-					} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
-						ellipse->setSelected(false);
-					} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
-						triangle->setSelected(false);
-					}
-				}
-				selectedShape = w;
-			});
+		case ShapeType::Rectangle:
+			widget = createRectangleAt(position);
 			break;
-		}
-		case ShapeType::Ellipse: {
-			const QSizeF size(120, 120);
-			// позиция центр фигуры
-			QRectF rect(position.x() - size.width() / 2.0,
-			           position.y() - size.height() / 2.0,
-			           size.width(), size.height());
-			widget = new EllipseWidget(rect, randomColor(), canvas);
-			auto* ellipseWidget = qobject_cast<EllipseWidget*>(widget);
-			connect(ellipseWidget, &EllipseWidget::shapeSelected, this, [this](EllipseWidget* w) {
-				// снимаем выделение с других фигур
-				for (QWidget* shape : shapes) {
-					if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
-						rect->setSelected(false);
-					} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
-						if (ellipse != w) ellipse->setSelected(false);
-					} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
-						triangle->setSelected(false);
-					}
-				}
-				selectedShape = w;
-			});
+		case ShapeType::Ellipse:
+			widget = createEllipseAt(position);
 			break;
-		}
-		case ShapeType::Triangle: {
-			const qreal side = 120.0;
-			const qreal h = side * std::sqrt(3.0) / 2.0;
-			// позиция центр треугольника (центр описанной окружности)
-			QPolygonF poly;
-			poly << QPointF(position.x(), position.y() - h * 2.0 / 3.0)  // верхняя вершина
-			     << QPointF(position.x() - side / 2.0, position.y() + h / 3.0)  // левая нижняя
-			     << QPointF(position.x() + side / 2.0, position.y() + h / 3.0); // правая нижняя
-			widget = new TriangleWidget(poly, randomColor(), canvas);
-			auto* triangleWidget = qobject_cast<TriangleWidget*>(widget);
-			connect(triangleWidget, &TriangleWidget::shapeSelected, this, [this](TriangleWidget* w) {
-				// снимаем выделение с других фигур
-				for (QWidget* shape : shapes) {
-					if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
-						rect->setSelected(false);
-					} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
-						ellipse->setSelected(false);
-					} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
-						if (triangle != w) triangle->setSelected(false);
-					}
-				}
-				selectedShape = w;
-			});
+		case ShapeType::Triangle:
+			widget = createTriangleAt(position);
 			break;
-		}
 		case ShapeType::None:
 			return;
 	}
-	
+	// новая фигура должна подчиняться текущему режиму кликабельна или прозрачна для мыши
 	if (widget) {
-		// Новая фигура должна подчиняться текущему режиму (кликабельна или "прозрачна" для мыши)
 		const bool transparent = (pendingShapeType != ShapeType::None);
 		widget->setAttribute(Qt::WA_TransparentForMouseEvents, transparent);
 
@@ -318,6 +247,86 @@ void MainWindow::createShapeAt(const QPointF& position, ShapeType type) {
 		shapes.push_back(widget);
 		bringToFront(widget);
 	}
+}
+
+QWidget* MainWindow::createRectangleAt(const QPointF& position) {
+	const QSizeF size(120, 80);
+	// позиция центр фигуры
+	QRectF rect(position.x() - size.width() / 2.0,
+	            position.y() - size.height() / 2.0,
+	            size.width(), size.height());
+
+	auto* rectWidget = new RectangleWidget(rect, randomColor(), canvas);
+	// устанавливаем соединение на кликабельность
+	connect(rectWidget, &RectangleWidget::shapeSelected, this, [this](RectangleWidget* w) {
+		// снимаем выделение с других фигур
+		for (QWidget* shape : shapes) {
+			if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
+				if (rect != w) rect->setSelected(false);
+			} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
+				ellipse->setSelected(false);
+			} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
+				triangle->setSelected(false);
+			}
+		}
+		selectedShape = w;
+	});
+
+	return rectWidget;
+}
+
+QWidget* MainWindow::createEllipseAt(const QPointF& position) {
+	const QSizeF size(120, 120);
+	// позиция центр фигуры
+	QRectF rect(position.x() - size.width() / 2.0,
+	            position.y() - size.height() / 2.0,
+	            size.width(), size.height());
+
+	auto* ellipseWidget = new EllipseWidget(rect, randomColor(), canvas);
+	// устанавливаем соединение на кликабельность
+	connect(ellipseWidget, &EllipseWidget::shapeSelected, this, [this](EllipseWidget* w) {
+		// снимаем выделение с других фигур
+		for (QWidget* shape : shapes) {
+			if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
+				rect->setSelected(false);
+			} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
+				if (ellipse != w) ellipse->setSelected(false);
+			} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
+				triangle->setSelected(false);
+			}
+		}
+		selectedShape = w;
+	});
+
+	return ellipseWidget;
+}
+
+QWidget* MainWindow::createTriangleAt(const QPointF& position) {
+	const qreal side = 120.0;
+	const qreal h = side * std::sqrt(3.0) / 2.0;
+	// позиция центр треугольника (центр описанной окружности)
+	QPolygonF poly;
+	poly << QPointF(position.x(), position.y() - h * 2.0 / 3.0)  // верхняя вершина
+	     << QPointF(position.x() - side / 2.0, position.y() + h / 3.0)  // левая нижняя
+	     << QPointF(position.x() + side / 2.0, position.y() + h / 3.0); // правая нижняя
+
+	auto* triangleWidget = new TriangleWidget(poly, randomColor(), canvas);
+	// устанавливаем соединение на кликабельность
+	connect(triangleWidget, &TriangleWidget::shapeSelected, this, [this](TriangleWidget* w) {
+		// снимаем выделение с других фигур
+		for (QWidget* shape : shapes) {
+			if (auto* rect = qobject_cast<RectangleWidget*>(shape)) {
+				rect->setSelected(false);
+			} else if (auto* ellipse = qobject_cast<EllipseWidget*>(shape)) {
+				ellipse->setSelected(false);
+			} else if (auto* triangle = qobject_cast<TriangleWidget*>(shape)) {
+				if (triangle != w) triangle->setSelected(false);
+			}
+		}
+		selectedShape = w;
+	});
+
+	return triangleWidget;
 }
 
 void MainWindow::onDeleteSelected() {
@@ -328,11 +337,12 @@ void MainWindow::onDeleteSelected() {
 		canvas->setCursor(Qt::ArrowCursor);
 	}
 	
-	// удаляем выделенную фигуру или последнюю добавленную
+
 	if (shapes.empty()) {
 		return;
 	}
 	
+	// удаляем выделенную фигуру или последнюю добавленную
 	QWidget* toDelete = shapes.back();
 	if (selectedShape) {
 		// ищем выделенную фигуру

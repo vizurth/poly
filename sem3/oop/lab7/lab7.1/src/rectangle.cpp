@@ -18,7 +18,7 @@ void RectangleWidget::paintEvent(QPaintEvent* event) {
 	painter.setBrush(color);
 	int penWidth = 2;
 	if (isSelected_) {
-		painter.setPen(QPen(Qt::blue, penWidth));
+		painter.setPen(QPen(Qt::red, penWidth));
 	} else {
 		painter.setPen(QPen(Qt::black, penWidth));
 	}
