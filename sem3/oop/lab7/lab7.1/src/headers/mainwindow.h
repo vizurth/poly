@@ -37,13 +37,13 @@ private:
 	void setupUi(); // реализовавываем UI
 	void bringToFront(QWidget* widget); // поднять виджет на передний план
 	void createShapeAt(const QPointF& position, ShapeType type); // создать фигуру в указанной точке
-	QWidget* createRectangleAt(const QPointF& position); // создать прямоугольник в указанной точке
-	QWidget* createEllipseAt(const QPointF& position);   // создать эллипс в указанной точке
-	QWidget* createTriangleAt(const QPointF& position);  // создать треугольник в указанной точке
 	void resetAddButtons(); // сбросить подсветку всех кнопок добавления
 	void updateShapesMouseTransparency(); // включить/выключить кликабельность фигур в зависимости от режима добавления
+	void clearSelection();
 
-	void clearSelection(); // снимает выделение со всех фигур
+	QWidget* createTriangleAt(const QPointF& position);
+	QWidget* createEllipseAt(const QPointF& position);
+	QWidget* createRectangleAt(const QPointF& position);
 
 private:
 	QWidget* canvas; // область для рисования фигур
