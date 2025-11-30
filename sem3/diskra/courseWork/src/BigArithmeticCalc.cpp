@@ -9,6 +9,7 @@ using namespace std;
 
 // ============ вспомогательные функции для работы с символами ============
 
+// следующий символ по правилу +1
 string BigArithmeticCalc::nextSymbol(const string& current) const {
     auto it = plusOneRule.find(current);
     if (it == plusOneRule.end()) {
@@ -17,11 +18,17 @@ string BigArithmeticCalc::nextSymbol(const string& current) const {
     return it->second;
 }
 
+// функция для сравнения символов
+/*
+	если a == b или символы не найдены 0
+	если a > b => 1
+	ecли a < b => -1
+	ходим по бесконечному циклу через правило +1
+*/
 int BigArithmeticCalc::compareSymbols(const string& a, const string& b) const {
     if (a == b) return 0;
 
     string current = additiveIdentity;
-    // используем буквенный счетчик вместо int
     while (true) {
         if (current == a) return -1;
         if (current == b) return 1;
@@ -50,13 +57,24 @@ BigArithmeticCalc::BigArithmeticCalc(int n,
 
 // ============ малая арифметика ============
 
+// базовые операции через диаграмму хассе
+
+/*
+	LOOK: addByHasse(a, b)
+	будем поддерживать 
+	counter = additiveIdentity(ноль)
+	result = a
+	(
+	если смотреть на диаграмму хассе то мы будем прибавлять к result +1 и ходить через nextSymbol
+	до момента пока counter != b
+	)
+*/
 string BigArithmeticCalc::addByHasse(const string& a, const string& b) const {
     if (b == additiveIdentity) return a;
     
     string counter = additiveIdentity;
     string result = a;
     
-    // используем буквенный счетчик
     while (counter != b) {
         result = nextSymbol(result);
         counter = nextSymbol(counter);
@@ -65,6 +83,15 @@ string BigArithmeticCalc::addByHasse(const string& a, const string& b) const {
     return result;
 }
 
+/*
+	LOOK: multiplyByHasse(a, b)
+	Проверяем граничные случаи
+
+	так как мы умножаем мы должны несколько раз прибавлять a к результату
+	до того момента пока counter != b(то сколько раз надо умножить)
+
+	result = addByHasse(result, a)
+*/
 string BigArithmeticCalc::multiplyByHasse(const string& a, const string& b) const {
     // специальный случай: a * a = универсум
     if (a == additiveIdentity && b == additiveIdentity) {
@@ -87,30 +114,42 @@ string BigArithmeticCalc::multiplyByHasse(const string& a, const string& b) cons
     return result;
 }
 
+/*
+	LOOK: subtractByHasse(a, b)
+	ищем c такое, что addByHasse(b, c) == a
+	перебираем все элементы алфавита
+*/
 string BigArithmeticCalc::subtractByHasse(const string& a, const string& b) const {
-    // ищем c такое, что addByHasse(b, c) == a
     for (const auto& candidate : alphabet) {
         if (addByHasse(b, candidate) == a) {
             return candidate;
         }
     }
-    return "ERR";
+    return "ERR: with subtract";
 }
 
+/*
+	LOOK: divideByHasse(a, b)
+	деление на ноль = пустое множество
+	деление будет равняться a * b^-1(инвертированное)
+*/
 string BigArithmeticCalc::divideByHasse(const string& a, const string& b) const {
-    // деление на ноль = пустое множество
     if (b == additiveIdentity) {
         return emptySet;
     }
     
     if (inverseMap.find(b) == inverseMap.end()) {
-        return "ERR";
+        return "ERR: cant find b^-1";
     }
     
     string bInverse = inverseMap.at(b);
     return multiplyByHasse(a, bInverse);
 }
 
+/*
+	LOOK: findMultiplicativeInverse(x)
+	ищем такое что candidate что x * candidate = multiplicativeIdentity
+*/
 optional<string> BigArithmeticCalc::findMultiplicativeInverse(const string& x) {
     if (x == additiveIdentity) return nullopt;
     
@@ -133,6 +172,10 @@ void BigArithmeticCalc::buildInverseMap() {
     }
 }
 
+
+/*
+	LOOK: блок кода с построением таблиц
+*/
 void BigArithmeticCalc::buildAddTable() {
     addTable.assign(N, vector<string>(N));
     // используем буквенные индексы
@@ -186,48 +229,32 @@ void BigArithmeticCalc::buildNegationMap() {
     }
 }
 
-// основная таблица сложения с переносами
+/*
+	LOOK: buildAdditionTableWithCarry()
+	структура таблицы (c1, c2, carry_in) => (sum, carry)
+	функция построения таблицы сложения с учетом переносов из младших разрядов
+
+	запишем все значения для этого будем перебирать
+	с1 - первый слагаемое
+	с2 - второе слагаемое
+	carry_in - перенос из младшего разряда
+
+	сумма = addByHasse(addByHasse(c1, c2), carry_in)
+	так же будем проверять прошли ли мы полностью диаграмму функцией 
+	LOOK: checkCarry(start, steps)
+*/
 void BigArithmeticCalc::buildAdditionTableWithCarry() {
     for (const auto& c1 : alphabet) {
         for (const auto& c2 : alphabet) {
-            for (const auto& carry_in : alphabet) {
-                string sum1 = addByHasse(c1, c2);
-                string final_sum = addByHasse(sum1, carry_in);
+			//FIXME: возможно тут надо итерироваться по всем символам алфавита
+            for (const auto& carry_in : {additiveIdentity, multiplicativeIdentity}) {
+                string sum1 = addByHasse(c1, c2); // сумма без переноса
+                string final_sum = addByHasse(sum1, carry_in); // финальная сумма с учетом переноса
                 
-                bool carry1 = false;
-                bool carry2 = false;
+                bool carry1 = checkCarry(c1, c2); // проверяем перенос с1 + с2
+				bool carry2 = checkCarry(sum1, carry_in); // проверяем перенос sum1 + carry_in
                 
-                // проверяем первый перенос: c1 + c2
-                if (c2 != additiveIdentity) {
-                    string temp = c1;
-                    string counter = additiveIdentity;
-                    while (counter != c2) {
-                        string old_temp = temp;
-                        temp = nextSymbol(temp);
-                        counter = nextSymbol(counter);
-                        
-                        if (old_temp != additiveIdentity && temp == additiveIdentity) {
-                            carry1 = true;
-                        }
-                    }
-                }
-                
-                // проверяем второй перенос: sum1 + carry_in
-                if (carry_in != additiveIdentity) {
-                    string temp = sum1;
-                    string counter = additiveIdentity;
-                    while (counter != carry_in) {
-                        string old_temp = temp;
-                        temp = nextSymbol(temp);
-                        counter = nextSymbol(counter);
-                        
-                        if (old_temp != additiveIdentity && temp == additiveIdentity) {
-                            carry2 = true;
-                        }
-                    }
-                }
-                
-                string carry_out = (carry1 || carry2) ? multiplicativeIdentity : additiveIdentity;
+                string carry_out = (carry1 || carry2) ? multiplicativeIdentity : additiveIdentity; // выставляем перенос при 
                 
                 additionTableWithCarry[make_tuple(c1, c2, carry_in)] = make_pair(final_sum, carry_out);
             }
@@ -235,7 +262,30 @@ void BigArithmeticCalc::buildAdditionTableWithCarry() {
     }
 }
 
-// ============ работа со знаками ============
+/*
+	LOOK: checkCarry(start, steps)
+	проверяет возникновение переноса при сложении start + steps
+	если перенос возник true иначе false
+*/
+bool BigArithmeticCalc::checkCarry(const string& start, const string& steps) const {
+    if (steps == additiveIdentity) return false;
+
+    string temp = start;
+    string counter = additiveIdentity;
+
+    while (counter != steps) {
+        string old_temp = temp;
+        temp = nextSymbol(temp);
+        counter = nextSymbol(counter);
+
+        if (old_temp != additiveIdentity && temp == additiveIdentity) {
+            return true; // перенос обнаружен
+        }
+    }
+    return false;
+}
+
+// ============ работа со знаками минус ============
 
 bool BigArithmeticCalc::isNegative(const string& num) const {
     return !num.empty() && num[0] == '-';
@@ -253,7 +303,7 @@ string BigArithmeticCalc::addSign(const string& num, bool negative) const {
     return negative ? "-" + num : num;
 }
 
-// ============ большая арифметика (8 разрядов) ============
+// ============ большая арифметика  ============
 
 // проверка не вылезает ли строка за пределы алфавита
 bool BigArithmeticCalc::isValidNumber(const string& num) const {
@@ -267,14 +317,28 @@ bool BigArithmeticCalc::isValidNumber(const string& num) const {
     return true;
 }
 
-// проверка на переполнение (больше 8 разрядов)
-bool BigArithmeticCalc::wouldOverflow(const string& num) const {
+bool BigArithmeticCalc::isValidElement(const string& elem) const {
+    for (const auto& x : alphabet) {
+        if (x == elem) return true;
+    }
+    return false;
+}
+
+// проверка на переполнение по количеству разрядов
+bool BigArithmeticCalc::isOverflow(const string& num) const {
     string unsigned_num = removeSign(num);
     string normalized = normalize(unsigned_num);
     return normalized.length() > MAX_DIGITS;
 }
 
 // удаление ведущих нулей
+
+/*
+	LOOK: normalize(num) 
+	функция для удаление ведущих нулей
+	так как мы можем при вычислении добавить ведущие нули для упрощения вычислений
+	бедем счетчиком считать количество нулей спереди числа а далее просто обрежем их
+*/
 string BigArithmeticCalc::normalize(const string& num) const {
     if (num.empty()) return additiveIdentity;
     
@@ -297,6 +361,18 @@ string BigArithmeticCalc::normalize(const string& num) const {
     return addSign(result, negative);
 }
 
+/*
+	LOOK: addBigUnsigned(a, b)
+	функция для беззнакового суммирования чисел столбиком
+	для этого просто будем поддерживать переменные:
+	result, carry
+	проходим по разрядам справа налево и для каждого разряда
+	берем digit1 и digit2 cуммируем их по таблице с переносами
+	и записываем carry != additiveIdentity
+	в самом конце приписываем carry к результату если он есть
+	
+	проверяем на переполнение
+*/
 string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const { 
     if (!isValidNumber(a) || !isValidNumber(b)) {
         return "ERR: invalid number";
@@ -305,7 +381,7 @@ string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const
     string num1 = a;
     string num2 = b;
 
-    // выравниваем длины
+    // добавляем нули
     size_t max_len = max(num1.length(), num2.length());
     while (num1.length() < max_len) {
         num1 = additiveIdentity + num1;
@@ -317,8 +393,6 @@ string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const
     string result;
     string carry = additiveIdentity;
 
-    // складываем справа налево используя таблицу с переносами
-    // используем int только для индекса массива
     for (int i = static_cast<int>(max_len) - 1; i >= 0; --i) {
         string digit1(1, num1[i]);
         string digit2(1, num2[i]);
@@ -335,19 +409,24 @@ string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const
         result = sum + result;
     }
 
-    // если остался перенос, добавляем старший разряд
     if (carry != additiveIdentity) {
         result = carry + result;
     }
 
-    // проверка на переполнение
-    if (wouldOverflow(result)) {
+    if (isOverflow(result)) {
         return "ERR: overflow";
     }
 
     return normalize(result);
 }
 
+/*
+	LOOK: subtractBigUnsigned(a, b)
+	тут пофакту считаем модуль вычитание столбиком
+	поддерживаем result и borrow 
+	также смотрим на заем из младшего разряда
+	и используем substractByHasse(a, b)
+*/
 string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) const {
     if (!isValidNumber(a) || !isValidNumber(b)) {
         return "ERR: invalid number";
@@ -379,10 +458,12 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
     for (int i = static_cast<int>(max_len) - 1; i >= 0; --i) {
         string current(1, larger[i]);
         
-        // вычитаем borrow из предыдущего разряда
+        // вычитаем заем из предыдущего разряда
         if (borrow != additiveIdentity) {
-            string neg_borrow = negationMap.at(borrow);
-            current = addByHasse(current, neg_borrow);
+            // string neg_borrow = negationMap.at(borrow);
+            // current = addByHasse(current, neg_borrow);
+			// FIXME: используем вычитание по диаграмме хассе
+			current = subtractByHasse(current, borrow);
             borrow = additiveIdentity;
         }
         
@@ -399,8 +480,10 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
         }
         
         // вычитаем: current - digit2 = current + (-digit2)
-        string neg_digit2 = negationMap.at(digit2);
-        string result_digit = addByHasse(current, neg_digit2);
+        // string neg_digit2 = negationMap.at(digit2);
+        // string result_digit = addByHasse(current, neg_digit2);
+		// FIXME: используем вычитание по диаграмме хассе
+		string result_digit = subtractByHasse(current, digit2);
         
         result = result_digit + result;
     }
@@ -408,6 +491,12 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
     return normalize(result);
 }
 
+/*
+	LOOK: multiplyByDigit(num, digit)
+	функция умножения числа на цифру
+	просто будем использовать counter чтолбы считать сколько раз уже умножили 
+	и result = addBigUnsigned(result, num)
+*/
 string BigArithmeticCalc::multiplyByDigit(const string& num, const string& digit) const {
     if (digit == additiveIdentity) return additiveIdentity;
     if (digit == multiplicativeIdentity) return num;
@@ -425,6 +514,13 @@ string BigArithmeticCalc::multiplyByDigit(const string& num, const string& digit
     return result;
 }
 
+/*
+	LOOK: multiplyBigUnsigned(a, b)
+	функция умножения чисел столбиком
+	проходим по каждой цифре множителя справа налево
+	для каждой цифры получаем частичное произведение
+	и сдвигаем его влево на соответствующее количество разрядов
+*/
 string BigArithmeticCalc::multiplyBigUnsigned(const string& a, const string& b) const {
     if (!isValidNumber(a) || !isValidNumber(b)) {
         return "ERR: invalid number";
@@ -458,6 +554,11 @@ string BigArithmeticCalc::multiplyBigUnsigned(const string& a, const string& b) 
     return normalize(result);
 }
 
+/*
+	LOOK: compareBigUnsigned(a, b)
+	функция для сравнения беззнаковых больших чисел
+	сравниваем по длине а далее поразрядно слева направо c помощью compareSymbols
+*/
 int BigArithmeticCalc::compareBigUnsigned(const string& a, const string& b) const {
     string na = normalize(a);
     string nb = normalize(b);
@@ -474,22 +575,10 @@ int BigArithmeticCalc::compareBigUnsigned(const string& a, const string& b) cons
     return 0;
 }
 
-int BigArithmeticCalc::compareBig(const string& a, const string& b) const {
-    bool neg_a = isNegative(a);
-    bool neg_b = isNegative(b);
-    
-    if (neg_a && !neg_b) return -1;
-    if (!neg_a && neg_b) return 1;
-    
-    string unsigned_a = removeSign(a);
-    string unsigned_b = removeSign(b);
-    
-    int cmp = compareBigUnsigned(unsigned_a, unsigned_b);
-    
-    // для отрицательных меняем знак сравнения
-    return neg_a ? -cmp : cmp;
-}
-
+/*
+	LOOK: divideBigUnsigned(a, b)
+	функция для деления в столбик
+*/
 pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a, const string& b) const {
     if (!isValidNumber(a) || !isValidNumber(b)) {
         return {"ERR", "ERR"};
@@ -518,7 +607,7 @@ pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a, const
     }
     
     // деление в столбик
-    string quotient_str;
+    string q_str;
     string current_remainder = additiveIdentity;
     
     // проходим по каждой цифре делимого слева направо
@@ -528,7 +617,7 @@ pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a, const
         current_remainder = normalize(current_remainder);
         
         // ищем максимальную цифру частного
-        string quotient_digit = additiveIdentity;
+        string q_digit = additiveIdentity;
         
         // пробуем все возможные цифры от 1 до максимальной
         string test_digit = multiplicativeIdentity;
@@ -539,27 +628,32 @@ pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a, const
                 break;
             }
             
-            quotient_digit = test_digit;
+            q_digit = test_digit;
             test_digit = nextSymbol(test_digit);
         }
         
-        quotient_str += quotient_digit;
+        q_str += q_digit;
         
         // вычитаем произведение из остатка
-        if (quotient_digit != additiveIdentity) {
-            string product = multiplyByDigit(divisor, quotient_digit);
+        if (q_digit != additiveIdentity) {
+            string product = multiplyByDigit(divisor, q_digit);
             current_remainder = subtractBigUnsigned(current_remainder, product);
         }
     }
     
-    string quotient = normalize(quotient_str);
+    string q = normalize(q_str);
     string remainder = normalize(current_remainder);
     
-    return {quotient, remainder};
+    return {q, remainder};
 }
 
-// ============ публичные операции ============
+// ============ операции с учетом знаков ============
 
+/*
+	LOOK: add(a, b)
+	функция для сложения больших чисел со знаком
+	рассматриваем 4 случая в зависимости от знаков a и b
+*/
 string BigArithmeticCalc::add(const string& a, const string& b) const {
     bool neg_a = isNegative(a);
     bool neg_b = isNegative(b);
@@ -586,6 +680,7 @@ string BigArithmeticCalc::add(const string& a, const string& b) const {
             return subtractBigUnsigned(unsigned_a, unsigned_b);
         } else {
             string diff = subtractBigUnsigned(unsigned_b, unsigned_a);
+			cout << "Debug:" << diff << endl;
             return addSign(diff, true);
         }
     }
@@ -604,6 +699,11 @@ string BigArithmeticCalc::add(const string& a, const string& b) const {
     return "ERR: unknown case";
 }
 
+/*
+	LOOK: subtract(a, b)
+	функция для вычитания больших чисел со знаком
+	используем правило: a - b = a + (-b)
+*/
 string BigArithmeticCalc::subtract(const string& a, const string& b) const {
     // a - b = a + (-b)
     bool neg_b = isNegative(b);
@@ -612,7 +712,11 @@ string BigArithmeticCalc::subtract(const string& a, const string& b) const {
     
     return add(a, negated_b);
 }
-
+/*
+	LOOK: multiply(a, b)
+	функция для умножения больших чисел со знаком
+	результат отрицательный, если знаки разные
+*/
 string BigArithmeticCalc::multiply(const string& a, const string& b) const {
     bool neg_a = isNegative(a);
     bool neg_b = isNegative(b);
@@ -629,6 +733,11 @@ string BigArithmeticCalc::multiply(const string& a, const string& b) const {
     return addSign(product, result_negative);
 }
 
+/*
+	LOOK: divide(a, b)
+	функция для деления больших чисел со знаком
+	обрабатываем специальные случаи
+*/
 string BigArithmeticCalc::divide(const string& a, const string& b) const {
     bool neg_a = isNegative(a);
     bool neg_b = isNegative(b);
@@ -667,15 +776,6 @@ string BigArithmeticCalc::divide(const string& a, const string& b) const {
     }
     
     return "Q: " + q + " | R: " + r;
-}
-
-// ============ утилиты ============
-
-bool BigArithmeticCalc::isValidElement(const string& elem) const {
-    for (const auto& x : alphabet) {
-        if (x == elem) return true;
-    }
-    return false;
 }
 
 // ============ геттеры ============

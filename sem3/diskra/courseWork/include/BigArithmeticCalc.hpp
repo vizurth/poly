@@ -59,6 +59,7 @@ private:
     
     // построение таблиц для больших операций
     void buildAdditionTableWithCarry();
+	bool checkCarry(const string& start, const string& steps) const;
     void buildNegationMap();
     
     // вспомогательные функции для работы с символами
@@ -80,7 +81,7 @@ private:
     string normalize(const string& num) const;
     
     // проверка на переполнение
-    bool wouldOverflow(const string& num) const;
+    bool isOverflow(const string& num) const;
 
     // операции столбиком (только для положительных)
     string addBigUnsigned(const string& a, const string& b) const;
@@ -93,9 +94,6 @@ private:
     
     // сравнение больших чисел (без знака)
     int compareBigUnsigned(const string& a, const string& b) const;
-    
-    // сравнение с учетом знака
-    int compareBig(const string& a, const string& b) const;
     
     // вспомогательные для вывода
     void printTable(const vector<vector<string>>& table) const;
