@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <map>
@@ -6,61 +8,58 @@
 
 using namespace std;
 
-// Узел BDD графа
+// узел BDD графа
 struct BDDNode {
-    int id;                    // Уникальный идентификатор узла
-    string variable;           // Имя переменной или терминал ("0", "1")
-    int low;                   // ID узла для перехода при значении 0 (пунктирная линия)
-    int high;                  // ID узла для перехода при значении 1 (сплошная линия)
-    bool isTerminal;           // Является ли узел терминальным
+    int id; // id - ноды для более удобного создания
+    string variable; // имя переменной в ноде
+    int low; // пунктирная линия
+    int high; // сплошная линия
+    bool isSheet; // является ли нода листом
     
-    BDDNode() : id(-1), variable(""), low(-1), high(-1), isTerminal(false) {}
+    BDDNode() : id(-1), variable(""), low(-1), high(-1), isSheet(false) {}
     
     BDDNode(int _id, string _var, int _low, int _high, bool _term)
-        : id(_id), variable(_var), low(_low), high(_high), isTerminal(_term) {}
+        : id(_id), variable(_var), low(_low), high(_high), isSheet(_term) {}
 };
 
-// Класс для хранения и работы с BDD графом
+// класс для хранения и работы с BDD графом
 class BDDGraph {
 private:
-    map<int, BDDNode> nodes;   // Хранилище всех узлов графа по ID
-    int rootId;                // ID корневого узла
+    map<int, BDDNode> nodes; // нода графа по id
+    int rootId; // id корневой ноды
     
 public:
     BDDGraph() : rootId(-1) {}
     
-    // Добавление узла в граф
-    void addNode(int id, string variable, int low, int high, bool isTerminal) {
-        nodes[id] = BDDNode(id, variable, low, high, isTerminal);
+    // ф-ция для добавления ноды
+    void addNode(int id, string variable, int low, int high, bool isSheet) {
+        nodes[id] = BDDNode(id, variable, low, high, isSheet);
     }
-    
-    // Установка корневого узла
+       
+    // установка корневой ноды
     void setRoot(int id) {
         rootId = id;
     }
     
-    // Построение BDD из вашей диаграммы
+    // построение BDD
     void buildFromDiagram() {
         // листья
         addNode(0, "0", -1, -1, true);   // 0
         addNode(1, "1", -1, -1, true);   // 1
-        
+		
+		// внутренние ноды
         addNode(2, "x3", 1, 0, false);
-        
         addNode(3, "x3", 0, 1, false);
-        
         addNode(4, "x4", 2, 3, false);
-        
         addNode(5, "x4", 3, 1, false);
-        
         addNode(6, "x2", 4, 5, false);
-        
         addNode(7, "x1", 2, 6, false);
         
+		// корневая нода
         setRoot(7);
     }
     
-    // Вычисление значения BDD для заданных значений переменных
+    // вычисление значения функции для заданных переменных
     int evaluate(map<string, int>& values, vector<string>& path) {
         if (rootId == -1) {
             cerr << "Ошибка: граф не инициализирован!" << endl;
@@ -74,21 +73,21 @@ private:
     int evaluateNode(int nodeId, map<string, int>& values, vector<string>& path) {
         BDDNode& node = nodes[nodeId];
         
-        // Если терминальный узел - возвращаем его значение
-        if (node.isTerminal) {
+        // если лист то возвращаем значение
+        if (node.isSheet) {
             path.push_back("Достигнут терминал: " + node.variable);
             return stoi(node.variable);
         }
         
-        // Получаем значение текущей переменной
+        // значение переменной в текущем узле
         int varValue = values[node.variable];
         
-        // Записываем путь
-        string direction = (varValue == 0) ? "low (пунктир)" : "high (сплошная)";
+        // записываем путь
+        string direction = (varValue == 0) ? "(пунктир)" : "(сплошная)";
         path.push_back("Узел " + to_string(nodeId) + " (" + node.variable + 
                       " = " + to_string(varValue) + ") -> " + direction);
         
-        // Переходим по соответствующей ветви
+        // переходим к следующему узлу
         if (varValue == 0) {
             return evaluateNode(node.low, values, path);
         } else {
@@ -97,7 +96,7 @@ private:
     }
     
 public:
-    // Вывод структуры графа
+    // вывод графа
     void printGraph() {
         cout << "\n=== Структура BDD графа ===" << endl;
         cout << "Корневой узел: " << rootId << endl << endl;
@@ -106,7 +105,7 @@ public:
             BDDNode& node = it->second;
             cout << "Узел " << node.id << ": " << node.variable;
             
-            if (node.isTerminal) {
+            if (node.isSheet) {
                 cout << " (терминал)" << endl;
             } else {
                 cout << " -> low: " << node.low 

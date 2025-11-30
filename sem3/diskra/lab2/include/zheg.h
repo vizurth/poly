@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -6,13 +8,13 @@
 
 using namespace std;
 
-// Класс для построения полинома Жигалкина
+// класс для построения полинома Жигалкина
 class ZhegalkinPolynomial {
 private:
-    int numVars;                    // Количество переменных
-    vector<int> truthTable;         // Таблица истинности
-    vector<vector<int>> triangle;   // Треугольник для метода Паскаля
-    vector<string> minterms;        // Термы полинома
+    int numVars; // кол-во переменных
+    vector<int> truthTable; // таблица истинности
+    vector<vector<int>> triangle; // треугольник для метода Паскаля
+    vector<string> minterms; // термы полинома
     
 public:
     ZhegalkinPolynomial(int n) : numVars(n) {
@@ -24,7 +26,7 @@ public:
         }
     }
     
-    // Установка таблицы истинности из вектора
+    // создание таблицы истинности
     void setTruthTableFromVector(const vector<int>& F) {
         int size = pow(2, numVars);
         
@@ -55,50 +57,14 @@ public:
         cout << endl;
     }
     
-    // Ввод таблицы истинности
-    void inputTruthTable() {
-        int size = pow(2, numVars);
-        cout << "\n=== Ввод таблицы истинности ===" << endl;
-        cout << "Введите " << size << " значений функции (0 или 1):" << endl;
-        
-        // Печать заголовка
-        for (int i = 0; i < numVars; i++) {
-            cout << "x" << (i + 1) << " ";
-        }
-        cout << "| f" << endl;
-        cout << string(numVars * 3 + 3, '-') << endl;
-        
-        // Ввод значений
-        for (int i = 0; i < size; i++) {
-            // Показываем текущий набор переменных
-            for (int j = numVars - 1; j >= 0; j--) {
-                cout << ((i >> j) & 1) << "  ";
-            }
-            cout << "| ";
-            
-            int val;
-            do {
-                cin >> val;
-                if (val != 0 && val != 1) {
-                    cout << "Ошибка! Введите 0 или 1: ";
-                }
-            } while (val != 0 && val != 1);
-            
-            truthTable[i] = val;
-        }
-    }
-    
     // Построение треугольника (метод треугольника Паскаля)
     void buildTriangle() {
         int size = pow(2, numVars);
         
-        // Первая строка - исходная таблица истинности
         for (int i = 0; i < size; i++) {
             triangle[0][i] = truthTable[i];
         }
         
-        // Построение остальных строк
-        // Каждый элемент = XOR двух элементов сверху
         for (int row = 1; row < size; row++) {
             for (int col = 0; col < size - row; col++) {
                 triangle[row][col] = triangle[row - 1][col] ^ triangle[row - 1][col + 1];
@@ -113,7 +79,6 @@ public:
         cout << "Каждая строка получается применением XOR к соседним элементам\n" << endl;
         
         for (int row = 0; row < size; row++) {
-            // Отступ для красоты
             cout << string(row * 2, ' ');
             
             for (int col = 0; col < size - row; col++) {
