@@ -11,11 +11,9 @@
 using namespace std;
 
 int main() {
-    // Создаём систему меню с конфигурацией из config.h
-    UI menu(vars, F);
+    UI ui(vars, F);
     
-    // Запускаем главный цикл
-    menu.run();
+    ui.run();
     
     return 0;
 }
