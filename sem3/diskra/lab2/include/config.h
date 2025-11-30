@@ -8,4 +8,4 @@ vector<int> F = {
 
 };
  // имена переменных
-vector<string> vars = {"x1", "x2", "x3", "x4"}; // имена переменных
+vector<string> vars = {"x1", "x2", "x3", "x4"};
