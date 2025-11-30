@@ -8,107 +8,119 @@
 
 using namespace std;
 
-/**
- * Калькулятор "большой" конечной арифметики (8 разрядов)
- * Работает на основе "малой" арифметики с правилом "+1"
- */
+// калькулятор большой конечной арифметики (8 разрядов)
+// работает на основе малой арифметики с правилом "+1"
 class BigArithmeticCalc {
 private:
-    // Основные параметры арифметики
+    // основные параметры арифметики
     int N;
     map<string, string> plusOneRule;
     vector<string> alphabet;
     
-    // Вычисленные структуры
+    // вычисленные структуры
     map<string, string> inverseMap;
     
-    // Таблицы для больших операций (с переносами)
+    // таблицы для больших операций (с переносами)
     map<tuple<string, string, string>, pair<string, string>> additionTableWithCarry;
-    map<string, string> negationMap;  // x + neg(x) = additiveIdentity
+    map<string, string> negationMap;
     
-    // Таблицы операций (для малой арифметики)
+    // таблицы операций (для малой арифметики)
     vector<vector<string>> addTable;
     vector<vector<string>> mulTable;
     vector<vector<string>> subTable;
     vector<vector<string>> divTable;
     
-    // Специальные элементы
-    string additiveIdentity;      // "a" (0)
-    string multiplicativeIdentity; // "b" (1)
-    string universum;             // "универсум" для a*a
-    string emptySet;              // "∅" для деления на a
+    // специальные элементы
+    string additiveIdentity;
+    string multiplicativeIdentity;
+    string universum;
+    string emptySet;
     
-    // ============ МАЛАЯ АРИФМЕТИКА ============
+    // максимальная длина числа в разрядах
+    static const int MAX_DIGITS = 8;
     
-    // Базовые операции через диаграмму Хассе
+    // ============ малая арифметика ============
+    
+    // базовые операции через диаграмму хассе
     string addByHasse(const string& a, const string& b) const;
     string multiplyByHasse(const string& a, const string& b) const;
     string subtractByHasse(const string& a, const string& b) const;
     string divideByHasse(const string& a, const string& b) const;
     
-    // Поиск обратных элементов
+    // поиск обратных элементов
     optional<string> findMultiplicativeInverse(const string& x);
     void buildInverseMap();
     
-    // Построение таблиц малой арифметики
+    // построение таблиц малой арифметики
     void buildAddTable();
     void buildMulTable();
     void buildSubTable();
     void buildDivTable();
     
-    // Построение таблиц для больших операций
+    // построение таблиц для больших операций
     void buildAdditionTableWithCarry();
     void buildNegationMap();
     
-    // Вспомогательные функции для работы с символами
+    // вспомогательные функции для работы с символами
     string nextSymbol(const string& current) const;
     int compareSymbols(const string& a, const string& b) const;
-	void printAdditionTableWithCarry() const;
     
-    // ============ БОЛЬШАЯ АРИФМЕТИКА ============
+    // ============ большая арифметика ============
     
-    // Проверка: является ли строка валидным числом
+    // работа со знаками
+    bool isNegative(const string& num) const;
+    string removeSign(const string& num) const;
+    string addSign(const string& num, bool negative) const;
+    
+    // проверка валидности
     bool isValidNumber(const string& num) const;
+    bool isValidElement(const string& elem) const;
     
-    // Нормализация: удаление ведущих нулей
+    // нормализация: удаление ведущих нулей
     string normalize(const string& num) const;
-
-    // Операции стобликом
-    string addBig(const string& a, const string& b) const;
-    string subtractBig(const string& a, const string& b) const;
-    string multiplyBig(const string& a, const string& b) const;
-    pair<string, string> divideBig(const string& a, const string& b) const;
     
-    // Умножение большого числа на однозначное
+    // проверка на переполнение
+    bool wouldOverflow(const string& num) const;
+
+    // операции столбиком (только для положительных)
+    string addBigUnsigned(const string& a, const string& b) const;
+    string subtractBigUnsigned(const string& a, const string& b) const;
+    string multiplyBigUnsigned(const string& a, const string& b) const;
+    pair<string, string> divideBigUnsigned(const string& a, const string& b) const;
+    
+    // умножение большого числа на однозначное
     string multiplyByDigit(const string& num, const string& digit) const;
     
-    // Сравнение больших чисел
+    // сравнение больших чисел (без знака)
+    int compareBigUnsigned(const string& a, const string& b) const;
+    
+    // сравнение с учетом знака
     int compareBig(const string& a, const string& b) const;
     
-	// Проверка: является ли элемент алфавита валидны    
-    bool isValidElement(const string& elem) const;
+    // вспомогательные для вывода
     void printTable(const vector<vector<string>>& table) const;
     
 public:
-    // Конструктор
+    // конструктор
     BigArithmeticCalc(int n, 
                      const map<string, string>& rule, 
                      const vector<string>& alph,
                      const string& addId = "0",
                      const string& mulId = "1");
     
-    // Геттеры
+    // геттеры
     const vector<string>& getAlphabet() const;
+    string getMinNumber() const;
+    string getMaxNumber() const;
     
-    // ============ ОПЕРАЦИИ БОЛЬШОЙ АРИФМЕТИКИ ============
+    // ============ операции большой арифметики ============
     
     string add(const string& a, const string& b) const;
     string multiply(const string& a, const string& b) const;
     string subtract(const string& a, const string& b) const;
     string divide(const string& a, const string& b) const; 
     
-    
-    // Вывод таблиц и информации
+    // вывод таблиц и информации
     void printAddTable() const;
     void printMulTable() const;
     void printSubTable() const;
