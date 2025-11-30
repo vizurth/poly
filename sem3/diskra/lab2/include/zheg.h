@@ -57,7 +57,7 @@ public:
         cout << endl;
     }
     
-    // Построение треугольника (метод треугольника Паскаля)
+    // построение треугольника (метод треугольника Паскаля)
     void buildTriangle() {
         int size = pow(2, numVars);
         
@@ -72,7 +72,7 @@ public:
         }
     }
     
-    // Отображение треугольника
+    // отображение треугольника
     void printTriangle() {
         int size = pow(2, numVars);
         cout << "\n=== Треугольник (метод Паскаля) ===" << endl;
@@ -90,7 +90,7 @@ public:
         cout << "\nЛевая колонка треугольника - коэффициенты полинома Жигалкина!" << endl;
     }
     
-    // Генерация имени терма по индексу
+    // генерация имени терма по индексу
     string generateMinterm(int index) {
         if (index == 0) return "1";
         
@@ -104,7 +104,7 @@ public:
         return term;
     }
     
-    // Построение полинома Жигалкина
+    // построение полинома жигалкина
     string buildPolynomial() {
         int size = pow(2, numVars);
         string polynomial = "";
@@ -133,7 +133,7 @@ public:
         return polynomial;
     }
     
-    // Вывод результата
+    // вывод
     void printResult() {
         string poly = buildPolynomial();
         
@@ -157,7 +157,7 @@ public:
         }
     }
     
-    // Вычисление значения полинома для заданного набора переменных
+    // вычисление значения полинома
     int evaluatePolynomial(const vector<int>& vars) {
         if (vars.size() != numVars) {
             cerr << "Ошибка! Неверное количество переменных." << endl;
@@ -185,49 +185,5 @@ public:
         }
         
         return result;
-    }
-    
-    // Интерактивное вычисление значения функции
-    void interactiveEvaluation() {
-        cout << "\n=== Вычисление значения функции ===" << endl;
-        
-        bool continueEval = true;
-        while (continueEval) {
-            vector<int> vars(numVars);
-            
-            cout << "\nВведите значения переменных (0 или 1):" << endl;
-            for (int i = 0; i < numVars; i++) {
-                int val;
-                do {
-                    cout << "x" << (i + 1) << " = ";
-                    cin >> val;
-                    if (val != 0 && val != 1) {
-                        cout << "Ошибка! Введите 0 или 1." << endl;
-                    }
-                } while (val != 0 && val != 1);
-                vars[i] = val;
-            }
-            
-            // Вычисляем значение
-            int result = evaluatePolynomial(vars);
-            
-            // Вывод результата
-            cout << "\n--- Результат ---" << endl;
-            cout << "f(";
-            for (int i = 0; i < numVars; i++) {
-                cout << vars[i];
-                if (i < numVars - 1) cout << ", ";
-            }
-            cout << ") = " << result << endl;
-            
-            // Продолжить?
-            char choice;
-            cout << "\nВычислить для других значений? (y/n): ";
-            cin >> choice;
-            
-            if (choice != 'y' && choice != 'Y') {
-                continueEval = false;
-            }
-        }
     }
 };

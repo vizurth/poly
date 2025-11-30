@@ -1,0 +1,3 @@
+/Users/timuradiatullin/narnia/spbpu/sem3/diskra/lab2/build/CMakeFiles/sdnf.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/diskra/lab2/build/CMakeFiles/edit_cache.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/diskra/lab2/build/CMakeFiles/rebuild_cache.dir

@@ -191,13 +191,6 @@ private:
         zp.printResult();
         
         // интерактивное вычисление
-        char choice;
-        cout << "\nВычислить значение для конкретных значений переменных? (y/n): ";
-        cin >> choice;
-        
-        if (choice == 'y' || choice == 'Y') {
-            zp.interactiveEvaluation();
-        }
         
         pause();
     }
