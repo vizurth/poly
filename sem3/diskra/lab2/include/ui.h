@@ -227,8 +227,8 @@ private:
     }
     
 public:
-    UI(const vector<string>& variables, const vector<int>& function)
-        : vars(variables), F(function), running(true) {}
+    UI(const vector<string>& vars, const vector<int>& function)
+        : vars(vars), F(function), running(true) {}
     
     void run() {
         while (running) {

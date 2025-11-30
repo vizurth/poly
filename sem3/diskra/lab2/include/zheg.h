@@ -14,7 +14,7 @@ private:
     int numVars; // кол-во переменных
     vector<int> truthTable; // таблица истинности
     vector<vector<int>> triangle; // треугольник для метода Паскаля
-    vector<string> minterms; // термы полинома
+    vector<string> terms; // термы полинома
     
 public:
     ZhegalkinPolynomial(int n) : numVars(n) {
@@ -40,7 +40,6 @@ public:
         truthTable = F;
         
         cout << "\n=== Таблица истинности загружена ===" << endl;
-        // Печать заголовка
         for (int i = 0; i < numVars; i++) {
             cout << "x" << (i + 1) << " ";
         }
@@ -76,7 +75,6 @@ public:
     void printTriangle() {
         int size = pow(2, numVars);
         cout << "\n=== Треугольник (метод Паскаля) ===" << endl;
-        cout << "Каждая строка получается применением XOR к соседним элементам\n" << endl;
         
         for (int row = 0; row < size; row++) {
             cout << string(row * 2, ' ');
@@ -91,7 +89,7 @@ public:
     }
     
     // генерация имени терма по индексу
-    string generateMinterm(int index) {
+    string generateTerm(int index) {
         if (index == 0) return "1";
         
         string term = "";
@@ -110,13 +108,13 @@ public:
         string polynomial = "";
         bool first = true;
         
-        minterms.clear();
+        terms.clear();
         
         // Левая колонка треугольника содержит коэффициенты
         for (int i = 0; i < size; i++) {
             if (triangle[i][0] == 1) {
-                string term = generateMinterm(i);
-                minterms.push_back(term);
+                string term = generateTerm(i);
+                terms.push_back(term);
                 
                 if (!first) {
                     polynomial += " ⊕ ";
@@ -151,7 +149,7 @@ public:
         for (int i = 0; i < size; i++) {
             cout << "  a" << i << " = " << triangle[i][0];
             if (triangle[i][0] == 1) {
-                cout << " → включаем терм: " << generateMinterm(i);
+                cout << " → включаем терм: " << generateTerm(i);
             }
             cout << endl;
         }

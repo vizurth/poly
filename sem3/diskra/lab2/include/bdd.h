@@ -11,15 +11,15 @@ using namespace std;
 // узел BDD графа
 struct BDDNode {
     int id; // id - ноды для более удобного создания
-    string variable; // имя переменной в ноде
-    int low; // пунктирная линия
-    int high; // сплошная линия
+    string var; // имя переменной в ноде
+    int zero; // пунктирная линия
+    int one; // сплошная линия
     bool isSheet; // является ли нода листом
     
-    BDDNode() : id(-1), variable(""), low(-1), high(-1), isSheet(false) {}
+    BDDNode() : id(-1), var(""), zero(-1), one(-1), isSheet(false) {}
     
-    BDDNode(int _id, string _var, int _low, int _high, bool _term)
-        : id(_id), variable(_var), low(_low), high(_high), isSheet(_term) {}
+    BDDNode(int _id, string _var, int _zero, int _one, bool _term)
+        : id(_id), var(_var), zero(_zero), one(_one), isSheet(_term) {}
 };
 
 // класс для хранения и работы с BDD графом
@@ -32,8 +32,8 @@ public:
     BDDGraph() : rootId(-1) {}
     
     // ф-ция для добавления ноды
-    void addNode(int id, string variable, int low, int high, bool isSheet) {
-        nodes[id] = BDDNode(id, variable, low, high, isSheet);
+    void addNode(int id, string var, int zero, int one, bool isSheet) {
+        nodes[id] = BDDNode(id, var, zero, one, isSheet);
     }
        
     // установка корневой ноды
@@ -59,7 +59,7 @@ public:
         setRoot(7);
     }
     
-    // вычисление значения функции для заданных переменных
+    // вычисление значения функции для заданных переменных path (x1,x2,x3,x4)
     int evaluate(map<string, int>& values, vector<string>& path) {
         if (rootId == -1) {
             cerr << "Ошибка: граф не инициализирован!" << endl;
@@ -75,23 +75,23 @@ private:
         
         // если лист то возвращаем значение
         if (node.isSheet) {
-            path.push_back("Достигнут терминал: " + node.variable);
-            return stoi(node.variable);
+            path.push_back("Достигнут лист: " + node.var);
+            return stoi(node.var);
         }
         
         // значение переменной в текущем узле
-        int varValue = values[node.variable];
+        int varValue = values[node.var];
         
         // записываем путь
         string direction = (varValue == 0) ? "(пунктир)" : "(сплошная)";
-        path.push_back("Узел " + to_string(nodeId) + " (" + node.variable + 
+        path.push_back("Узел " + to_string(nodeId) + " (" + node.var + 
                       " = " + to_string(varValue) + ") -> " + direction);
         
         // переходим к следующему узлу
         if (varValue == 0) {
-            return evaluateNode(node.low, values, path);
+            return evaluateNode(node.zero, values, path);
         } else {
-            return evaluateNode(node.high, values, path);
+            return evaluateNode(node.one, values, path);
         }
     }
     
@@ -103,13 +103,13 @@ public:
         
         for (map<int, BDDNode>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
             BDDNode& node = it->second;
-            cout << "Узел " << node.id << ": " << node.variable;
+            cout << "Узел " << node.id << ": " << node.var;
             
             if (node.isSheet) {
-                cout << " (терминал)" << endl;
+                cout << " (лист)" << endl;
             } else {
-                cout << " -> low: " << node.low 
-                     << ", high: " << node.high << endl;
+                cout << " -> zero: " << node.zero 
+                     << ", one: " << node.one << endl;
             }
         }
         cout << "========================" << endl << endl;
