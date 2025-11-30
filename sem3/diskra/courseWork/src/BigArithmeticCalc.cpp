@@ -306,7 +306,7 @@ string BigArithmeticCalc::addBig(const string& a, const string& b) const {
     string num1 = a;
     string num2 = b;
 
-    // Выравниваем длины
+    // выравниваем длины
     size_t max_len = max(num1.length(), num2.length());
     while (num1.length() < max_len) {
         num1 = additiveIdentity + num1;
@@ -318,12 +318,12 @@ string BigArithmeticCalc::addBig(const string& a, const string& b) const {
     string result;
     string carry = additiveIdentity;
 
-    // Складываем справа налево используя таблицу с переносами
+    // складываем справа налево используя таблицу с переносами
     for (int i = static_cast<int>(max_len) - 1; i >= 0; --i) {
         string digit1(1, num1[i]);
         string digit2(1, num2[i]);
 
-        // Используем таблицу сложения с переносами
+        // используем таблицу сложения с переносами
         auto key = make_tuple(digit1, digit2, carry);
         auto it = additionTableWithCarry.find(key);
         if (it == additionTableWithCarry.end()) {
@@ -336,7 +336,7 @@ string BigArithmeticCalc::addBig(const string& a, const string& b) const {
         result = sum + result;
     }
 
-    // Если остался перенос, добавляем старший разряд (если не превышаем 8 разрядов)
+    // если остался перенос добавим к старшему разряд
     if (carry != additiveIdentity && result.length() < 8) {
         result = carry + result;
     }
@@ -349,17 +349,17 @@ string BigArithmeticCalc::subtractBig(const string& a, const string& b) const {
         return "ERR: Invalid number";
     }
 
-    // Сравниваем числа
+    // сравниваем числа
     int cmp = compareBig(a, b);
     if (cmp == 0) {
         return additiveIdentity;
     }
     
-    // Определяем большее и меньшее число
+    // определяем большее и меньшее число и меняем их местами
     string larger = (cmp >= 0) ? a : b;
     string smaller = (cmp >= 0) ? b : a;
 
-    // Выравниваем длины
+    // выравниваем длины
     size_t max_len = max(larger.length(), smaller.length());
     while (larger.length() < max_len) {
         larger = additiveIdentity + larger;
@@ -371,7 +371,7 @@ string BigArithmeticCalc::subtractBig(const string& a, const string& b) const {
     string result;
     string borrow = additiveIdentity;
 
-    // Вычитаем справа налево
+    // вычитаем справа налево
     for (int i = static_cast<int>(max_len) - 1; i >= 0; --i) {
         string current(1, larger[i]);
         
@@ -413,7 +413,7 @@ string BigArithmeticCalc::multiplyByDigit(const string& num, const string& digit
     string result = additiveIdentity;
     string counter = additiveIdentity;
     
-    // Умножаем через многократное сложение
+    // умножаем через многократное сложение
     while (counter != digit) {
         result = addBig(result, num);
         counter = nextSymbol(counter);
@@ -434,22 +434,21 @@ string BigArithmeticCalc::multiplyBig(const string& a, const string& b) const {
     string result = additiveIdentity;
     string multiplicand = a;
     
-    // Умножение столбиком: проходим по каждой цифре множителя справа налево
+    // умножение столбиком: проходим по каждой цифре множителя справа налево
     for (int i = b.length() - 1; i >= 0; --i) {
         string multiplier_digit(1, b[i]);
         
         if (multiplier_digit != additiveIdentity) {
-            // Умножаем multiplicand на текущую цифру множителя
+            // умножаем multiplicand на текущую цифру множителя
             string partial_product = multiplyByDigit(multiplicand, multiplier_digit);
             
-            // Сдвиг влево (добавляем нули справа)
+            // сдвиг влево (добавляем нули справа)
             int shift_count = b.length() - 1 - i;
             string shifted_value = partial_product;
             for (int j = 0; j < shift_count; j++) {
                 shifted_value += additiveIdentity;
             }
-            
-            // Ограничиваем до 8 разрядов
+            // ограничиваем до 8 разрядов
             if (shifted_value.length() > 8) {
                 shifted_value = shifted_value.substr(shifted_value.length() - 8);
             }
@@ -637,7 +636,7 @@ void BigArithmeticCalc::printHasseDiagram() const {
     for (int i = 0; i < N; ++i) {
         cout << current;
         if (i < N - 1) {
-            cout << " → ";
+            cout << " => ";
         }
         current = nextSymbol(current);
     }

@@ -40,11 +40,11 @@ void UI::displayPrompt() const {
 }
 
 void UI::displayResult(const string& expression, const string& result) const {
-    cout << "  ➜  " << expression << " = " << result << endl;
+    cout << "  =>  " << expression << " = " << result << endl;
 }
 
 void UI::displayError(const string& message) const {
-    cout << "❌ Ошибка: " << message << endl;
+    cout << "Ошибка: " << message << endl;
 }
 
 void UI::displayGoodbye() const {
