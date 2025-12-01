@@ -757,7 +757,7 @@ string BigArithmeticCalc::divide(const string& a, const string& b) const {
     }
     
     // если делимое отрицательное, а делитель положительный
-    // то -a / b = -(a/b + 1), остаток = b - r
+    // то -a / b = -(a/(b + 1)), остаток = b - r
     if (neg_a && !neg_b && r != additiveIdentity) {
         // добавляем единицу к частному
         q = addBigUnsigned(q, multiplicativeIdentity);
@@ -771,9 +771,7 @@ string BigArithmeticCalc::divide(const string& a, const string& b) const {
         q = addSign(q, true);
     }
     // если оба отрицательные: -a / (-b) = a/b
-    else if (neg_a && neg_b) {
-        // ничего не меняем
-    }
+    else if (neg_a && neg_b) {}
     
     return "Q: " + q + " | R: " + r;
 }
@@ -819,30 +817,22 @@ void BigArithmeticCalc::printTable(const vector<vector<string>>& table) const {
 }
 
 void BigArithmeticCalc::printAddTable() const {
-    cout << "\n╔════════════════════════════════════════╗" << endl;
-    cout << "║      ТАБЛИЦА СЛОЖЕНИЯ (+)              ║" << endl;
-    cout << "╚════════════════════════════════════════╝\n" << endl;
+    cout << "============ ТАБЛИЦА СЛОЖЕНИЯ (+) ============" << endl;
     printTable(addTable);
 }
 
 void BigArithmeticCalc::printMulTable() const {
-    cout << "\n╔════════════════════════════════════════╗" << endl;
-    cout << "║      ТАБЛИЦА УМНОЖЕНИЯ (*)             ║" << endl;
-    cout << "╚════════════════════════════════════════╝\n" << endl;
+    cout << "=========== ТАБЛИЦА УМНОЖЕНИЯ (*) ===========" << endl;
     printTable(mulTable);
 }
 
 void BigArithmeticCalc::printSubTable() const {
-    cout << "\n╔════════════════════════════════════════╗" << endl;
-    cout << "║      ТАБЛИЦА ВЫЧИТАНИЯ (-)             ║" << endl;
-    cout << "╚════════════════════════════════════════╝\n" << endl;
+    cout << "=========== ТАБЛИЦА ВЫЧИТАНИЯ (-) ===========" << endl;
     printTable(subTable);
 }
 
 void BigArithmeticCalc::printDivTable() const {
-    cout << "\n╔════════════════════════════════════════╗" << endl;
-    cout << "║      ТАБЛИЦА ДЕЛЕНИЯ (/)               ║" << endl;
-    cout << "╚════════════════════════════════════════╝\n" << endl;
+    cout << "=========== ТАБЛИЦА ДЕЛЕНИЯ (/) ===========" << endl;
     printTable(divTable);
 }
 
@@ -854,9 +844,7 @@ void BigArithmeticCalc::printAllTables() const {
 }
 
 void BigArithmeticCalc::printHasseDiagram() const {
-    cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
-    cout << "║          ДИАГРАММА ХАССЕ (правило +1)                  ║" << endl;
-    cout << "╚════════════════════════════════════════════════════════╝" << endl;
+    cout << "=========== ДИАГРАММА ХАССЕ (правило +1) ===========" << endl;
     
     cout << "\nЦиклический порядок элементов Z" << N << ":\n\n  ";
     
@@ -870,13 +858,11 @@ void BigArithmeticCalc::printHasseDiagram() const {
     }
     cout << " → " << additiveIdentity << " (цикл)" << endl;
     
-    cout << "\n════════════════════════════════════════════════════════\n" << endl;
+    cout << "\n===================================================\n" << endl;
 }
 
 void BigArithmeticCalc::printInfo() const {
-    cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
-    cout << "║         ИНФОРМАЦИЯ О КОНЕЧНОЙ АРИФМЕТИКЕ               ║" << endl;
-    cout << "╚════════════════════════════════════════════════════════╝" << endl;
+    cout << "=========== ИНФОРМАЦИЯ О КОНЕЧНОЙ АРИФМЕТИКЕ ===========" << endl;
     
     cout << "\nразмерность: Z" << N << endl;
     cout << "аддитивная единица (0): '" << additiveIdentity << "'" << endl;
@@ -892,14 +878,10 @@ void BigArithmeticCalc::printInfo() const {
     cout << "  • " << additiveIdentity << " / " << additiveIdentity 
          << " = " << universum << " (диапазон всех чисел)" << endl;
     cout << "  • переполнение (> " << MAX_DIGITS << " разрядов) = ERR: overflow" << endl;
-    
-    cout << "\n════════════════════════════════════════════════════════\n" << endl;
 }
 
 void BigArithmeticCalc::printHelp() const {
-    cout << "\n╔════════════════════════════════════════════════════════╗" << endl;
-    cout << "║                      ПОМОЩЬ                            ║" << endl;
-    cout << "╚════════════════════════════════════════════════════════╝" << endl;
+    cout << "=========== ПОМОЩЬ ===========" << endl;
     
     cout << "\nдоступные команды:\n" << endl;
     cout << "\n  БОЛЬШАЯ АРИФМЕТИКА (до " << MAX_DIGITS << " разрядов, с отрицательными):" << endl;
@@ -933,6 +915,6 @@ void BigArithmeticCalc::printHelp() const {
     cout << "  • остаток может быть многозначным" << endl;
     cout << "  • пример: -7 / 3 = Q: -3 | R: 2  (т.к. -3*3 + 2 = -7)" << endl;
     
-    cout << "\n════════════════════════════════════════════════════════\n" << endl;
+    cout << "\n =========================================================== \n" << endl;
 }
     
