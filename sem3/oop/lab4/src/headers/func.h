@@ -16,10 +16,13 @@ auto adapter_peek(const std::queue<T, Container>& adapter) -> decltype(adapter.f
 
 
 template <typename T>
-void printAdapter(T adapter, const std::string& name);
+void printSQPQ(T adapter, const std::string& name);
 
 template <typename T>
 void printContainer(const T& cont, std::string s);
+
+template <typename T>
+void printSQPQ(T  sqpq, const std::string& s);
 
 // Включаем реализацию шаблона
 #include "../tpl/func.tpp"

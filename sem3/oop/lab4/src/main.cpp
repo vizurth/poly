@@ -22,8 +22,9 @@
 using namespace std;	
 #define	stop
 
-bool Pred1_1(const Point& p) {
-  return (p.getX() == 7) && (p.getY() == 7);
+template <int n, int m>
+bool Pred1_1(const Point& point){
+	return (point.getX() >=-1 * n && point.getX()<=m) && (point.getY() >= -1 * n && point.getY()<=m); 
 }
 
 void to_lower_case(std::string& s) {
@@ -33,8 +34,20 @@ void to_lower_case(std::string& s) {
 
 int main()
 {
-
+{
 	//Очередь с двумя концами - контейнер deque
+	/*
+	LOOK:
+	template<
+    	class T,
+    	class Allocator = std::allocator<T>
+	> class deque;
+	Random access - constant O(1).
+
+	Insertion or removal of elements at the end or beginning - constant O(1).
+
+	Insertion or removal of elements - linear O(n);
+	*/
 
 	//Создайте пустой deque с элементами типа Point. С помощью
 	//assign заполните deque копиями элементов вектора. С помощью
@@ -72,38 +85,71 @@ int main()
 	}
 
 	printContainer(myStrings, "deque MyString after erase:");
-
+}
 
 	////////////////////////////////////////////////////////////////////////////////////
 
-
+{
 	//Напишите шаблон функции для вывода значений stack, queue, priority_queue
 	//Подумайте, как "получать" данное "с верхушки"?
 	//Что происходит с контейнерами после вывода значений?
 
-  // vector
-  vector<int> v = {5, 3, 8, 1};
-  printContainer(v, "Vector:");
-
-  // stack
-  stack<int> st;
-  for (auto x : v) st.push(x);
-  printAdapter(st, "Stack:");
-
-  // queue
-  queue<int> q;
-  for (auto x : v) q.push(x);
-  printAdapter(q, "Queue:");
-
-  // priority_queue
-  priority_queue<int> pq;
-  for (auto x : v) pq.push(x);
-  printAdapter(pq, "Priority Queue:");
+	
 
 
+	/*
+	template <typename T>
+	void printSQPQ(T  sqpq, const string& s){
+		cout<<"\n\n\t"<<s<<"  # Sequence:\n";
+		while(!sqpq.empty()){
+			if constexpr (std::is_same_v<T, std::queue<typename T::value_type>>) { // если используем queue
+				std::cout << sqpq.front() << " ";
+			}else{
+				cout<< sqpq.top()<<" "; 
+			}
+			sqpq.pop();
+		}
+		cout<<"\n";
+	}
+	*/
+
+	// vector
+	vector<int> v = {5, 3, 8, 1};
+	printContainer(v, "Vector:");
+
+	// stack
+	stack<int> st;
+	for (auto x : v) st.push(x);
+	printSQPQ(st, "Stack:");
+
+	// queue
+	queue<int> q;
+	for (auto x : v) q.push(x);
+	printSQPQ(q, "Queue:");
+
+	// priority_queue
+	priority_queue<int> pq;
+	for (auto x : v) pq.push(x);
+	printSQPQ(pq, "Priority Queue:");
+
+}
 
 	////////////////////////////////////////////////////////////////////////////////////
+
+{
+	
 	//stack
+	/*
+	LOOK:
+	template<
+		class T,
+		class Container = std::deque<T>
+	> class stack;
+
+	Доступ к элементу	.top() O(1)	
+	Добавление	.push(value) O(1)	
+	Удаление	.pop() O(1)
+	*/
 
 	//Создайте стек таким образом, чтобы
 	//а) элементы стека стали копиями элементов вектора
@@ -117,16 +163,16 @@ int main()
 	//в) сравните стеки на равенство
 	//г) модифицируйте любой из стеком любым образом (push, pop, top)
 	//д) проверьте, какой из стеков больше (подумайте, какой смысл вкладывается в такое сравнение)
-	{
+	
 		stack<int> stA;
 		stA.push(1);
 		stA.push(2);
 		stA.push(3);
 
-		printAdapter(stA, "stack A");
+		printSQPQ(stA, "stack A");
 
 		stack<int> stB = stA;
-		printAdapter(stA, "stack B");
+		printSQPQ(stA, "stack B");
 
 
 		if (stA == stB) {
@@ -137,7 +183,7 @@ int main()
 
 		stA.push(5);
 
-		printAdapter(stA, "stack A after push 5");
+		printSQPQ(stA, "stack A after push 5");
 
 		if (stA > stB) cout << 1 << endl;
 		else cout << 0 << endl;
@@ -145,17 +191,21 @@ int main()
 		if (stA.size() > stB.size()) cout << 1 << endl;
 		else cout << 0 << endl;
 
-	stop
-
-	}
-
-
+}
+	
 	////////////////////////////////////////////////////////////////////////////////////
+
+{
 	/*
+	LOOK:
 	template<
 		class T,
 		class Container = std::deque<T>
 	> class queue;
+	Доступ к первому .front() O(1)
+	Доступ к последнему .back() O(1)
+	Вставка (в конец) .push() O(1)
+	Удаление (с начала) .pop() O(1)
 	*/
 
 	//queue
@@ -164,7 +214,6 @@ int main()
 	//при этом явно задайте базовый контейнер.
 	//Измените значения первого и последнего элементов посредством front() и back()
 	//Подумайте, что требуется сделать при уничтожении такой очереди?
-	{
 		deque<Point*> dq;
 		dq.push_back(new Point(0,0));
 		dq.push_back(new Point(1,1));
@@ -173,7 +222,7 @@ int main()
 
 		queue<Point*, deque<Point*>> q(dq);
 
-		printAdapter(q, "queue before edit");
+		printSQPQ(q, "queue before edit");
 		
 		q.front()->setX(10);
 		q.front()->setY(20);
@@ -181,23 +230,30 @@ int main()
 		q.back()->setX(40);
 		q.back()->setY(50);
 
-		printAdapter(q, "queue after edit");
+		printSQPQ(q, "queue after edit");
 
 		//очистить память
 		while (!q.empty()){
 			delete q.front();
 			q.pop();
 		}
-
-	}
+		dq.clear();}
+	
 	////////////////////////////////////////////////////////////////////////////////////
 
+{
 	/*
+	LOOK:
 	template<
 		class T,
-		class Container = std::vector<T>,
-		class Compare = std::less<typename Container::value_type>
+		class Container = std::vector<T>, [i] -> [2*i + 1, 2*i + 2]
+		class Compare = std::less<typename Container::value_type> // функция компоратор
 	> class priority_queue;
+	Получить максимальный	.top()	O(1) vector[0]
+
+	Вставка	.push(value)	O(logN)
+
+	Удаление максимального	.pop()	O(logN)
 	*/
 
 	//priority_queue
@@ -207,13 +263,12 @@ int main()
 	//		что сравнивается при вставке?
 
 
-	{
 		const char* lits[] = {"ccc", "aaa", "bbb"};
 		// неверно т.к const char* (в случае с int || double было бы все ок)
 		// в случае строк < сравнивает адреса в памяти а не строки
 		priority_queue<const char*>pq1(lits, lits + 3);
 
-		printAdapter(pq1, "pq");
+		printSQPQ(pq1, "pq");
 
 		auto cmp = [](const char* a,const char* b){
 			return strcmp(a, b) < 0; // true : if(a < b)
@@ -224,12 +279,25 @@ int main()
 		);
 		cout << "!!!!" << endl;
 
-		printAdapter(pq2, "pq2");
-	}
+		printSQPQ(pq2, "pq2");
 	
-	
+}
+
 	////////////////////////////////////////////////////////////////////////////////////
+
+{	
 	//set
+	/*
+	LOOK:
+	template<
+		class Key,
+		class Compare = std::less<Key>,
+		class Allocator = std::allocator<Key>
+	> class set;
+	Поиск (.find(), .count()) O(logN)
+	Вставка (.insert())	 O(logN)
+	Удаление (.erase())	O(logN)
+	*/
 	//a) создайте множество с элементами типа Point - подумайте, что необходимо определить
 	//		в классе Point (и каким образом)
 	//б) распечатайте значения элементов с помощью шаблона, реализованного в предыдущей лаб. работе
@@ -253,23 +321,28 @@ int main()
 	set<int> setA = {5, 1, 8, 3};
 	set<int> setB = {3, 8, 1, 5};
 
+	printContainer(setA, "setA");
+	printContainer(setB, "setB"); 
+
 	std::set<int> mySet;
 	std::vector<int> sourceVector = {10, 20, 10, 5, 30, 20};
 
 	mySet.insert(sourceVector.begin(), sourceVector.end()); 
 
 	printContainer(mySet, "mySet");
-
+}
 
 	////////////////////////////////////////////////////////////////////////////////////
+{
 	/*
 		template<
 			class Key,
 			class Compare = std::less<Key>,
 			class Allocator = std::allocator<Key>
 		> class multiset;
+		Вставка, удаление, поиска O(log N)
 		*/
-	{
+	
 		multiset<int> nums = {10, 5, 20, 10, 30, 5};
 		nums.insert(10);
 		
@@ -278,7 +351,18 @@ int main()
 
 
 	////////////////////////////////////////////////////////////////////////////////////
-	//map	
+	
+{
+	//map (Red-Black Tree)
+	/*
+	LOOK:
+	template<
+		class Key,
+		class T,
+		class Compare = std::less<Key>,
+		class Allocator = std::allocator<std::pair<const Key, T>>
+	> class map;
+	*/
 	//а) создайте map, который хранит пары "фамилия, зарплата" - pair<const char*, int>,
 	//	при этом строки задаются строковыми литералами
 	//б) заполните контейнер значениями посредством operator[] и insert()
@@ -286,7 +370,6 @@ int main()
 
 	//е) замените один из КЛЮЧЕЙ на новый (была "Иванова", вышла замуж => стала "Петрова")
 
-	{
 		map<const char*, int> mp;
 
 		mp["Иванова"] = 1234;
@@ -300,9 +383,19 @@ int main()
 		printMap(mp);
 	}
 
-
 	////////////////////////////////////////////////////////////////////////////////////
+	
+{
 	//multimap
+	/*
+	LOOK:
+	template<
+		class Key,
+		class T,
+		class Compare = std::less<Key>,
+		class Allocator = std::allocator<std::pair<const Key, T>>
+	> class multimap;
+	*/
 	//а) создайте "англо-русский" словарь, где одному и тому же ключу будут соответствовать
 	//		несколько русских значений - pair<string,string>, например: strange: чужой, странный...
 	//б) Заполните словарь парами с помощью метода insert или проинициализируйте с помощью 
@@ -310,7 +403,7 @@ int main()
 	//в) Выведите все содержимое словаря на экран
 	//г) Выведите на экран только варианты "переводов" для заданного ключа. Подсказка: для нахождения диапазона
 	//		итераторов можно использовать методы lower_bound() и upper_bound()
-	{
+	
 		multimap<string, string> dictionary = {
 			{"strange", "чужой"},
 			{"book", "книга"},
@@ -321,22 +414,23 @@ int main()
 		};
 
 		dictionary.insert({"book", "книга"});
-    dictionary.insert(make_pair("book", "бронировать"));
+    	dictionary.insert(make_pair("book", "бронировать"));
 
 		for (const auto& pair : dictionary) cout << pair.first << " -> " << pair.second << endl;
 
 		string key = "strange";
-    auto range = dictionary.equal_range(key); // pair<it, it>  замена lower ^ upper_bound
+    	auto range = dictionary.equal_range(key); // pair<it, it>  замена lower ^ upper_bound
 
 		cout << "\nПеревод для strange:\n";
-    for (auto it = range.first; it != range.second; ++it) {
-        cout << "  -> " << it->second << endl;
-    }
+		for (auto it = range.first; it != range.second; ++it) {
+			cout << "  -> " << it->second << endl;
+		}
 		
 	}
 
 ///////////////////////////////////////////////////////////////////
 
+{
 	//Итераторы
 
 	//Реверсивные итераторы. Сформируйте set<Point>. Подумайте, что
@@ -345,7 +439,7 @@ int main()
 
 	// перегружаем operator==
 	set<Point> p_set = {{1, 7}, {3, 2}, {3, 6}, {0, 0}};
-  vector<Point> p_vec(p_set.rbegin(), p_set.rend());
+  	vector<Point> p_vec(p_set.rbegin(), p_set.rend());
 
 	printContainer(p_vec, "p_vec"); 
 
@@ -355,18 +449,18 @@ int main()
 
 	ostream_iterator<Point> out(cout, " ");
 
-  copy(p_vec.begin(), p_vec.end(), out);
-	cout << endl;
-  copy(p_set.begin(), p_set.end(), out);
-	cout << endl;
+	copy(p_vec.begin(), p_vec.end(), out);
+		cout << endl;
+	copy(p_set.begin(), p_set.end(), out);
+		cout << endl;
 
 
 
 	//Итераторы вставки. С помощью возвращаемых функциями:
 
 	vector<int> src = {1, 2, 3};
-  deque<int> d;
-  list<int> l;
+  	deque<int> d;
+  	list<int> l;
 	vector<int> ve;
 
 	/*
@@ -374,14 +468,18 @@ int main()
 		OutputIt copy( InputIt first, InputIt last, OutputIt d_first );
 	*/
 
-	//back_inserter() - deque, vector, list
+	//back_inserter() - deque, vector, list .push_back()
 	copy(src.begin(), src.end(), back_inserter(d));
-	//front_inserter() - deque, list
+	printContainer(d, "deque");
+	//front_inserter() - deque, list .push_front()
 	copy(src.begin(), src.end(), front_inserter(l));
-	//inserter() - w all
+	printContainer(l, "l");
+	//inserter() - all .insert()
 	copy(src.begin(), src.end(), inserter(ve, ve.begin()));
+	printContainer(ve, "ve");
 	//итераторов вставки добавьте элементы в любой из созданных контейнеров. Подумайте:
 	//какие из итераторов вставки можно использовать с каждым контейнером.
+}
 
 
 
@@ -396,13 +494,13 @@ int main()
 	//Подсказка : неплохо вызываемую функцию определить как шаблон
 
 	vector<int> nums = {10, 20, 30};
-  list<string> words = {"hello", "world"};
+  	list<string> words = {"hello", "world"};
     
-  for_each(nums.begin(), nums.end(), print<int>);
-  cout << endl;
+	for_each(nums.begin(), nums.end(), print<int>);
+	cout << endl;
 
-  for_each(words.begin(), words.end(), print<string>);
-  cout << endl;
+	for_each(words.begin(), words.end(), print<string>);
+	cout << endl;
 	stop
 
 	//С помощью алгоритма for_each в любой последовательности с элементами типа Point
@@ -412,10 +510,10 @@ int main()
 	vector<Point> points = {{1, 1}, {2, 2}, {3, 2}, {1, 7}, {1, 7}};
 
 	// PointTransformer класс функтор (повторяет поведение функций)
-  for_each(points.begin(), points.end(), PointModifier(5, 5));
+	for_each(points.begin(), points.end(), PointModifier(5, 5));
 
-  for_each(points.begin(), points.end(), print<Point>);
-  cout << "\n";
+	for_each(points.begin(), points.end(), print<Point>);
+	cout << "\n";
 
 
 	//С помощью алгоритма find() найдите в любой последовательности элементов Point
@@ -423,21 +521,20 @@ int main()
 
 	Point target_point = {6, 12};
 
-  auto it = points.begin();
-  int count = 0;
+	auto it = points.begin();
+	int count = 0;
 	cout << "\nсписок совпадений:\n";
 	while (true) {
-    it = find(it, points.end(), target_point);
-    if (it != points.end()) {
-      cout << distance(points.begin(), it) << endl;
-      ++it; 
-      count++;
-    } else {
-      break;
-    }
-  }
-
-  cout << "\nколичество: " << count << endl;
+		it = find(it, points.end(), target_point);
+		if (it != points.end()) {
+			cout << distance(points.begin(), it) << endl;
+			++it; 
+			count++;
+		} else {
+			break;
+		}
+	}
+  	cout << "\nколичество: " << count << endl;
 
 	
 	
@@ -463,12 +560,12 @@ int main()
 	//С помощью алгоритма find_if() найдите в любой последовательности элементов Point
 	//итератор на элемент Point, удовлетворяющий условию: координаты x и y лежат в промежутке
 	//[-n, +m].
-
-	auto it1 = find_if(points.begin(), points.end(), Pred1_1);
+	cout << endl; 
+	auto it1 = find_if(points.begin(), points.end(), Pred1_1<10, 20>);
 
 	if (it1 != points.end()) {
 		cout << distance(points.begin(), it1) << endl;
-		cout << "{" << it->getX() << ", " << it1->getY() << "}" << endl;
+		cout << *it1 << endl;
 	}
 
 
@@ -498,7 +595,8 @@ int main()
 	printContainer(rects, "rects after sort");
 
 
-	{//transform
+	{
+		//transform
 		/*
 			template< class InputIt, class OutputIt, class UnaryOp >
 			OutputIt transform( InputIt first1, InputIt last1, OutputIt d_first, UnaryOp unary_op );
@@ -524,7 +622,7 @@ int main()
 		list<string> words = {"ALGEBRA", "Math", "go", "algebra", "go"};
 		set<string> lower;
 		
-		// inserter из-за пустого set'a
+		// inserter из-за пустого set'a, сам tranform не знает что это за контейнер
 		transform(words.begin(), words.end(),
 					inserter(lower, lower.begin()),
 					[](const string& s) {
@@ -544,7 +642,7 @@ int main()
 		//Сформируйте любым способом вектор с элементами типа string.
 		//Создайте (и распечатайте для проверки) map<string, int>, который будет
 		//содержать упорядоченные по алфавиту строки и
-		//количество повторений каждой строки в векторе
+		//количество повторений каждой строки в векторе (map сортирует ключи)
 	
 
 
