@@ -78,7 +78,7 @@ private:
     bool isValidElement(const string& elem) const;
     
     // нормализация: удаление ведущих нулей
-    string normalize(const string& num) const;
+    string deleteTrashZeros(const string& num) const;
     
     // проверка на переполнение
     bool isOverflow(const string& num) const;
@@ -103,8 +103,8 @@ public:
     BigArithmeticCalc(int n, 
                      const map<string, string>& rule, 
                      const vector<string>& alph,
-                     const string& addId = "a",
-                     const string& mulId = "b");
+                     const string& addId = "0",
+                     const string& mulId = "1");
     
     // геттеры
     const vector<string>& getAlphabet() const;
