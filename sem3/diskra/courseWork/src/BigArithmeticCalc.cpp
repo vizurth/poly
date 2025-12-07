@@ -447,60 +447,51 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
     }
 
     string result;
-    string borrow = additiveIdentity;
+    bool borrow = false; // флаг заема
 
     // вычитаем справа налево
     for (int i = static_cast<int>(max_len) - 1; i >= 0; --i) {
         string current(1, larger[i]);
-        
-        // вычитаем заем из текущего разряда (если был заем из предыдущего)
-        if (borrow != additiveIdentity) {
-            // Если текущая цифра меньше заема, нужно взять заем из следующего разряда
-            // Для этого добавляем N к current перед вычитанием заема
-            if (compareSymbols(current, borrow) < 0) {
-                // Добавляем N к current (берем заем из следующего разряда)
-                // Но это означает, что следующий разряд (i-1) должен быть уменьшен на 1
-                // Так как мы обрабатываем справа налево, следующий разряд еще не обработан
-                // Поэтому мы должны уменьшить его значение перед обработкой
-                // Для этого уменьшаем larger[i-1] на 1, если i > 0
-                if (i > 0) {
-                    string next_digit(1, larger[i-1]);
-                    string decreased = subtractByHasse(next_digit, multiplicativeIdentity);
-                    if (decreased.substr(0, 4) != "ERR") {
-                        larger = larger.substr(0, i-1) + decreased + larger.substr(i);
-                    }
-                }
-                // Добавляем N к current
-                for (int j = 0; j < N; j++) {
-                    current = nextSymbol(current);
-                }
-            }
-            // Вычитаем заем
-            current = subtractByHasse(current, borrow);
-            borrow = additiveIdentity;
-        }
-        
         string digit2(1, smaller[i]);
         
-        // если текущая цифра меньше вычитаемой, берем заем
-        if (compareSymbols(current, digit2) < 0) {
-            borrow = multiplicativeIdentity;
-            // добавляем N к текущей цифре (берем заем)
-            for (int j = 0; j < N; j++) {
-                current = nextSymbol(current);
+        // если был заем из предыдущего разряда, вычитаем единицу
+        if (borrow) {
+            // проверяем, можем ли вычесть единицу из текущего разряда
+            if (current == additiveIdentity) {
+                // если текущий разряд = 0, то после вычитания заема получаем 7
+                // и заем переносится дальше
+                current = alphabet.back(); // 7 в Z8
+                // заем остается true
+            } else {
+                // вычитаем единицу из текущего разряда
+                current = subtractByHasse(current, multiplicativeIdentity);
+                borrow = false; // заем погашен
             }
         }
         
-        // вычитаем: current - digit2
-        string result_digit = subtractByHasse(current, digit2);
+        // теперь вычитаем digit2 из current
+        int cmp_digits = compareSymbols(current, digit2);
         
-        result = result_digit + result;
+        if (cmp_digits >= 0) {
+            // можем вычесть напрямую
+            string result_digit = subtractByHasse(current, digit2);
+            result = result_digit + result;
+        } else {
+            // нужен заем из следующего (старшего) разряда
+            // добавляем N (8 в Z8) к current
+            string temp = current;
+            for (int j = 0; j < N; j++) {
+                temp = nextSymbol(temp);
+            }
+            // теперь можем вычесть
+            string result_digit = subtractByHasse(temp, digit2);
+            result = result_digit + result;
+            borrow = true; // устанавливаем флаг заема для следующего разряда
+        }
     }
-
-    // После обработки всех разрядов borrow должен быть additiveIdentity,
-    // так как larger >= smaller. Если borrow не равен additiveIdentity, 
-    // это означает ошибку в логике - мы взяли заем из несуществующего разряда.
-    if (borrow != additiveIdentity) {
+    // если после обработки всех разрядов остался заем - это ошибка
+    // (такого не должно быть, т.к. larger >= smaller)
+    if (borrow) {
         return "ERR: borrow after subtraction";
     }
 
