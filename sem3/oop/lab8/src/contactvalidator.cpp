@@ -2,9 +2,10 @@
 #include <QRegularExpression>
 #include <QDate>
 
+// проверка имени
 bool ContactValidator::validateName(const QString& name, QString& errorMessage)
 {
-    // Сначала нормализуем (приводим к правильному виду)
+    // нормализуем
     QString normalized = normalizeName(name);
     
     if (normalized.isEmpty()) {
@@ -12,25 +13,23 @@ bool ContactValidator::validateName(const QString& name, QString& errorMessage)
         return false;
     }
     
-    // Проверяем исходное имя (до нормализации) на недопустимые символы
+    // работаем с исходным вводом (обрезаем пробелы)
     QString trimmed = name.trimmed();
     
-    // Не может начинаться или заканчиваться на дефис
+    // не должно начинаться или заканчиваться на дефис
     if (trimmed.startsWith('-') || trimmed.endsWith('-')) {
         errorMessage = "Имя не может начинаться или заканчиваться на дефис";
         return false;
     }
     
-    // Проверка: только буквы (любых алфавитов), цифры, дефис, пробел
-    // ВАЖНО: разрешаем как заглавные, так и строчные буквы на входе
-    QRegularExpression regex(R"(^[А-ЯЁA-ZЇІЄҐа-яёa-zїієґ0-9]([А-ЯЁA-ZЇІЄҐа-яёa-zїієґ0-9\s\-]*[А-ЯЁA-ZЇІЄҐа-яёa-zїієґ0-9])?$)");
-    
+    // разрешенные символы: буквы, цифры, дефис, пробел
+    QRegularExpression regex(R"(^[A-Za-zА-Яа-яЁё0-9][A-Za-zА-Яа-яЁё0-9\- ]*[A-Za-zА-Яа-яЁё0-9]$)");
     if (!regex.match(trimmed).hasMatch()) {
         errorMessage = "Имя может содержать только буквы, цифры, дефис и пробел";
         return false;
     }
     
-    // Проверка: не должно быть двойных дефисов или пробелов
+    // запрет двойных дефисов и множественных пробелов
     if (trimmed.contains("--") || trimmed.contains(QRegularExpression(R"(\s{2,})"))) {
         errorMessage = "Имя не должно содержать двойные дефисы или множественные пробелы";
         return false;
@@ -39,6 +38,7 @@ bool ContactValidator::validateName(const QString& name, QString& errorMessage)
     return true;
 }
 
+// проверка телефона
 bool ContactValidator::validatePhone(const QString& phone, QString& errorMessage)
 {
     QString normalized = normalizePhone(phone);
@@ -48,21 +48,19 @@ bool ContactValidator::validatePhone(const QString& phone, QString& errorMessage
         return false;
     }
     
-    // Извлекаем только цифры для проверки
+    // оставляем только цифры для проверки длины
     QString digits = extractPhoneDigits(normalized);
     
-    // Международный формат: от 10 до 15 цифр
     if (digits.length() < 10) {
         errorMessage = "Телефон должен содержать минимум 10 цифр";
         return false;
     }
-    
     if (digits.length() > 15) {
         errorMessage = "Телефон должен содержать максимум 15 цифр";
         return false;
     }
     
-    // Проверяем формат: должен начинаться с + и содержать только цифры
+    // формат: должен быть + и цифры
     QRegularExpression formatRegex(R"(^\+\d+$)");
     if (!formatRegex.match(normalized).hasMatch()) {
         errorMessage = "Телефон должен быть в международном формате (+...)";
@@ -72,6 +70,7 @@ bool ContactValidator::validatePhone(const QString& phone, QString& errorMessage
     return true;
 }
 
+// проверка даты рождения
 bool ContactValidator::validateBirthDate(const QDate& date, QString& errorMessage)
 {
     if (!date.isValid()) {
@@ -81,47 +80,24 @@ bool ContactValidator::validateBirthDate(const QDate& date, QString& errorMessag
     
     QDate currentDate = QDate::currentDate();
     
-    // Дата рождения должна быть меньше текущей даты
+    // дата должна быть в прошлом
     if (date >= currentDate) {
         errorMessage = "Дата рождения должна быть меньше текущей даты";
         return false;
     }
     
-    // Проверка разумности (не более 150 лет назад)
+    // не старше 150 лет
     QDate minDate = currentDate.addYears(-150);
     if (date < minDate) {
         errorMessage = "Дата рождения слишком давняя";
         return false;
     }
     
-    // Проверка месяца (Qt уже проверяет, но для явности)
-    if (date.month() < 1 || date.month() > 12) {
-        errorMessage = "Месяц должен быть от 1 до 12";
-        return false;
-    }
-    
-    // Проверка дня с учетом високосных лет
-    int year = date.year();
-    int month = date.month();
-    int day = date.day();
-    
-    // Количество дней в каждом месяце
-    int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    
-    // Проверка на високосный год
-    bool isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-    if (isLeapYear && month == 2) {
-        daysInMonth[1] = 29;
-    }
-    
-    if (day < 1 || day > daysInMonth[month - 1]) {
-        errorMessage = QString("День должен быть от 1 до %1 для выбранного месяца").arg(daysInMonth[month - 1]);
-        return false;
-    }
-    
+    // тут можно было бы проверять дни/високосные года, но qt уже валидирует дату
     return true;
 }
 
+// проверка email
 bool ContactValidator::validateEmail(const QString& email, QString& errorMessage)
 {
     QString normalized = normalizeEmail(email);
@@ -131,7 +107,7 @@ bool ContactValidator::validateEmail(const QString& email, QString& errorMessage
         return false;
     }
     
-    // Проверяем наличие ровно одного @
+    // должно содержать @ ровно один
     if (!normalized.contains('@')) {
         errorMessage = "Email должен содержать символ @";
         return false;
@@ -150,33 +126,30 @@ bool ContactValidator::validateEmail(const QString& email, QString& errorMessage
         errorMessage = "Имя пользователя не может быть пустым";
         return false;
     }
-    
     if (domain.isEmpty()) {
         errorMessage = "Домен не может быть пустым";
         return false;
     }
     
-    // Имя пользователя: латинские буквы, цифры, точки, подчеркивания
-    // Не может начинаться или заканчиваться на точку
+    // имя пользователя: латиница, цифры, точки, подчеркивания
     if (username.startsWith('.') || username.endsWith('.')) {
         errorMessage = "Имя пользователя не может начинаться или заканчиваться на точку";
         return false;
     }
-    
-    QRegularExpression usernameRegex(R"(^[A-Za-z0-9._%+-]+$)");
+    QRegularExpression usernameRegex(R"(^[A-Za-z0-9._%+\-]+$)");
     if (!usernameRegex.match(username).hasMatch()) {
         errorMessage = "Имя пользователя должно состоять из латинских букв, цифр, точек и подчеркиваний";
         return false;
     }
     
-    // Домен: должен содержать минимум одну точку
+    // домен должен содержать точку
     if (!domain.contains('.')) {
         errorMessage = "Домен должен содержать минимум одну точку (например, example.com)";
         return false;
     }
     
-    // Проверка формата домена: латинские буквы, цифры, точки, дефисы
-    QRegularExpression domainRegex(R"(^[A-Za-z0-9]([A-Za-z0-9\-]*[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9\-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,}$)");
+    // проверка формата домена
+    QRegularExpression domainRegex(R"(^[A-Za-z0-9][A-Za-z0-9\-]*(\.[A-Za-z0-9][A-Za-z0-9\-]*)*\.[A-Za-z]{2,}$)");
     if (!domainRegex.match(domain).hasMatch()) {
         errorMessage = "Неверный формат домена";
         return false;
@@ -185,6 +158,7 @@ bool ContactValidator::validateEmail(const QString& email, QString& errorMessage
     return true;
 }
 
+// нормализация имени
 QString ContactValidator::normalizeName(const QString& name)
 {
     QString normalized = name.trimmed();
@@ -193,26 +167,21 @@ QString ContactValidator::normalizeName(const QString& name)
         return normalized;
     }
     
-    // Удаляем множественные пробелы (2 и более)
+    // убираем лишние пробелы
     normalized.replace(QRegularExpression(R"(\s{2,})"), " ");
-    
-    // Удаляем множественные дефисы
+    // убираем повторные дефисы
     normalized.replace(QRegularExpression(R"(-{2,})"), "-");
     
-    // Делаем первую букву заглавной, остальные строчными
+    // первая буква заглавная
     normalized[0] = normalized[0].toUpper();
     
-    // Обрабатываем каждый символ
+    // делаем буквы после пробела/дефиса заглавными, остальные строчными
     for (int i = 1; i < normalized.length(); ++i) {
         QChar current = normalized[i];
         QChar previous = normalized[i-1];
-        
-        // После пробела или дефиса делаем заглавную букву
         if ((previous == ' ' || previous == '-') && current.isLetter()) {
             normalized[i] = current.toUpper();
-        }
-        // Все остальные буквы делаем строчными (если они не после пробела/дефиса)
-        else if (current.isLetter() && previous != ' ' && previous != '-') {
+        } else if (current.isLetter() && previous != ' ' && previous != '-') {
             normalized[i] = current.toLower();
         }
     }
@@ -220,26 +189,26 @@ QString ContactValidator::normalizeName(const QString& name)
     return normalized;
 }
 
+// нормализация телефона
 QString ContactValidator::normalizePhone(const QString& phone)
 {
     QString normalized = phone.trimmed();
     
-    // Удаляем все пробелы, скобки, дефисы
+    // удаляем пробелы, скобки, дефисы
     normalized.remove(QRegularExpression(R"([\s\(\)\-])"));
     
-    // Преобразуем в международный формат
-    // Если начинается с 8 и длина 11 цифр (российский формат), заменяем на +7
+    // русский 8->+7
     if (normalized.startsWith("8")) {
         QString digits = extractPhoneDigits(normalized);
         if (digits.length() == 11) {
             normalized = "+7" + digits.mid(1);
         }
     }
-    // Если начинается с 7 без +, добавляем +
+    // если начинается на 7 без +, добавляем +
     else if (normalized.startsWith("7") && !normalized.startsWith("+")) {
         normalized = "+" + normalized;
     }
-    // Если не начинается с +, добавляем +
+    // если нет +, добавляем
     else if (!normalized.startsWith("+")) {
         normalized = "+" + normalized;
     }
@@ -247,19 +216,19 @@ QString ContactValidator::normalizePhone(const QString& phone)
     return normalized;
 }
 
+// нормализация email
 QString ContactValidator::normalizeEmail(const QString& email)
 {
     QString normalized = email.trimmed().toLower();
     
-    // Удаляем пробелы вокруг @
+    // убираем пробелы вокруг @ и все пробелы
     normalized.replace(QRegularExpression(R"(\s*@\s*)"), "@");
-    
-    // Удаляем все пробелы
     normalized.remove(' ');
     
     return normalized;
 }
 
+// извлекаем только цифры
 QString ContactValidator::extractPhoneDigits(const QString& phone)
 {
     QString digits;

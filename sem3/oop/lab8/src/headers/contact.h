@@ -14,7 +14,6 @@ public:
             const QString& address, const QDate& birthDate, const QString& email,
             const QStringList& phoneNumbers);
 
-    // Getters
     QString firstName() const { return m_firstName; }
     QString lastName() const { return m_lastName; }
     QString middleName() const { return m_middleName; }
@@ -23,7 +22,6 @@ public:
     QString email() const { return m_email; }
     QStringList phoneNumbers() const { return m_phoneNumbers; }
 
-    // Setters
     void setFirstName(const QString& firstName) { m_firstName = firstName; }
     void setLastName(const QString& lastName) { m_lastName = lastName; }
     void setMiddleName(const QString& middleName) { m_middleName = middleName; }
@@ -32,11 +30,9 @@ public:
     void setEmail(const QString& email) { m_email = email; }
     void setPhoneNumbers(const QStringList& phoneNumbers) { m_phoneNumbers = phoneNumbers; }
 
-    // JSON serialization
     QJsonObject toJson() const;
     static Contact fromJson(const QJsonObject& json);
 
-    // Comparison operators for sorting
     bool operator<(const Contact& other) const;
     bool operator==(const Contact& other) const;
 
