@@ -1,5 +1,65 @@
 {
 	\section{Признак Абеля. Признак сходимости знакочередующихся рядов. Оценка остатка знакочередующегося ряда.}
 
+	\section*{Признак Абеля} Рассмотрим ряд \( \sum_{n=1}^{\infty} a_n b_n \). Пусть: \begin{enumerate} \item Ряд \( \sum_{n=1}^{\infty} b_n \) сходится. \item Последовательность \( \{a_n\}_{n=1}^{\infty} \) монотонна и ограничена. \end{enumerate} Тогда ряд \( \sum_{n=1}^{\infty} a_n b_n \) сходится.
+
+	\section*{Теорема 3.3. Признак Лейбница} Рассмотрим ряд \[ \sum_{n=1}^{\infty} (-1)^{n-1} b_n, \quad b_n > 0 \quad \forall n \in \mathbb{N}. \] Если последовательность \( \{b_n\}_{n=1}^{\infty} \) монотонно убывает и стремится к нулю, то ряд сходится. \section*{Следствия} \begin{enumerate} \item Пусть \( S \) — сумма ряда \[ \sum_{n=1}^{\infty} (-1)^{n-1} b_n, \quad b_n > 0 \quad \forall n \in \mathbb{N}. \] Тогда \[ 0 \leq S \leq b_1. \] \item Для остатка \( r_m = \sum_{n=m+1}^{\infty} (-1)^{n-1} b_n \) справедливо: \[ |r_m| \leq b_{m+1}, \quad \text{sgn } r_m = (-1)^m. \] \end{enumerate} Вывод: при замене суммы ряда лейбницевского типа его частичной суммой возникает погрешность, не превосходящая модуль первого из отброшенных членов и совпадающая с ним по знаку. 
+
+
+\section*{Пример}
+
+
+
+\[
+\sum_{n=1}^{\infty} (-1)^{n-1} \frac{1}{n} = 1 - \frac{1}{2} + \frac{1}{3} - \ldots = \ln 2
+\]
+
+
+
+\section*{Доказательство}
+
+\begin{enumerate}
+  \item Рассмотрим частичную сумму:
+  
+
+\[
+  S_{2n} = 1 - \frac{1}{2} + \frac{1}{3} - \ldots - \frac{1}{2n}
+  \]
+
+
+  Перегруппируем:
+  
+
+\[
+  S_{2n} = \left(1 + \frac{1}{2} + \ldots + \frac{1}{2n}\right) - 2\left(\frac{1}{2} + \frac{1}{4} + \ldots + \frac{1}{2n}\right) + \frac{1}{2n}
+  \]
+
+
+  
+
+\[
+  = H_{2n} - H_n, \quad \text{где } H_n = 1 + \frac{1}{2} + \ldots + \frac{1}{n} = c + \ln n + \alpha_n, \quad \alpha_n \xrightarrow[n \to \infty]{} 0
+  \]
+
+
+  Следовательно:
+  
+
+\[
+  S_{2n} = (c + \ln 2n + \alpha_{2n}) - (c + \ln n + \alpha_n) = \ln 2 + (\alpha_{2n} - \alpha_n) \xrightarrow[n \to \infty]{} \ln 2
+  \]
+
+
+
+  \item Ряд сходится по признаку Лейбница. Пусть \( S \) — его сумма. Тогда:
+  
+
+\[
+  S_{2n} \xrightarrow[n \to \infty]{} S \quad \Rightarrow \quad S = \ln 2
+  \]
+
+
+\end{enumerate}
+
 	\newpage
 }

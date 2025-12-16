@@ -1,5 +1,145 @@
 {
 	\section{Признак Даламбера.}
 
+\section*{Теорема 2.3 (Признак Даламбера).}
+
+Рассмотрим ряд
+
+
+\[
+\sum_{n=1}^{\infty} a_n \quad : \quad a_n > 0 \quad \forall n \in \mathbb{N}.
+\]
+
+
+
+1). Если
+
+
+\[
+\exists\, q < 1 : \quad \frac{a_{n+1}}{a_n} \leq q \quad \forall n \in \mathbb{N},
+\]
+
+
+то ряд сходится.
+
+2). Если
+
+
+\[
+\exists\, q > 1 : \quad \frac{a_{n+1}}{a_n} \geq q \quad \forall n \in \mathbb{N},
+\]
+
+
+то ряд расходится.
+
+\medskip
+
+\section*{Доказательство.}
+
+1). Пусть
+
+
+\[
+\exists\, q < 1 : \quad \frac{a_{n+1}}{a_n} \leq q \quad \forall n \in \mathbb{N}.
+\]
+
+
+Тогда
+
+
+\[
+a_2 \leq q a_1, \quad
+a_3 \leq q a_2 \leq q^2 a_1, \quad
+\ldots, \quad
+a_k \leq q a_{k-1} \leq q^{k-1} a_1, \ldots
+\]
+
+
+
+Ряд
+
+
+\[
+\sum_{k=1}^{\infty} q^{k-1} a_1 = a_1 \sum_{k=1}^{\infty} q^{k-1}
+\]
+
+
+сходится как сумма геометрической прогрессии (\(q < 1\)), следовательно, ряд
+
+
+\[
+\sum_{n=1}^{\infty} a_n
+\]
+
+
+сходится по 1-му признаку сравнения.
+
+\medskip
+
+2). Пусть
+
+
+\[
+\exists\, q > 1 : \quad \frac{a_{n+1}}{a_n} \geq q \quad \forall n \in \mathbb{N}.
+\]
+
+
+Тогда
+
+
+\[
+a_2 \geq q a_1, \quad
+a_3 \geq q a_2 \geq q^2 a_1, \quad
+\ldots, \quad
+a_k \geq q a_{k-1} \geq q^{k-1} a_1, \ldots
+\]
+
+
+
+Ряд
+
+
+\[
+\sum_{k=1}^{\infty} q^{k-1} a_1 = a_1 \sum_{k=1}^{\infty} q^{k-1}
+\]
+
+
+расходится как сумма геометрической прогрессии (\(q > 1\)), следовательно, ряд
+
+
+\[
+\sum_{n=1}^{\infty} a_n
+\]
+
+
+расходится по 1-му признаку сравнения.
+
+	\section*{Теорема 2.4 (Предельный признак Даламбера).}
+
+	Рассмотрим ряд
+
+
+	\[
+	\sum_{n=1}^{\infty} a_n \quad : \quad a_n > 0 \quad \forall n \in \mathbb{N}.
+	\]
+
+
+
+	Пусть существует предел
+
+
+	\[
+	\lim_{n \to \infty} \frac{a_{n+1}}{a_n} = q.
+	\]
+
+
+
+	Тогда:
+	\begin{enumerate}
+	\item если \( q < 1 \), ряд сходится;
+	\item если \( q > 1 \), ряд расходится;
+	\item если \( q = 1 \), ничего сказать нельзя.
+\end{enumerate}
+
 	\newpage
 }

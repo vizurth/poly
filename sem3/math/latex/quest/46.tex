@@ -1,5 +1,271 @@
 {
 	\section{Функция $cos(z), sin(z)$ дальше переписать из списка}
 
+\section*{Определение 8.2.}
+
+\medskip
+
+1). Рассмотрим ряд
+\[
+\sum_{n=0}^{\infty} (-1)^n \frac{z^{2n}}{(2n)!}.
+\]
+
+Ряд сходится абсолютно $\ \forall z \in \mathbb{C}$, так как ряд
+\[
+\sum_{n=0}^{\infty} (-1)^n \frac{x^{2n}}{(2n)!}
+\]
+сходится абсолютно $\ \forall x \in \mathbb{R}$, и
+\[
+\forall z \in \mathbb{R} \quad
+\sum_{n=0}^{\infty} (-1)^n \frac{z^{2n}}{(2n)!} = \cos z.
+\]
+
+Назовем сумму этого ряда $S(z)$ значением функции $\cos z$
+$\ \forall z \in \mathbb{C}$
+
+( мы продолжили функцию $\cos x$ с действительной оси
+на всю комплексную плоскость ).
+
+\medskip
+
+2). Рассмотрим ряд
+\[
+\sum_{n=0}^{\infty} (-1)^n \frac{z^{2n+1}}{(2n+1)!}.
+\]
+
+Ряд сходится абсолютно $\ \forall z \in \mathbb{C}$, так как ряд
+\[
+\sum_{n=0}^{\infty} (-1)^n \frac{x^{2n+1}}{(2n+1)!}
+\]
+сходится абсолютно $\ \forall x \in \mathbb{R}$, и
+\[
+\forall z \in \mathbb{R} \quad
+\sum_{n=0}^{\infty} (-1)^n \frac{z^{2n+1}}{(2n+1)!} = \sin z.
+\]
+
+Назовем сумму этого ряда $S(z)$ значением функции $\sin z$
+$\ \forall z \in \mathbb{C}$
+
+( мы продолжили функцию $\sin x$ с действительной оси
+на всю комплексную плоскость ).
+
+\section*{Замечание 8.1.}
+
+Справедлива теорема: если существует продолжение бесконечно
+дифференцируемой функции с действительной оси на комплексную
+плоскость с сохранением свойства бесконечной дифференцируемости,
+то такое продолжение единственно.
+(Такое продолжение называется аналитическим).
+
+\medskip
+
+Построенные нами продолжения функций $e^{x}$, $\cos x$, $\sin x$
+бесконечно дифференцируемы как суммы степенных рядов.
+Следовательно, построенные нами продолжения — это единственно
+возможные аналитические продолжения функций
+$e^{x}$, $\cos x$, $\sin x$ с действительной оси на комплексную
+плоскость).
+
+\medskip
+
+\section*{Замечание 8.2.}
+
+\[
+\text{Функция } \sin z =
+\sum_{n=0}^{\infty} (-1)^n \frac{z^{2n+1}}{(2n+1)!}
+\quad \text{сохранила свойство нечетности.}
+\]
+
+\[
+\text{Функция } \cos z =
+\sum_{n=0}^{\infty} (-1)^n \frac{z^{2n}}{(2n)!}
+\quad \text{сохранила свойство четности.}
+\]
+
+
+\section*{Теорема 8.2.}
+
+\[
+\forall z \in \mathbb{C}
+\]
+
+1).
+\[
+e^{iz} = \cos z + i \sin z,
+\]
+
+2).
+\[
+\sin z = \frac{e^{iz} - e^{-iz}}{2i},
+\]
+
+3).
+\[
+\cos z = \frac{e^{iz} + e^{-iz}}{2}.
+\]
+
+\medskip
+
+\section*{Следствия.}
+
+\medskip
+
+1).
+\[
+e^{x+iy} = e^{x} (\cos y + i \sin y),
+\quad \forall x, y \in \mathbb{R}.
+\]
+
+\medskip
+
+2).
+\[
+e^{z} \text{ имеет период } T = 2\pi i,
+\]
+так как
+\[
+e^{z+2\pi i} = e^{z} e^{2\pi i}
+= e^{z} (\cos 2\pi + i \sin 2\pi) = e^{z}.
+\]
+
+\medskip
+
+3).
+\[
+\cos z \text{ и } \sin z \text{ имеют период } 2\pi,
+\]
+так как
+\[
+\cos (z+2\pi) =
+\frac{e^{iz+2\pi i} + e^{-iz-2\pi i}}{2}
+=
+\frac{e^{iz} + e^{-iz}}{2}
+= \cos z;
+\]
+
+\[
+\sin (z+2\pi) =
+\frac{e^{iz+2\pi i} - e^{-iz-2\pi i}}{2i}
+=
+\frac{e^{iz} - e^{-iz}}{2i}
+= \sin z.
+\]
+
+\medskip
+
+4). Остаются в силе формула
+\[
+\sin^2 z + \cos^2 z = 1
+\]
+и другие тригонометрические формулы
+
+\[
+\left(
+\sin^2 z + \cos^2 z =
+\left( \frac{e^{iz} - e^{-iz}}{2i} \right)^2
++
+\left( \frac{e^{iz} + e^{-iz}}{2} \right)^2
+=
+\right.
+\]
+
+\[
+\left.
+=
+- \frac{e^{2iz} + e^{-2iz} - 2}{4}
++ \frac{e^{2iz} + e^{-2iz} + 2}{4}
+= 1
+\right)
+\]
+
+\medskip
+
+5).
+\[
+\operatorname{sh}(iz) =
+\frac{e^{iz} - e^{-iz}}{2}
+= i \sin z,
+\quad
+\sin (iz) =
+\frac{e^{-z} - e^{z}}{2i}
+= i \operatorname{sh} z,
+\]
+
+\[
+\operatorname{ch}(iz) =
+\frac{e^{iz} + e^{-iz}}{2}
+= \cos z,
+\quad
+\cos (iz) =
+\frac{e^{-z} + e^{z}}{2}
+= \operatorname{ch} z.
+\]
+
+\medskip
+
+6). Исчезло свойство ограниченности функций
+$\sin z$ и $\cos z$, например,
+
+\[
+\cos (ix) =
+\frac{e^{-x} + e^{x}}{2}
+\xrightarrow[x \to +\infty]{} +\infty,
+\quad (x \in \mathbb{R}).
+\]
+
+\medskip
+
+\section*{Определение 8.3.}
+
+Пусть $z \in \mathbb{C} \setminus \{0\}$.
+$w \in \mathbb{C}$ называется логарифмом $z$, если
+\[
+z = e^{w}.
+\]
+
+\medskip
+
+\section*{Теорема 8.3.}
+
+Пусть $z \in \mathbb{C} \setminus \{0\}$.
+\[
+\mathrm{Ln}\, z = \ln |z| + i \operatorname{Arg} z.
+\]
+
+\medskip
+
+\section*{Определение 8.4.}
+
+По определению
+\[
+z^{w} = e^{\,w \mathrm{Ln}\, z}.
+\]
+
+\medskip
+
+\section*{Примеры.}
+
+\medskip
+
+1).
+\[
+\mathrm{Ln}(-1) = \ln 1 + i(\pi + 2\pi k)
+= i\pi (2k+1),
+\quad (k \in \mathbb{Z}).
+\]
+
+\medskip
+
+2).
+\[
+(-1)^{\sqrt{2}} =
+e^{\sqrt{2}\,\mathrm{Ln}(-1)}
+=
+e^{i\sqrt{2}\pi(2k+1)},
+\quad (k \in \mathbb{Z}).
+\]
+
+
+
 	\newpage
 }

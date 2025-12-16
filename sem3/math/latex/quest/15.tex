@@ -1,96 +1,96 @@
-{
-	\section{Нормальные системы дифференциальных уравнений (СДУ). Запись системы в векторной форме. Определение
-решения. Теорема о существовании и единственности решения задачи Коши для нормальных систем.}
+% {
+% 	\section{Нормальные системы дифференциальных уравнений (СДУ). Запись системы в векторной форме. Определение
+% решения. Теорема о существовании и единственности решения задачи Коши для нормальных систем.}
 
-\subsection*{Нормальная система ОДУ}
+% \subsection*{Нормальная система ОДУ}
 
-Система \textbf{(7.1)} $n$ дифференциальных уравнений первого порядка называется \textbf{нормальной системой}, если она имеет вид:
-
-
-\[
-\begin{cases}
-y_1' = f_1(x, y_1, \ldots, y_n), \\
-y_2' = f_2(x, y_1, \ldots, y_n), \\
-\vdots \\
-y_n' = f_n(x, y_1, \ldots, y_n),
-\end{cases}
-\quad \iff \quad
-Y'(x) = F(x, Y),
-\]
+% Система \textbf{(7.1)} $n$ дифференциальных уравнений первого порядка называется \textbf{нормальной системой}, если она имеет вид:
 
 
-где
+% \[
+% \begin{cases}
+% y_1' = f_1(x, y_1, \ldots, y_n), \\
+% y_2' = f_2(x, y_1, \ldots, y_n), \\
+% \vdots \\
+% y_n' = f_n(x, y_1, \ldots, y_n),
+% \end{cases}
+% \quad \iff \quad
+% Y'(x) = F(x, Y),
+% \]
 
 
-\[
-Y(x) =
-\begin{pmatrix}
-y_1(x) \\
-y_2(x) \\
-\vdots \\
-y_n(x)
-\end{pmatrix},
-\quad
-F(x, Y) =
-\begin{pmatrix}
-f_1(x, y_1, \ldots, y_n) \\
-f_2(x, y_1, \ldots, y_n) \\
-\vdots \\
-f_n(x, y_1, \ldots, y_n)
-\end{pmatrix}.
-\]
-вектор функции ,  называется нормальной системой    ОДУ   n-го порядка   ( порядок уравнения –количество неизвестных функций    y1(x) ,  y2(x) , ... , yn(x) ,   производные  участвуют только первого порядка ) .
-
-\[
-\text{(Считаем, что }
-Y'(x) =
-\begin{pmatrix}
-y_1'(x) \\
-y_2'(x) \\
-\vdots \\
-y_n'(x)
-\end{pmatrix}
-\text{)}
-\]
+% где
 
 
-\subsection*{Определение решения}
+% \[
+% Y(x) =
+% \begin{pmatrix}
+% y_1(x) \\
+% y_2(x) \\
+% \vdots \\
+% y_n(x)
+% \end{pmatrix},
+% \quad
+% F(x, Y) =
+% \begin{pmatrix}
+% f_1(x, y_1, \ldots, y_n) \\
+% f_2(x, y_1, \ldots, y_n) \\
+% \vdots \\
+% f_n(x, y_1, \ldots, y_n)
+% \end{pmatrix}.
+% \]
+% вектор функции ,  называется нормальной системой    ОДУ   n-го порядка   ( порядок уравнения –количество неизвестных функций    y1(x) ,  y2(x) , ... , yn(x) ,   производные  участвуют только первого порядка ) .
 
-Пусть функции $f_1, f_2, \ldots, f_n$ определены и непрерывны на множестве $\Omega \subset \mathbb{R}^{n+1}$. Набор функций $y_1(x), y_2(x), \ldots, y_n(x)$, определённых на некотором промежутке $(a, b)$, называется \textbf{решением системы} (7.1), если выполняются следующие условия:
-\begin{enumerate}
-    \item $(x, y_1(x), y_2(x), \ldots, y_n(x)) \in \Omega \quad \forall x \in (a, b);$
-    \item $\exists \, y_1', y_2', \ldots, y_n' \text{ на } (a, b);$
-    \item после подстановки функций $y_1(x), y_2(x), \ldots, y_n(x)$ в систему (7.1) получаются верные тождества на $(a, b)$.
-\end{enumerate}
-
-
-\subsection*{Теорема о существовании и единственности решения задачи Коши}
-
-Пусть функции $f_1, f_2, \ldots, f_n$ определены и непрерывны на множестве $\Omega \subset \mathbb{R}^{n+1}$, и все элементы матрицы Якоби
-
-
-\[
-\begin{pmatrix}
-\frac{\partial f_1}{\partial y_1} & \frac{\partial f_1}{\partial y_2} & \cdots & \frac{\partial f_1}{\partial y_n} \\
-\frac{\partial f_2}{\partial y_1} & \frac{\partial f_2}{\partial y_2} & \cdots & \frac{\partial f_2}{\partial y_n} \\
-\vdots & \vdots & \ddots & \vdots \\
-\frac{\partial f_n}{\partial y_1} & \frac{\partial f_n}{\partial y_2} & \cdots & \frac{\partial f_n}{\partial y_n}
-\end{pmatrix}
-\]
-
-
-непрерывны на множестве $\Omega$.
-
-Тогда для любого набора чисел $(x_0, y_1^*, \ldots, y_n^*) \in \Omega$ существует единственное решение $y_1(x), y_2(x), \ldots, y_n(x)$ системы (7.1), определённое на некотором интервале $[x_0 - h, x_0 + h]$ и удовлетворяющее начальным условиям:
-
-
-\[
-y_1(x_0) = y_1^*, \quad y_2(x_0) = y_2^*, \quad \ldots, \quad y_n(x_0) = y_n^*.
-\]
+% \[
+% \text{(Считаем, что }
+% Y'(x) =
+% \begin{pmatrix}
+% y_1'(x) \\
+% y_2'(x) \\
+% \vdots \\
+% y_n'(x)
+% \end{pmatrix}
+% \text{)}
+% \]
 
 
-\textit{(без доказательства)}
+% \subsection*{Определение решения}
+
+% Пусть функции $f_1, f_2, \ldots, f_n$ определены и непрерывны на множестве $\Omega \subset \mathbb{R}^{n+1}$. Набор функций $y_1(x), y_2(x), \ldots, y_n(x)$, определённых на некотором промежутке $(a, b)$, называется \textbf{решением системы} (7.1), если выполняются следующие условия:
+% \begin{enumerate}
+%     \item $(x, y_1(x), y_2(x), \ldots, y_n(x)) \in \Omega \quad \forall x \in (a, b);$
+%     \item $\exists \, y_1', y_2', \ldots, y_n' \text{ на } (a, b);$
+%     \item после подстановки функций $y_1(x), y_2(x), \ldots, y_n(x)$ в систему (7.1) получаются верные тождества на $(a, b)$.
+% \end{enumerate}
 
 
-	\newpage
-}
+% \subsection*{Теорема о существовании и единственности решения задачи Коши}
+
+% Пусть функции $f_1, f_2, \ldots, f_n$ определены и непрерывны на множестве $\Omega \subset \mathbb{R}^{n+1}$, и все элементы матрицы Якоби
+
+
+% \[
+% \begin{pmatrix}
+% \frac{\partial f_1}{\partial y_1} & \frac{\partial f_1}{\partial y_2} & \cdots & \frac{\partial f_1}{\partial y_n} \\
+% \frac{\partial f_2}{\partial y_1} & \frac{\partial f_2}{\partial y_2} & \cdots & \frac{\partial f_2}{\partial y_n} \\
+% \vdots & \vdots & \ddots & \vdots \\
+% \frac{\partial f_n}{\partial y_1} & \frac{\partial f_n}{\partial y_2} & \cdots & \frac{\partial f_n}{\partial y_n}
+% \end{pmatrix}
+% \]
+
+
+% непрерывны на множестве $\Omega$.
+
+% Тогда для любого набора чисел $(x_0, y_1^*, \ldots, y_n^*) \in \Omega$ существует единственное решение $y_1(x), y_2(x), \ldots, y_n(x)$ системы (7.1), определённое на некотором интервале $[x_0 - h, x_0 + h]$ и удовлетворяющее начальным условиям:
+
+
+% \[
+% y_1(x_0) = y_1^*, \quad y_2(x_0) = y_2^*, \quad \ldots, \quad y_n(x_0) = y_n^*.
+% \]
+
+
+% \textit{(без доказательства)}
+
+
+% 	\newpage
+% }

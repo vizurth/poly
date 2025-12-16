@@ -1,5 +1,20 @@
 {
 	\section{Разложение в степенные ряды элементарных функций действительной переменной.}
 
+	\subsection*{1. Экспонента} \[ e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} \quad \text{на } (-\infty, \infty), \quad \text{так как} \] 
+	
+	\textbf{а)} частичные суммы ряда Тейлора \( S_n(x) = T_n(x) \), где \[ T_n(x) = \sum_{k=0}^{n} \frac{f^{(k)}(0)}{k!} x^k \] — многочлен Тейлора; \textbf{б)} \( \forall x \in (-\infty, \infty) \quad \exists H > 0 : x \in [-H, H] \), \[ |(e^x)^{(n)}| = |e^x| \leq e^H \quad \forall x \in [-H, H], \quad \text{следовательно,} \quad e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} \quad \text{на } [-H, H], \] \[ \text{следовательно,} \quad e^x = \sum_{n=0}^{\infty} \frac{x^n}{n!} \quad \forall x \in (-\infty, \infty). \]
+
+	\subsection*{2. Косинус} \[ \cos x = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n}}{(2n)!} \quad \text{на } (-\infty, \infty), \] \text{так как} 
+	
+	\textbf{а)} частичные суммы ряда Тейлора \( S_n(x) = T_n(x) \), где \[ T_n(x) = \sum_{k=0}^{n} \frac{f^{(k)}(0)}{k!} x^k \quad \text{– многочлен Тейлора;} \] \textbf{б)} \[ \forall x \in (-\infty, \infty) \quad \exists H > 0 : x \in [-H, H], \] \[ |(\cos x)^{(n)}| = |\cos(x + \frac{\pi}{2}n)| \leq 1 \quad \forall x \in [-H, H], \quad \text{следовательно,} \] \[ \cos x = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n}}{(2n)!} \quad \text{на } [-H, H], \quad \text{следовательно,} \] \[ \cos x = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n}}{(2n)!} \quad \forall x \in (-\infty, \infty). \] 
+
+	\subsection*{3. Cинус} \[ \sin x = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n+1}}{(2n+1)!} \quad \text{на } (-\infty, \infty), \quad \text{так как} \] \textbf{а)} частичные суммы ряда Тейлора \( S_n(x) = T_n(x) \), где \[ T_n(x) = \sum_{k=0}^{n} \frac{f^{(k)}(0)}{k!} x^k \] — многочлен Тейлора; \textbf{б)} \[ \forall x \in (-\infty, \infty) \quad \exists H > 0 : x \in [-H, H], \] \[ |(\sin x)^{(n)}| = |\sin(x + \frac{\pi}{2}n)| \leq 1 \quad \forall x \in [-H, H], \quad \text{следовательно,} \] \[ \sin x = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n+1}}{(2n+1)!} \quad \text{на } [-H, H], \quad \text{следовательно,} \] \[ \sin x = \sum_{n=0}^{\infty} (-1)^n \frac{x^{2n+1}}{(2n+1)!} \quad \forall x \in (-\infty, \infty). \] 
+
+	\subsection*{4. Гиперболический косинус} \[ \text{ch } x = \frac{e^x + e^{-x}}{2} = \sum_{n=0}^{\infty} \frac{x^{2n}}{(2n)!} \quad \forall x \in (-\infty, \infty) \] 
+	\subsection*{5.Гиперболический синус} \[ \text{sh } x = \frac{e^x - e^{-x}}{2} = \sum_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} \quad \forall x \in (-\infty, \infty) \] 
+	\subsection*{6. Биномиальный ряд} \[ (1 + x)^m = 1 + \sum_{n=1}^{\infty} \frac{m(m-1)\ldots(m-n+1)}{n!} x^n \quad \text{на } (-1, 1), \quad \text{так как} \] \textbf{а)} частичные суммы ряда Тейлора \( S_n(x) = T_n(x) \), где \[ T_n(x) = \sum_{k=0}^{n} \frac{f^{(k)}(0)}{k!} x^k \quad \text{– многочлен Тейлора;} \] \textbf{б)} без доказательства. 
+	\subsection*{7. Логарифм} \[ \ln(1 + x) = \sum_{n=1}^{\infty} \frac{(-1)^{n-1}}{n} x^n \quad \text{на } (-1, 1] \]
+
 	\newpage
 }
