@@ -14,8 +14,17 @@
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QHeaderView>
+#include <QStack>
 #include "contactstorage.h"
 #include "contact.h"
+
+// Структура для хранения действия
+struct ContactAction {
+    enum Type { Add, Edit, Delete };
+    Type type;
+    Contact contact;
+    int index; // для Edit и Delete
+};
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +44,7 @@ private slots:
     void onTableSortChanged(int column);
     void loadContacts();
     void saveContacts();
+    void undoLastAction();
 
 private:
     void setupUI();
@@ -49,6 +59,10 @@ private:
     void showError(const QString& message);
     void showInfo(const QString& message);
     int getSelectedRow() const;
+    bool checkForDuplicates(const Contact& contact, int excludeIndex = -1);
+    void pushAction(ContactAction::Type type, const Contact& contact, int index = -1);
+    QString getFormattingWarnings(const QString& firstName, const QString& lastName, 
+                                   const QString& middleName, const QString& phone);
 
     // UI Components
     QWidget* m_centralWidget;
@@ -73,6 +87,7 @@ private:
     QPushButton* m_deleteButton;
     QPushButton* m_saveButton;
     QPushButton* m_cancelButton;
+    QPushButton* m_undoButton;
     
     // Search
     QGroupBox* m_searchGroup;
@@ -80,12 +95,14 @@ private:
     QComboBox* m_searchFieldCombo;
     QPushButton* m_searchButton;
     QPushButton* m_clearSearchButton;
+    QDateEdit* m_searchDateEdit;
+	QComboBox* m_dateSearchTypeCombo;
     
     // Data
     ContactStorage* m_storage;
     int m_editingIndex;
     bool m_isEditing;
+    QStack<ContactAction> m_undoStack;
 };
 
 #endif // MAINWINDOW_H
-

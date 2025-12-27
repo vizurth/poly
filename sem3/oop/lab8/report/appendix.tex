@@ -1,0 +1,448 @@
+\section*{Полный исходный код}
+
+\subsection*{power.h}
+\begin{lstlisting}
+#pragma once
+#include <stdio.h>
+  
+unsigned long long power_iterative(int base, int exp);
+unsigned long long power_recursive(int base, int exp);
+\end{lstlisting}
+
+\subsection*{power.c}
+\begin{lstlisting}
+#include "headers/power.h"
+#include <stdio.h>
+  
+unsigned long long power_iterative(int base, int exp) {
+    unsigned long long result = 1;
+    unsigned long long b = base;
+    while (exp > 0) {
+        if (exp % 2 == 1) {
+            result *= b;
+        }
+        b *= b;
+        exp /= 2;
+    }
+    return result;
+}
+  
+unsigned long long power_recursive(int base, int exp) {
+    if (exp == 0) return 1;
+    if (exp == 1) return base;
+    unsigned long long half = power_recursive(base, exp / 2);
+    if (exp % 2 == 0)
+        return half * half;
+    else
+        return half * half * base;
+}
+\end{lstlisting}
+
+\subsection*{main.c}
+\begin{lstlisting}
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+  
+#define REPEATS 100000
+  
+#include "src/headers/power.h"
+  
+int main(int argc, char **argv) {
+    if (argc < 3) {
+        printf("Usage: %s <base> <exponent>\n", argv[0]);
+        return 1;
+    }
+  
+    int base = atoi(argv[1]);
+    int exp = atoi(argv[2]);
+  
+    clock_t start, end;
+    unsigned long long result_iter = 0, result_rec = 0;
+    double iter_total = 0.0, rec_total = 0.0;
+  
+    start = clock();
+    for (int i = 0; i < REPEATS; ++i)
+        result_rec = power_recursive(base, exp);
+    end = clock();
+    rec_total = (double)(end - start) / CLOCKS_PER_SEC;
+  
+    start = clock();
+    for (int i = 0; i < REPEATS; ++i)
+        result_iter = power_iterative(base, exp);
+    end = clock();
+    iter_total = (double)(end - start) / CLOCKS_PER_SEC;
+  
+    printf("Тест на %d повторов:\n", REPEATS);
+    printf("Результат: %llu. Итеративно: %.6f сек (в среднем %.9f сек)\n",
+           result_iter, iter_total, iter_total / REPEATS);
+    printf("Результат: %llu. Рекурсивно: %.6f сек (в среднем %.9f сек)\n",
+           result_rec, rec_total, rec_total / REPEATS);
+  
+    return 0;
+}
+\end{lstlisting}
+
+\subsection*{CMakeLists.txt}
+\begin{lstlisting}
+cmake_minimum_required(VERSION 3.10)
+project(power_prac C)
+  
+set(CMAKE_C_STANDARD 11)
+include_directories(headers)
+  
+add_library(power_static STATIC src/power.c)
+set_target_properties(power_static PROPERTIES OUTPUT_NAME "power")
+  
+add_library(power_shared SHARED src/power.c)
+set_target_properties(power_shared PROPERTIES OUTPUT_NAME "power")
+  
+add_executable(main_static main.c)
+target_link_libraries(main_static power_static)
+  
+add_executable(main_shared main.c)
+target_link_libraries(main_shared power_shared)
+  
+add_executable(main_dl main_dl.c)
+target_link_libraries(main_dl dl)
+  
+add_executable(znak_ncurses_app znak_ncurses_app.c src/znak.c)
+  
+target_include_directories(znak_ncurses_app PRIVATE src/headers)
+  
+target_link_libraries(znak_ncurses_app ncurses z)
+  
+  
+add_custom_target(db
+  COMMAND $(PROJECT_SOURCE_DIR)/build/znak_ncurses_app
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMENT "running db"
+)
+\end{lstlisting}
+
+\subsection*{main\_dl.c}
+\begin{lstlisting}
+#include <stdio.h>
+#include <stdlib.h>
+#include <dlfcn.h>
+#include <time.h>
+  
+#define REPEATS 100000
+  
+typedef unsigned long long (*power_iter_t)(int, int);
+typedef unsigned long long (*power_rec_t)(int, int);
+  
+int main(int argc, char **argv) {
+    if (argc < 3) {
+        printf("Usage: %s <base> <exponent>\n", argv[0]);
+        return 1;
+    }
+  
+    int base = atoi(argv[1]);
+    int exp = atoi(argv[2]);
+  
+    void *handle = dlopen("./libpower.so", RTLD_LAZY);
+    if (!handle) {
+        fprintf(stderr, "Ошибка dlopen: %s\n", dlerror());
+        return 1;
+    }
+  
+    power_iter_t power_iterative = (power_iter_t)dlsym(handle, "power_iterative");
+    power_rec_t power_recursive = (power_rec_t)dlsym(handle, "power_recursive");
+  
+    char *error;
+    if ((error = dlerror()) != NULL) {
+        fprintf(stderr, "Ошибка dlsym: %s\n", error);
+        dlclose(handle);
+        return 1;
+    }
+  
+    clock_t start, end;
+    unsigned long long result_iter = 0, result_rec = 0;
+    double iter_total = 0.0, rec_total = 0.0;
+  
+    start = clock();
+    for (int i = 0; i < REPEATS; ++i)
+        result_rec = power_recursive(base, exp);
+    end = clock();
+    rec_total = (double)(end - start) / CLOCKS_PER_SEC;
+  
+    start = clock();
+    for (int i = 0; i < REPEATS; ++i)
+        result_iter = power_iterative(base, exp);
+    end = clock();
+    iter_total = (double)(end - start) / CLOCKS_PER_SEC;
+  
+    printf("Тест на %d повторов:\n", REPEATS);
+    printf("Результат: %llu. Итеративно (dlopen): %.6f сек (в среднем %.9f сек)\n",
+           result_iter, iter_total, iter_total / REPEATS);
+    printf("Результат: %llu. Рекурсивно (dlopen): %.6f сек (в среднем %.9f сек)\n",
+           result_rec, rec_total, rec_total / REPEATS);
+  
+    dlclose(handle);
+    return 0;
+}
+\end{lstlisting}
+
+\subsection*{znak.h}
+\begin{lstlisting}
+#pragma once
+
+#include <stdint.h>
+#include <stddef.h>
+  
+typedef enum {
+    ARIES, TAURUS, GEMINI, CANCER,
+    LEO, VIRGO, LIBRA, SCORPIO,
+    SAGITTARIUS, CAPRICORN, AQUARIUS, PISCES
+} ZODIAC;
+  
+typedef struct {
+    uint8_t day   : 5;  // 0–31
+    uint8_t month : 4;  // 0–12
+    uint16_t year : 12; // 0–4095
+} BIRTHDAYDATE;
+  
+  
+typedef struct {
+    char surname[32];
+    char name[32];
+    ZODIAC zodiac;
+    BIRTHDAYDATE birth;
+} ZNAK;
+  
+  
+typedef struct {
+    char signature[4];
+    uint32_t transaction_id;
+    uint32_t record_count;
+    uint32_t crc32;
+} DB_HEADER;
+  
+  
+uint32_t calculate_crc32(ZNAK *records, size_t count);
+\end{lstlisting}
+
+\subsection*{znak.c}
+\begin{lstlisting}
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <zlib.h>
+#include "headers/znak.h"
+  
+uint32_t calculate_crc32(ZNAK *records, size_t count) {
+    return crc32(0L, (const unsigned char *)records, count * sizeof(ZNAK));
+}
+\end{lstlisting}
+
+\subsection*{znak\_ncurses\_app.c}
+\begin{lstlisting}
+#include <ncurses.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include <zlib.h>
+#include "src/headers/znak.h"
+  
+#define MAX_RECORDS 100
+#define DB_PATH "znak.db"
+  
+ZNAK records[MAX_RECORDS];
+DB_HEADER header;
+int record_count = 0;
+uint32_t current_tx_id = 1; // по умолчанию
+  
+void input_record() {
+    ZNAK z;
+    char tmp[50];
+    int zodiac_choice;
+  
+    clear();
+    mvprintw(1, 2, "Add new record (ZNAK)");
+  
+    mvprintw(3, 4, "Surname: ");
+    echo();
+    getstr(z.surname);
+  
+    mvprintw(4, 4, "Name: ");
+    getstr(z.name);
+  
+    // День
+    mvprintw(5, 4, "Day (1-31): ");
+    getstr(tmp);
+    int day = atoi(tmp);
+  
+    if (day < 1 || day > 31) {
+        z.birth.day = 0;
+        mvprintw(6, 10, "Invalid day, set to 0");
+    } else {
+        z.birth.day = day;
+    }
+  
+    // Месяц
+    mvprintw(7, 4, "Month (1-12): ");
+    getstr(tmp);
+    int month = atoi(tmp);
+    if (month < 1 || month > 12) {
+        z.birth.month = 0;
+        mvprintw(8, 10, "Invalid month, set to 0");
+    } else {
+        z.birth.month = month;
+    }
+  
+    mvprintw(9, 4, "Year (1900-2100): ");
+    getstr(tmp);
+    int year = atoi(tmp);
+    if (year < 1900 || year > 2100) {
+        z.birth.year = 0;
+        mvprintw(10, 10, "Invalid year, set to 0");
+    } else {
+        z.birth.year = year;
+    }
+  
+    mvprintw(12, 4, "Choose zodiac (0-11):");
+    mvprintw(13, 6, "0: Aries, 1: Taurus, 2: Gemini, 3: Cancer");
+    mvprintw(14, 6, "4: Leo, 5: Virgo, 6: Libra, 7: Scorpio");
+    mvprintw(15, 6, "8: Sagittarius, 9: Capricorn, 10: Aquarius, 11: Pisces");
+    getstr(tmp);
+    zodiac_choice = atoi(tmp);
+    if (zodiac_choice < 0 || zodiac_choice > 11) {
+        zodiac_choice = 0;
+        mvprintw(16, 10, "Invalid zodiac, set to 0");
+    }
+    z.zodiac = (ZODIAC)zodiac_choice;
+  
+    noecho();
+    records[record_count++] = z;
+  
+    mvprintw(18, 2, "Record added. Press any key...");
+    getch();
+    header.transaction_id = current_tx_id++;
+}
+  
+void show_records() {
+    clear();
+    mvprintw(1, 2, "List of ZNAK records:");
+    mvprintw(2, 2, "  # | Surname      | Name        | Birthdate   | Zodiac");
+  
+    for (int i = 0; i < record_count; ++i) {
+        mvprintw(4 + i, 2, " %2d | %-11s | %-10s | %02d.%02d.%04d | %d",
+                 i + 1,
+                 records[i].surname,
+                 records[i].name,
+                 records[i].birth.day,
+                 records[i].birth.month,
+                 records[i].birth.year,
+                 records[i].zodiac);
+    }
+  
+    mvprintw(6 + record_count, 2, "Press any key to return...");
+    getch();
+}
+  
+void find_by_surname() {
+    char tmp[32];
+    clear();
+    mvprintw(1, 2, "Enter surname to search: ");
+    echo();
+    getstr(tmp);
+    noecho();
+  
+    int found = 0;
+    mvprintw(3, 2, "Results for surname '%s':", tmp);
+  
+    for (int i = 0; i < record_count; ++i) {
+        if (strcmp(records[i].surname, tmp) == 0) {
+            mvprintw(5 + found, 4, "%s %s, %02d.%02d.%04d, Zodiac=%d",
+                     records[i].surname,
+                     records[i].name,
+                     records[i].birth.day,
+                     records[i].birth.month,
+                     records[i].birth.year,
+                     records[i].zodiac);
+            found++;
+        }
+    }
+  
+    if (!found) {
+        mvprintw(5, 2, "No people found with surname '%s'.", tmp);
+    }
+  
+    getch();
+    header.transaction_id = current_tx_id++;
+}
+  
+void save_to_file() {
+    FILE *f = fopen(DB_PATH, "wb");
+    if (!f) {
+        mvprintw(10, 2, "Could not open file for writing.");
+        return;
+    }
+  
+    memcpy(header.signature, "adia", 4);
+    header.transaction_id = ++current_tx_id;
+    header.record_count = record_count;
+    header.crc32 = calculate_crc32(records, record_count);
+  
+    fwrite(&header, sizeof(DB_HEADER), 1, f);
+    fwrite(records, sizeof(ZNAK), record_count, f);
+    fclose(f);
+  
+    mvprintw(10, 2, "File saved successfully.");
+}
+  
+void load_from_file() {
+    FILE *f = fopen(DB_PATH, "rb");
+    if (!f) {
+        mvprintw(10, 2, "File not found. Please enter new data.");
+        return;
+    }
+  
+    fread(&header, sizeof(DB_HEADER), 1, f);
+    fread(records, sizeof(ZNAK), header.record_count, f);
+    record_count = header.record_count;
+    current_tx_id = header.transaction_id + 1;
+    fclose(f);
+  
+    mvprintw(10, 2, "Loaded %d records from file.", record_count);
+}
+  
+void run_ui() {
+    initscr();
+    cbreak();
+    noecho();
+  
+    int choice;
+    while (true) {
+        clear();
+        mvprintw(1, 2, "ZNAK Menu:");
+        mvprintw(3, 4, "1. Add new record");
+        mvprintw(4, 4, "2. Show all records");
+        mvprintw(5, 4, "3. Find by surname");
+        mvprintw(6, 4, "4. Save to file");
+        mvprintw(7, 4, "5. Load from file");
+        mvprintw(8, 4, "6. Exit");
+  
+        mvprintw(10, 2, "Your choice: ");
+        echo();
+        scanw("%d", &choice);
+        noecho();
+  
+        switch (choice) {
+            case 1: input_record(); break;
+            case 2: show_records(); break;
+            case 3: find_by_surname(); break;
+            case 4: save_to_file(); getch(); break;
+            case 5: load_from_file(); getch(); break;
+            case 6: endwin(); return;
+            default: break;
+        }
+    }
+}
+  
+int main() {
+    run_ui();
+    return 0;
+}
+\end{lstlisting}
