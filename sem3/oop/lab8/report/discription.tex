@@ -1,1398 +1,1029 @@
-\section{Особенности реализации}
+\section{Реализация}
 
-\subsection{Установка и найстройка среды виртуализации}
+\subsection{Архитектура приложения}
 
-\subsubsection{Выбор и конфигурация виртуальной среды}
+Приложение «Телефонный справочник» построено на основе объектно-ориентированного подхода с четким разделением ответственности между компонентами системы. Архитектура следует принципам модульности и слабой связанности, что обеспечивает удобство сопровождения и расширения функциональности.
 
-Для разработки и выполнения лабораторных заданий была выбрана Oracle
-VirtualBox — стабильная и кроссплатформенная система виртуализации.
-Установка производилась на macOs (см. рисунок ~\ref{fig:virtual}).
-
-\par Создана новая виртуальная машина с параметрами:
+Основные компоненты приложения:
 \begin{itemize}
-	\item \textbf{Оперативная память: } 4 ГБ;
-	\item \textbf{Жёсткий диск:} 10 ГБ (динамически расширяемый);
-
-	\item \textbf{Образ системы: } 4 ГБ минимальный ISO-файл \textbf{Debian 12}.
+    \item \textbf{Contact} — структура данных для хранения информации о контакте;
+    \item \textbf{ContactValidator} — класс для валидации и нормализации пользовательского ввода;
+    \item \textbf{ContactStorage} — класс для работы с файловым хранилищем (JSON);
+    \item \textbf{MainWindow} — класс главного окна, реализующий графический интерфейс и логику взаимодействия с пользователем.
 \end{itemize}
 
+Структура директорий проекта:
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.99\linewidth]{myPhoto/createVirt.jpg}
-    \caption{Создание и настройка виртуальной машины в VirtualBox}
-    \label{fig:virtual}
-\end{figure}
+\begin{lstlisting}[style=cstyle, style=cstyle, caption={Структура проекта}]
+lab8/
+├── CMakeLists.txt
+├── src/
+│   ├── main.cpp
+│   ├── contact.cpp
+│   ├── contactstorage.cpp
+│   ├── contactvalidator.cpp
+│   └── mainwindow.cpp
+└── headers/
+    ├── contact.h
+    ├── contactstorage.h
+    ├── contactvalidator.h
+    └── mainwindow.h
+\end{lstlisting}
 
-\newpage
-
-\subsubsection{Замена имени хоста}
-
-\par На этапе установки системе было присвоено имя хоста 333 (см. рисунок ~\ref{fig:host_set}), что позволяет однозначно идентифицировать её в сети и командной строке.
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/host_set.jpg}
-    \caption{Задание имени хоста для виртуальной машины}
-    \label{fig:host_set}
-\end{figure}
-
-\subsubsection{Установка операционной системы}
-
-\par На рисунке (см. рисунок ~\ref{fig:debian}). изображен процесс установки Debian 12 проходил в стандартном. Для экономии ресурсов выбрана минимальная установка без GUI, подходящая для терминальной работы, компиляции и тестирования программ на языке C.
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/debian_install.jpg}
-    \caption{Создание и настройка виртуальной машины в VirtualBox}
-    \label{fig:debian}
-\end{figure}
-
-\subsubsection{Финальная конфигурация машины}
-\par Итоговые параметры системы представлены (см. рисунок ~\ref{fig:Vm}). После установки операционной системы дополнительно проверены параметры конфигурации виртуальной машины в VirtualBox.
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.69\textwidth]{myPhoto/VM.jpg}
-    }
-    \caption{Виртуальная машина}
-    \label{fig:Vm}
-\end{figure}
-
-\newpage
-
-\subsubsection{Создание учетной записи}
-\par Во время установки гостевой операционной системы Debian 12 (64-битная) была создана учётная запись с логином adiatullintimur, соответствующим фамилии пользователя в латинской транслитерации, как это предусматривалось заданием. Изначально имя хоста (hostname) было задано как случайная строка символов, а затем было изменено индивидуально пользователем - 333. Аутентификация осуществлялась через стандартный механизм ввода логина и пароля в текстовой консоли tty1, поскольку графическая среда в системе отсутствует — это также соответствовало условиям задания (см. рисунок~\ref{fig:Hostname}).
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.99\textwidth]{myPhoto/LoginHost.jpg}
-    }
-    \caption{Логин}
-    \label{fig:Hostname}
-\end{figure}
-
-\subsubsection{Настройка проброса портов}
-\par Дабы получить удаленный доступ к гостевой операционной системе была выполнена найстройка проброса TCP-порта 22 с виртуальной машины на хост-систему (см. рисунок~\ref{fig:Port}).
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.50\textwidth]{myPhoto/Port.jpg}
-    }
-    \caption{Проброс порта в гостевой операционной системе}
-    \label{fig:Port}
-\end{figure}
-
-В большинстве случаев виртуальная машина работает в изолированной среде, а её сеть настроена в режиме \textbf{NAT (Network Address Translation)}. Это означает следующее:
-\begin{itemize}
-    \item виртуальная машина имеет \textbf{локальный (внутренний) IP-адрес}, который недоступен извне;
-    \item внешние компьютеры, включая хост-систему, не могут напрямую подключиться к этой машине, так как трафик не маршрутизируется внутрь.
-\end{itemize}
-
-\subsection*{Для обхода этих ограничений используется проброс портов (port forwarding):}\vspace{0.5cm}
-
-Мы настраиваем хост-систему так, чтобы весь трафик, поступающий на порт \texttt{2222}, автоматически перенаправлялся на порт \texttt{22} (SSH) внутри виртуальной машины.
-
-Хост-система принимает соединение и направляет его внутрь виртуальной машины, обеспечивая доступ к SSH, несмотря на изоляцию.
-\vspace{0.5cm}
-\par После настройки проброса порта в гостевой ОС, подключаемся через хост-систему (см. рисунок~\ref{fig:Hostname2}).
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.99\textwidth]{myPhoto/LoginHost2.jpg}
-    }
-    \caption{Проброс порта в хост-системе}
-    \label{fig:Hostname2}
-\end{figure}
-
-\subsubsection{Настройка беспарольной аутентификации по SSH}
-
-Аутентификация по ключу - это не только удобство, но и значительное повышение безопасности. Ниже приведены её ключевые преимущества:
-
-\begin{itemize}
-    \item закрытый ключ невозможно подобрать, в отличие от слабых или утёкших паролей;
-    \item в отличие от паролей, которые могут быть перехвачены или сохранены, приватный ключ остаётся на клиенте.
-\end{itemize}
-
-Для подключения к виртуальной машине без пароля была настроена SSH-
-аутентификация по ключу (см. рисунок~\ref{fig:genkey}). Процесс состоял из следующих шагов:
-
-\subsection*{1. Генерация пары ключей на хост-системе}
-
-В терминале хост-системы выполнить команду:
-
-\begin{verbatim}
-ssh-keygen -t ed25519 -C "timur@local"
-\end{verbatim}
-
-По умолчанию ключи сохраняются в каталоге \texttt{~/.ssh}. Публичный ключ будет содержаться в файле \texttt{id\_ed25519.pub}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.99\linewidth]{myPhoto/genkey.jpg}
-    \caption{Генерация ключа в терминале bash}
-    \label{fig:genkey}
-\end{figure}
-
-\subsection*{2. Добавление публичного ключа на виртуальную машину}
-
-Для настройки беспарольной аутентификации по SSH необходимо передать публичный ключ на гостевую систему. Это можно сделать с помощью утилиты \texttt{ssh-copy-id}, которая автоматически создаёт каталог \texttt{\~{}/.ssh} на виртуальной машине (если он отсутствует), добавляет ключ в файл \texttt{authorized\_keys}, и устанавливает необходимые права доступа.
-
-\begin{verbatim}
-ssh-copy-id -p 2222 -i ~/.ssh/id_ed25519.pub adiatullintimur@localhost
-\end{verbatim}
-
-\noindent
-Описание параметров:
-\begin{itemize}
-  \item \texttt{-p 2222} — указывает нестандартный порт подключения к SSH-серверу виртуальной машины.
-  \item \texttt{-i ~/.ssh/id\_ed25519.pub} — путь к публичному ключу, который будет добавлен.
-  \item \texttt{adiatullintimur@localhost} — имя пользователя и адрес виртуальной машины.
-\end{itemize}
-
-После выполнения команды, ключ будет добавлен в файл \texttt{authorized\_keys} на гостевой системе, что позволит подключаться по SSH без запроса пароля.
-
-
-\subsection*{3. Назначение прав доступа к ключам}
-
-Для корректной работы SSH необходимо установить следующие права:
-
-\begin{verbatim}
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/authorized_keys
-\end{verbatim}
-
-\subsection*{4. Подключение к виртуальной машине}
-
-Для подключения с хоста к виртуальной машине выполнить:
-
-\begin{verbatim}
-ssh adiatullin@localhost -p 2222
-\end{verbatim}
-
-Таким образом теперь мы можем подключиться по ключу. Результат представлен на рисунке ~\ref{fig:withoutpass}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.99\linewidth]{myPhoto/withoutpass.jpg}
-    \caption{Вход в хост-системе по ключу}
-    \label{fig:withoutpass}
-\end{figure}
-
-\subsection{Основы работы в командной строке}
-
-\subsubsection{Автодополнение команд с помощью \textbf{Tab}}
-
-\par В терминале Debian доступна функция автодополнения: при вводе первых символов команды достаточно нажать клавишу Tab, чтобы завершить команду автоматически. Например, при наборе wh система при двойном нажатии предлагает выбор таких команд, как \textbf{whoami}, \textbf{whereis} и т.д., а da — до \textbf{date}, \textbf{dash}, если не возникает неоднозначности. Если же существует несколько возможных продолжений, двойное нажатие Tab отобразит список всех доступных вариантов.
-
-\par Рисунок ~\ref{fig:Tab} демонстрирует примеры автодополнения команд в терминале с помощью клавиши Tab.
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.88\textwidth]{myPhoto/Tab.jpg}
-    }
-    \caption{Функция автодополнения команд Tab}
-    \label{fig:Tab}
-\end{figure}
-
-\subsubsection{Использование встроенной справки через \textbf{man}}
-
-\par Команда \textbf{man} в Linux предоставляет доступ к подробной справочной информации по большинству утилит. С её помощью можно узнать назначение команды, синтаксис, параметры и возможные способы использования.
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.99\textwidth]{myPhoto/Man.jpg}
-    }
-    \caption{Встроенная справка whoami}
-    \label{fig:Man}
-\end{figure}
-
-\newpage
-
-Например, при вызове \textbf{man whoami} (см. рисунок~\ref{fig:Man}) отображается руководство по команде \textbf{whoami}, показывающее, что она используется для вывода имени текущего пользователя. Эта утилита не имеет дополнительных опций и подходит для быстрой идентификации пользователя.\vspace{0.5cm}
-
-\subsubsection{Остальные команды терминала}
-\par Аналогичным образом можно изучать и другие основные команды Linux. Например: \textbf{date} — показывает текущую дату и время, поддерживает форматирование; \textbf{uptime} — выводит, сколько времени работает система и её среднюю нагрузку, \textbf{df} — отображает использование дискового пространства; \textbf{cp, mv, touch, rm} — команды для копирования, перемещения, создания и удаления файлов; \textbf{stat} — показывает подробную информацию о файле; \textbf{file} — определяет тип содержимого файла; \textbf{find} — ищет файлы по критериям; \textbf{whereis} — ищет местоположение исполняемых файлов; \textbf{cat, less} — вывод содержимого файла, \textbf{less} удобнее для прокрутки; \textbf{grep} — ищет строки по шаблону в файлах; \textbf{hexdump} — показывает файл в шестнадцатеричном виде; \textbf{time} — измеряет время выполнения команды (см. рисунки~\ref{fig:Others},~\ref{fig:Others2},~\ref{fig:Others3}).
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.69\textwidth]{myPhoto/other.jpg}
-    }
-    \caption{Примеры команд}
-    \label{fig:Others}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.69\textwidth]{myPhoto/other2.jpg}
-    }
-    \caption{Примеры команд}
-    \label{fig:Others2}
-\end{figure}
+Взаимодействие компонентов представлено на диаграмме (см. рисунок~\ref{fig:architecture}).
 
 \begin{figure}[H]
     \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.69\textwidth]{myPhoto/other3.jpg}
-    }
-    \caption{Примеры команд}
-    \label{fig:Others3}
+    \begin{tikzpicture}[
+        box/.style={rectangle, draw, minimum width=3.5cm, minimum height=1cm, align=center},
+        arrow/.style={->, >=stealth, thick}
+    ]
+        \node[box] (mainwindow) at (0,4) {MainWindow\\(GUI + Controller)};
+        \node[box] (validator) at (-4,2) {ContactValidator};
+        \node[box] (storage) at (4,2) {ContactStorage};
+        \node[box] (contact) at (0,0) {Contact};
+        
+        \draw[arrow] (mainwindow) -- (validator);
+        \draw[arrow] (mainwindow) -- (storage);
+        \draw[arrow] (storage) -- (contact);
+        \draw[arrow] (validator) -- (contact);
+        \draw[arrow, dashed] (storage) -- ++(2,0) node[right] {QFile, JSON};
+    \end{tikzpicture}
+    \caption{Архитектура приложения}
+    \label{fig:architecture}
 \end{figure}
 
+Класс \texttt{MainWindow} выступает центральным компонентом, координирующим работу остальных модулей. Он обрабатывает события пользовательского интерфейса, вызывает методы валидации перед операциями с данными и использует \texttt{ContactStorage} для сохранения и загрузки информации.
 
-\subsubsection{История команд}
-\par В процессе работы в терминале Linux все введенные команды автоматически сохраняются в истории, что позволяет легко возвращаться к ранее выполненным операциям. \textbf{history} — выводит список ранее выполненных команд с номерами.
-Указав число, можно ограничить вывод последних команд: history 42 — последние 42 команды (см. рисунок~\ref{fig:History}).
+\subsection{Описание классов}
 
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.4\textwidth]{myPhoto/history.jpg}
-    }
-    \caption{Применение history}
-    \label{fig:History}
-\end{figure}
+\subsubsection{Структура Contact}
 
-\subsection{Установка среды разработки}
+Структура \texttt{Contact} представляет модель данных для хранения информации о контакте. Содержит все необходимые поля согласно требованиям задания.
 
-\subsubsection{Установка инструментов}
+\begin{lstlisting}[style=cstyle, style=cstyle, caption={Заголовочный файл contact.h}]
+#ifndef CONTACT_H
+#define CONTACT_H
 
-Для подготовки виртуальной машины к разработке необходимо установить базовые инструменты с помощью пакетного менеджера \texttt{apt} и утилиты \texttt{sudo}.
+#include <QString>
+#include <QDate>
+#include <QStringList>
+#include <QJsonObject>
 
-\begin{itemize}
-  \item \texttt{apt} (Advanced Package Tool) — утилита для управления пакетами в Debian-подобных системах.
-  \item \texttt{sudo} (superuser do) — позволяет выполнять команды от имени суперпользователя.
-\end{itemize}
+class Contact
+{
+public:
+    Contact();
+    Contact(const QString& firstName, const QString& lastName, 
+            const QString& middleName, const QString& address, 
+            const QDate& birthDate, const QString& email,
+            const QStringList& phoneNumbers);
 
-\noindent
-Для обновления списка доступных пакетов выполните команду:
+    QString firstName() const { return m_firstName; }
+    QString lastName() const { return m_lastName; }
+    QString middleName() const { return m_middleName; }
+    QString address() const { return m_address; }
+    QDate birthDate() const { return m_birthDate; }
+    QString email() const { return m_email; }
+    QStringList phoneNumbers() const { return m_phoneNumbers; }
 
-\begin{verbatim}
-sudo apt update
-\end{verbatim}
+    void setFirstName(const QString& firstName);
+    void setLastName(const QString& lastName);
+    void setMiddleName(const QString& middleName);
+    void setAddress(const QString& address);
+    void setBirthDate(const QDate& birthDate);
+    void setEmail(const QString& email);
+    void setPhoneNumbers(const QStringList& phoneNumbers);
 
-\noindent
-Для установки необходимых инструментов используйте:
+    QJsonObject toJson() const;
+    static Contact fromJson(const QJsonObject& json);
 
-\begin{verbatim}
-sudo apt install build-essential cmake
-\end{verbatim}
+    bool operator<(const Contact& other) const;
+    bool operator==(const Contact& other) const;
 
-\begin{itemize}
-  \item \texttt{build-essential} — включает компилятор языка C, утилиту \texttt{make} и другие инструменты, необходимые для сборки программ.
-  \item \texttt{cmake} — генератор сборочных скриптов, который использовался в проек- те для конфигурации, управления зависимостями и генерации Makefile.
-\end{itemize}
+private:
+    QString m_firstName;
+    QString m_lastName;
+    QString m_middleName;
+    QString m_address;
+    QDate m_birthDate;
+    QString m_email;
+    QStringList m_phoneNumbers;
+};
 
-\subsubsection{Исследование разделяемых библиотек}
+#endif // CONTACT_H
+\end{lstlisting}
 
-После установки необходимых компонентов была выполнена проверка системных зависимостей с помощью утилиты \texttt{ldd}. Эта команда позволяет определить:
+Класс реализует методы сериализации в формат JSON и десериализации из него, что обеспечивает удобное сохранение данных в файл. Операторы сравнения используются для сортировки контактов по фамилии, имени и отчеству.
 
-\begin{itemize}
-    \item имена динамически загружаемых библиотек, от которых зависит программа;
-    \item физические пути к данным библиотекам;
-    \item адреса загрузки в памяти.
-\end{itemize}
+\subsubsection{Класс ContactValidator}
 
-Анализ выполнялся на примере интерпретатора командной строки \texttt{/bin/bash}. Результат показан на рисунке~\ref{fig:depends1}.
+Класс \texttt{ContactValidator} инкапсулирует логику валидации пользовательского ввода с использованием регулярных выражений. Обеспечивает проверку корректности данных перед их сохранением.
 
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.99\textwidth]{myPhoto/depends.jpg}
-    }
-    \caption{Вывод команды \texttt{ldd /bin/bash}}
-    \label{fig:depends1}
-\end{figure}
+\begin{lstlisting}[style=cstyle, caption={Заголовочный файл contactvalidator.h}]
+#ifndef CONTACTVALIDATOR_H
+#define CONTACTVALIDATOR_H
 
-По результатам вывода можно выделить несколько критически важных библиотек:
+#include <QString>
+#include <QDate>
 
-\begin{itemize}
-    \item \texttt{linux-vdso.so.1} — виртуальная динамическая библиотека, которая генерируется ядром для ускорения системных вызовов;
-    \item \texttt{libtinfo.so.6} — библиотека, отвечающая за взаимодействие с терминалом (цвета, курсор и т.д.). Используется для управления терминалом;
-    \item \texttt{libc.so.6} — основная библиотека C, обеспечивающая взаимодействие с ядром;
-    \item \texttt{ld-linux-aarch64.so.2} —  динамический компоновщик/загрузчик для архитектуры AArch64 (ARM 64-bit). Его основная задача — подготовить и запустить программу.
-\end{itemize}
+class ContactValidator
+{
+public:
+    static bool validateName(const QString& name, 
+                             QString& errorMessage);
+    static bool validatePhone(const QString& phone, 
+                              QString& errorMessage);
+    static bool validateBirthDate(const QDate& date, 
+                                  QString& errorMessage);
+    static bool validateEmail(const QString& email, 
+                             QString& errorMessage);
 
-\textbf{Рекурсивный анализ зависимостей:}  
-Для более глубокого понимания структуры зависимостей была реализована последовательная проверка с помощью \texttt{ldd} не только основного бинарного файла, но и каждой найденной библиотеки. Такой подход позволяет отследить цепочки вложенных (косвенных) зависимостей, что особенно полезно при отладке или переносе программного окружения. Результат зависимости представлен на рисунках ~\ref{fig:libs}.
+    // Методы нормализации
+    static QString normalizeName(const QString& name);
+    static QString normalizePhone(const QString& phone);
+    static QString normalizeEmail(const QString& email);
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.79\linewidth]{myPhoto/depends2.jpg}
-    \caption{Последовательная проверка с помощью ldd /lib/aarch64-linux-gnu/libtinfo.so.6 и ldd /lib/aarch64-linux-gnu/libc.so.6}
-    \label{fig:libs}
-\end{figure}
-\newpage
+private:
+    static QString extractPhoneDigits(const QString& phone);
+};
 
-\subsubsection{Автоматизация сборки с помощью CMake}
+#endif // CONTACTVALIDATOR_H
+\end{lstlisting}
 
-В качестве системы сборки выбран \textbf{CMake} — мощный и гибкий инструмент, подходящий как для небольших проектов, так и для крупных кросс-платформенных систем.
-
-\paragraph{Преимущества использования CMake:}
-\begin{itemize}
-  \item независимость от платформы и компилятора;
-  \item автоматическая генерация \texttt{Makefile} или файлов для других систем;
-  \item возможность управления зависимостями и флагами компиляции;
-  \item интеграция с системой тестирования \texttt{CTest};
-  \item поддержка кастомных целей и скриптов (например, shell-обёрток).
-\end{itemize}
-
-\noindent Генерация Makefile:
-\begin{verbatim}
-mkdir build && cd build
-cmake ..
-make
-\end{verbatim}
-
-\noindent Такой подход сочетает в себе простоту Make с гибкостью и абстракцией CMake.
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.50\textwidth]{myPhoto/cmake1.jpg}
-    }
-    \caption{Процесс сборки}
-    \label{fig:ProcessCMake}
-\end{figure}
-
-\newpage
-
-\noindent\textbf{Структура CMakeLists.txt и назначение директив}\vspace{0.5cm}
-
-\par Описание используемых команд на рисунке ~\ref{fig:MyCMake}
+\textbf{Регулярные выражения для валидации:}
 
 \begin{itemize}
-    \item \texttt{cmake\_minimum\_required(VERSION 3.10)} — задаёт минимально допустимую версию CMake, необходимую для сборки проекта.
-
-    \item \texttt{project(power\_prac C)} — определяет имя проекта и указывает, что используется язык C.
-
-    \item \texttt{set(CMAKE\_C\_STANDARD 11)} — устанавливает стандарт языка C.
-
-    \item \texttt{include\_directories(headers)} — добавляет папку \texttt{headers} в список директорий с заголовочными файлами.
-
-    \item \texttt{add\_library(... STATIC ...)} — создаёт статическую библиотеку. В примере:
+    \item \textbf{Имя:} \texttt{\^{}[A-Za-zА-Яа-яЁё0-9][A-Za-zА-Яа-яЁё0-9\textbackslash- ]*[A-Za-zА-Яа-яЁё0-9]\$}
     \begin{itemize}
-        \item \texttt{power\_static} — библиотека из \texttt{src/power.c};
-        \item \texttt{set\_target\_properties(... OUTPUT\_NAME "power")} — задаёт имя выходного файла без приставки \_static.
+        \item Разрешены буквы (латиница и кириллица), цифры, дефис, пробел;
+        \item Не может начинаться или заканчиваться дефисом;
+        \item Запрещены двойные дефисы и множественные пробелы.
     \end{itemize}
-
-    \item \texttt{add\_library(... SHARED ...)} — аналогично, создаёт динамическую (разделяемую) библиотеку.
-
-    \item \texttt{add\_executable(...)} — создаёт исполняемый файл.
+    
+    \item \textbf{Телефон:} \texttt{\^{}\textbackslash+\textbackslash d+\$}
     \begin{itemize}
-        \item \texttt{main\_static} и \texttt{main\_shared} — основной файл \texttt{main.c}, связанный с соответствующей библиотекой через:
-        \item \texttt{target\_link\_libraries(...)} — подключает библиотеки к целевому исполняемому файлу.
+        \item Международный формат (начинается с +);
+        \item Длина от 10 до 15 цифр;
+        \item Автоматическое преобразование формата 8(XXX)XXX-XX-XX в +7XXXXXXXXXX.
     \end{itemize}
-
-    \item \texttt{main\_dl} — исполняемый файл, использующий \texttt{dlopen()} для динамической загрузки библиотек во время выполнения. Линкуется с \texttt{libdl} через \texttt{target\_link\_libraries(main\_dl dl)}.
-
-    \item \texttt{add\_executabLe(znak\_ncurses\_app ...)} — создаёт приложение с псевдографическим интерфейсом. Связывается с библиотеками \texttt{znak}, \texttt{ncurses} и \texttt{zlib}.
+    
+    \item \textbf{Email:} \texttt{\^{}[A-Za-z0-9.\_\%+-]+@[A-Za-z0-9.-]+\textbackslash.[A-Za-z]\{2,\}\$}
+    \begin{itemize}
+        \item Имя пользователя: латинские буквы, цифры, точки, подчеркивания;
+        \item Обязательное наличие символа @;
+        \item Домен должен содержать минимум одну точку.
+    \end{itemize}
+    
+    \item \textbf{Дата рождения:}
+    \begin{itemize}
+        \item Должна быть меньше текущей даты;
+        \item Не может быть более 150 лет назад;
+        \item Валидация високосных годов выполняется классом QDate.
+    \end{itemize}
 \end{itemize}
 
-\begin{figure}[h]
-	\centering
-	\href{https://example.com/fullsize-image}{%
-			\includegraphics[width=0.74\textwidth]{myPhoto/mycmake.jpg}
-	}
-	\caption{Используемый \texttt{CMakeLists.txt} в работе}
-	\label{fig:MyCMake}
+\textbf{Псевдокод метода validateName:}
+
+\begin{quote}
+\textbf{Функция validateName(name, errorMessage):} \\
+\hspace*{1em}normalized = normalizeName(name) \\
+\hspace*{1em}если normalized пусто: \\
+\hspace*{2em}errorMessage = "Имя не может быть пустым" \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}trimmed = name.trimmed() \\
+\hspace*{1em}если trimmed начинается или заканчивается на '-': \\
+\hspace*{2em}errorMessage = "Имя не может начинаться/заканчиваться на дефис" \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}regex = \^{}[A-Za-zА-Яа-яЁё0-9][A-Za-zА-Яа-яЁё0-9\textbackslash- ]*[A-Za-zА-Яа-яЁё0-9]\$ \\
+\hspace*{1em}если не соответствует regex: \\
+\hspace*{2em}errorMessage = "Имя может содержать только буквы, цифры, дефис и пробел" \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}если содержит "--" или множественные пробелы: \\
+\hspace*{2em}errorMessage = "Имя не должно содержать двойные дефисы или множественные пробелы" \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}вернуть true
+\end{quote}
+
+\textbf{Методы нормализации:}
+
+Нормализация обеспечивает приведение данных к единому формату перед сохранением:
+
+\begin{itemize}
+    \item \texttt{normalizeName} — удаляет лишние пробелы, приводит первую букву каждого слова к заглавной, остальные к строчным;
+    \item \texttt{normalizePhone} — удаляет пробелы, скобки, дефисы, преобразует российский формат 8(...) в +7(...);
+    \item \texttt{normalizeEmail} — приводит к нижнему регистру, удаляет пробелы.
+\end{itemize}
+
+\subsubsection{Класс ContactStorage}
+
+Класс \texttt{ContactStorage} отвечает за сохранение и загрузку контактов из файла в формате JSON. Использует классы \texttt{QFile}, \texttt{QJsonDocument}, \texttt{QJsonArray} и \texttt{QJsonObject} из фреймворка Qt.
+
+\begin{lstlisting}[style=cstyle, caption={Заголовочный файл contactstorage.h}]
+#ifndef CONTACTSTORAGE_H
+#define CONTACTSTORAGE_H
+
+#include "contact.h"
+#include <QList>
+#include <QString>
+
+class ContactStorage
+{
+public:
+    ContactStorage(const QString& filename = "phonebook.json");
+    
+    bool load();
+    bool save();
+    
+    QList<Contact>& contacts();
+    const QList<Contact>& contacts() const;
+    
+    void addContact(const Contact& contact);
+    void removeContact(int index);
+    void updateContact(int index, const Contact& contact);
+    
+    QString filename() const;
+    void setFilename(const QString& filename);
+
+private:
+    QList<Contact> m_contacts;
+    QString m_filename;
+};
+
+#endif // CONTACTSTORAGE_H
+\end{lstlisting}
+
+\textbf{Псевдокод метода load:}
+
+\begin{quote}
+\textbf{Функция load():} \\
+\hspace*{1em}file = открыть m\_filename для чтения \\
+\hspace*{1em}если файл не существует: \\
+\hspace*{2em}m\_contacts.clear() \\
+\hspace*{2em}вернуть true \\
+\hspace*{1em}если не удалось открыть файл: \\
+\hspace*{2em}вывести ошибку \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}data = прочитать весь файл \\
+\hspace*{1em}закрыть файл \\
+\hspace*{1em}doc = разобрать data как JSON \\
+\hspace*{1em}если ошибка парсинга: \\
+\hspace*{2em}вывести ошибку \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}если doc не является массивом: \\
+\hspace*{2em}вывести ошибку \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}array = doc.array() \\
+\hspace*{1em}m\_contacts.clear() \\
+\hspace*{1em}для каждого value в array: \\
+\hspace*{2em}если value является объектом: \\
+\hspace*{3em}contact = Contact::fromJson(value) \\
+\hspace*{3em}m\_contacts.append(contact) \\
+\hspace*{1em}вернуть true
+\end{quote}
+
+\textbf{Псевдокод метода save:}
+
+\begin{quote}
+\textbf{Функция save():} \\
+\hspace*{1em}file = открыть m\_filename для записи \\
+\hspace*{1em}если не удалось открыть файл: \\
+\hspace*{2em}вывести ошибку \\
+\hspace*{2em}вернуть false \\
+\hspace*{1em}array = пустой JSON-массив \\
+\hspace*{1em}для каждого contact в m\_contacts: \\
+\hspace*{2em}jsonObject = contact.toJson() \\
+\hspace*{2em}array.append(jsonObject) \\
+\hspace*{1em}doc = QJsonDocument(array) \\
+\hspace*{1em}записать doc.toJson() в файл \\
+\hspace*{1em}закрыть файл \\
+\hspace*{1em}вернуть true
+\end{quote}
+
+
+\subsubsection{Класс MainWindow}
+
+Класс \texttt{MainWindow} наследуется от \texttt{QMainWindow} и реализует графический интерфейс приложения, а также всю бизнес-логику взаимодействия с пользователем.
+
+\begin{lstlisting}[style=cstyle, caption={Фрагмент заголовочного файла mainwindow.h}]
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QTableWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QDateEdit>
+#include <QTextEdit>
+#include <QComboBox>
+#include <QStack>
+#include "contactstorage.h"
+#include "contact.h"
+
+struct ContactAction {
+    enum Type { Add, Edit, Delete };
+    Type type;
+    Contact contact;
+    int index;
+};
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void addContact();
+    void editContact();
+    void deleteContact();
+    void searchContacts();
+    void clearSearch();
+    void onTableSelectionChanged();
+    void loadContacts();
+    void saveContacts();
+    void undoLastAction();
+
+private:
+    void setupUI();
+    void setupTable();
+    void setupForm();
+    void setupSearch();
+    void populateTable();
+    void clearForm();
+    bool validateForm(QString& errorMessage);
+    bool checkForDuplicates(const Contact& contact, 
+                           int excludeIndex = -1);
+    
+    // UI компоненты
+    QTableWidget* m_table;
+    QLineEdit* m_firstNameEdit;
+    QLineEdit* m_lastNameEdit;
+    QLineEdit* m_middleNameEdit;
+    QTextEdit* m_addressEdit;
+    QDateEdit* m_birthDateEdit;
+    QLineEdit* m_emailEdit;
+    QTextEdit* m_phoneNumbersEdit;
+    QPushButton* m_addButton;
+    QPushButton* m_editButton;
+    QPushButton* m_deleteButton;
+    QPushButton* m_undoButton;
+    QLineEdit* m_searchEdit;
+    QComboBox* m_searchFieldCombo;
+    QDateEdit* m_searchDateEdit;
+    QComboBox* m_dateSearchTypeCombo;
+    
+    // Данные
+    ContactStorage* m_storage;
+    int m_editingIndex;
+    bool m_isEditing;
+    QStack<ContactAction> m_undoStack;
+};
+
+#endif // MAINWINDOW_H
+\end{lstlisting}
+
+\textbf{Ключевые компоненты графического интерфейса:}
+
+\begin{itemize}
+    \item \textbf{QTableWidget} — таблица для отображения контактов с возможностью сортировки по столбцам;
+    \item \textbf{QLineEdit, QTextEdit, QDateEdit} — поля ввода данных контакта;
+    \item \textbf{QComboBox} — выпадающие списки для выбора поля поиска и типа сравнения даты;
+    \item \textbf{QPushButton} — кнопки управления (Добавить, Редактировать, Удалить, Отмена, Поиск);
+    \item \textbf{QGroupBox} — группировка элементов формы и поиска.
+\end{itemize}
+
+Внешний вид главного окна представлен на рисунке~\ref{fig:main_window}.
+% TODO: вставить скриншот
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/main_window.png}
+    \caption{Главное окно приложения}
+    \label{fig:main_window}
 \end{figure}
+
+\textbf{Механизм сигналов и слотов:}
+
+Qt использует архитектуру сигналов и слотов для обработки событий. Основные соединения в приложении:
+% TODO: русский язык
+\begin{lstlisting}[style=cstyle, caption={Соединения сигналов и слотов}]
+// Кнопки управления
+connect(m_addButton, &QPushButton::clicked, 
+        this, &MainWindow::addContact);
+connect(m_editButton, &QPushButton::clicked, 
+        this, &MainWindow::editContact);
+connect(m_deleteButton, &QPushButton::clicked, 
+        this, &MainWindow::deleteContact);
+connect(m_undoButton, &QPushButton::clicked, 
+        this, &MainWindow::undoLastAction);
+
+// Поиск
+connect(m_searchButton, &QPushButton::clicked, 
+        this, &MainWindow::searchContacts);
+connect(m_clearSearchButton, &QPushButton::clicked, 
+        this, &MainWindow::clearSearch);
+
+// Таблица
+connect(m_table, &QTableWidget::itemSelectionChanged, 
+        this, &MainWindow::onTableSelectionChanged);
+
+// Автосохранение
+connect(m_storage, &ContactStorage::dataChanged, 
+        this, &MainWindow::saveContacts);
+\end{lstlisting}
+
+\subsection{Ключевые алгоритмы}
+
+\subsubsection{Алгоритм добавления контакта}
+
+Процесс добавления нового контакта включает несколько этапов проверки и обработки данных. Псевдокод представлен ниже.
+
+\textbf{Псевдокод метода addContact:}
+
+\begin{quote}
+\textbf{Функция addContact():} \\
+\hspace*{1em}errorMessage = "" \\
+\hspace*{1em}если не validateForm(errorMessage): \\
+\hspace*{2em}показать диалог с ошибкой errorMessage \\
+\hspace*{2em}вернуться \\
+\hspace*{1em}contact = получить данные из формы \\
+\hspace*{1em}если m\_isEditing == true: \\
+\hspace*{2em}oldContact = m\_storage.contacts()[m\_editingIndex] \\
+\hspace*{2em}если checkForDuplicates(contact, m\_editingIndex): \\
+\hspace*{3em}показать диалог "Такой контакт уже существует" \\
+\hspace*{3em}вернуться \\
+\hspace*{2em}m\_storage.updateContact(m\_editingIndex, contact) \\
+\hspace*{2em}pushAction(Edit, oldContact, m\_editingIndex) \\
+\hspace*{2em}показать сообщение "Контакт обновлен" \\
+\hspace*{2em}m\_isEditing = false \\
+\hspace*{2em}m\_addButton.setText("Добавить") \\
+\hspace*{1em}иначе: \\
+\hspace*{2em}если checkForDuplicates(contact): \\
+\hspace*{3em}показать предупреждение о дубликате \\
+\hspace*{3em}если пользователь отменил: \\
+\hspace*{4em}вернуться \\
+\hspace*{2em}m\_storage.addContact(contact) \\
+\hspace*{2em}pushAction(Add, contact, m\_storage.contactCount() - 1) \\
+\hspace*{2em}показать сообщение "Контакт добавлен" \\
+\hspace*{1em}m\_storage.save() \\
+\hspace*{1em}populateTable() \\
+\hspace*{1em}clearForm()
+\end{quote}
+
+\subsubsection{Алгоритм поиска контактов}
+
+Приложение поддерживает два типа поиска:
+\begin{itemize}
+    \item \textbf{Поиск по текстовым полям} (имя, фамилия, отчество, email, телефон, адрес) — поиск подстроки без учета регистра;
+    \item \textbf{Поиск по дате рождения} — точное совпадение, диапазон "до даты", "после даты".
+\end{itemize}
+
+\textbf{Псевдокод метода searchContacts:}
+
+\begin{quote}
+\textbf{Функция searchContacts():} \\
+\hspace*{1em}searchField = m\_searchFieldCombo.currentText() \\
+\hspace*{1em}m\_table.clearContents() \\
+\hspace*{1em}m\_table.setRowCount(0) \\
+\hspace*{1em}row = 0 \\
+\hspace*{1em}если searchField == "Дата рождения": \\
+\hspace*{2em}searchDate = m\_searchDateEdit.date() \\
+\hspace*{2em}searchType = m\_dateSearchTypeCombo.currentText() \\
+\hspace*{2em}для каждого contact в m\_storage.contacts(): \\
+\hspace*{3em}match = false \\
+\hspace*{3em}если searchType == "Точное совпадение" и contact.birthDate() == searchDate: \\
+\hspace*{4em}match = true \\
+\hspace*{3em}если searchType == "До даты" и contact.birthDate() <= searchDate: \\
+\hspace*{4em}match = true \\
+\hspace*{3em}если searchType == "После даты" и contact.birthDate() >= searchDate: \\
+\hspace*{4em}match = true \\
+\hspace*{3em}если match: \\
+\hspace*{4em}добавить contact в таблицу, строка row \\
+\hspace*{4em}row = row + 1 \\
+\hspace*{1em}иначе: \\
+\hspace*{2em}searchText = m\_searchEdit.text().toLower() \\
+\hspace*{2em}для каждого contact в m\_storage.contacts(): \\
+\hspace*{3em}value = получить значение поля searchField из contact \\
+\hspace*{3em}если value содержит searchText (без учета регистра): \\
+\hspace*{4em}добавить contact в таблицу, строка row \\
+\hspace*{4em}row = row + 1 \\
+\hspace*{1em}если row == 0: \\
+\hspace*{2em}показать сообщение "Ничего не найдено"
+\end{quote}
+
+\subsubsection{Механизм отмены действий}
+
+Для реализации функции отмены последнего действия используется структура \texttt{ContactAction} и стек \texttt{QStack<ContactAction>}.
+
+\textbf{Структура ContactAction:}
+\begin{lstlisting}[style=cstyle, caption={Структура для хранения действия}]
+struct ContactAction {
+    enum Type { Add, Edit, Delete };
+    Type type;         // Тип действия
+    Contact contact;   // Сохраненный контакт
+    int index;         // Индекс (для Edit и Delete)
+};
+\end{lstlisting}
+
+\textbf{Псевдокод метода undoLastAction:}
+
+\begin{quote}
+\textbf{Функция undoLastAction():} \\
+\hspace*{1em}если m\_undoStack пуст: \\
+\hspace*{2em}показать сообщение "Нечего отменять" \\
+\hspace*{2em}вернуться \\
+\hspace*{1em}action = m\_undoStack.pop() \\
+\hspace*{1em}если action.type == Add: \\
+\hspace*{2em}m\_storage.removeContact(action.index) \\
+\hspace*{2em}показать сообщение "Добавление отменено" \\
+\hspace*{1em}если action.type == Edit: \\
+\hspace*{2em}m\_storage.updateContact(action.index, action.contact) \\
+\hspace*{2em}показать сообщение "Редактирование отменено" \\
+\hspace*{1em}если action.type == Delete: \\
+\hspace*{2em}m\_storage.contacts().insert(action.index, action.contact) \\
+\hspace*{2em}показать сообщение "Удаление отменено" \\
+\hspace*{1em}m\_storage.save() \\
+\hspace*{1em}populateTable() \\
+\hspace*{1em}clearForm()
+\end{quote}
+
+При каждом изменении данных (добавление, редактирование, удаление) информация о действии сохраняется в стек методом \texttt{pushAction}. Это позволяет откатить последнюю операцию одним нажатием кнопки "Отменить".
+
+\subsubsection{Проверка на дубликаты}
+
+Перед добавлением или редактированием контакта выполняется проверка на наличие идентичных записей. Контакты считаются дубликатами, если совпадают все поля, кроме списка телефонов.
+
+\textbf{Псевдокод метода checkForDuplicates:}
+
+\begin{quote}
+\textbf{Функция checkForDuplicates(contact, excludeIndex):} \\
+\hspace*{1em}для i от 0 до m\_storage.contactCount() - 1: \\
+\hspace*{2em}если i == excludeIndex: \\
+\hspace*{3em}продолжить следующую итерацию \\
+\hspace*{2em}existing = m\_storage.contacts()[i] \\
+\hspace*{2em}если existing.firstName() == contact.firstName() и \\
+\hspace*{2em}\hspace*{2em}existing.lastName() == contact.lastName() и \\
+\hspace*{2em}\hspace*{2em}existing.middleName() == contact.middleName() и \\
+\hspace*{2em}\hspace*{2em}existing.birthDate() == contact.birthDate() и \\
+\hspace*{2em}\hspace*{2em}existing.email() == contact.email() и \\
+\hspace*{2em}\hspace*{2em}existing.address() == contact.address(): \\
+\hspace*{3em}вернуть true \\
+\hspace*{1em}вернуть false
+\end{quote}
+
+Если обнаружен дубликат, пользователю выводится п��едупреждение с вопросом о продолжении добавления.
+
+\subsection{Сортировка данных}
+
+Сортировка контактов в таблице выполняется автоматически при клике на заголовок столбца благодаря встроенному механизму \texttt{QTableWidget}. Метод \texttt{setSortingEnabled(true)} активирует эту функциональность.
+
+При каждой загрузке данных из файла список контактов предварительно сортируется по фамилии, имени и отчеству с помощью оператора \texttt{operator<}, реализованного в классе \texttt{Contact}:
+
+\begin{lstlisting}[style=cstyle, caption={Оператор сравнения для сортировки}]
+bool Contact::operator<(const Contact& other) const
+{
+    if (m_lastName != other.m_lastName) {
+        return m_lastName < other.m_lastName;
+    }
+    if (m_firstName != other.m_firstName) {
+        return m_firstName < other.m_firstName;
+    }
+    return m_middleName < other.m_middleName;
+}
+\end{lstlisting}
+
+Данный подход обеспечивает единообразие отображения данных при каждом запуске приложения.
 
 \newpage
 
-\subsection{Задание 1. Статические и динамические библиотеки}
-\subsubsection{Реализация функций}
+\section{Тестирование приложения}
 
-\noindent Индивидуальное задание заключалось в разработке функции возведения в степень целых чисел.
+В данном разделе представлены основные сценарии использования приложения с описанием действий пользователя и ожидаемого поведения системы.
 
-\par Функция была реализована на языке программирования \texttt{C} в двух вариантах: рекурсивном и итеративном. Это позволяет сравнить производительность и особенности реализации двух подходов.
+\subsection{Начальное состояние приложения}
 
-\par Объявления функций были вынесены в отдельный заголовочный файл \texttt{power.h} (см. рисунок ~\ref{fig:power.h}), обеспечивающий модульность и повторное использование кода. Для предотвращения многократного подключения заголовочного файла использовалась стандартная защита через препроцессорные директивы:
-
-\begin{verbatim}
-#pragma once
-\end{verbatim}
+При первом запуске приложения отображается главное окно с пустой таблицей контактов и формой ввода данных. Если файл \texttt{phonebook.json} не существует, он будет автоматически создан при сохранении первого контакта.
 
 \begin{figure}[H]
     \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.99\textwidth]{myPhoto/power.h.jpg}
-    }
-    \caption{Заголовочный файл}
-    \label{fig:power.h}
+    % \includegraphics[width=1\linewidth]{myPhoto/first_start.png}
+    \caption{Начальное состояние приложения при первом запуске}
+    \label{fig:first_start}
 \end{figure}
 
-\newpage
+Элементы интерфейса:
+\begin{itemize}
+    \item \textbf{Форма ввода данных} — содержит поля для всех атрибутов контакта;
+    \item \textbf{Кнопки управления} — "Добавить", "Редактировать", "Удалить", "Отменить";
+    \item \textbf{Панель поиска} — поле ввода, выбор поля для поиска, фильтры по дате;
+    \item \textbf{Таблица контактов} — отображает список всех записей с возможностью сортировки;
+    \item \textbf{Кнопки файловых операций} — "Сохранить" и "Загрузить".
+\end{itemize}
 
-\subsubsection*{power\_iterative — итеративное возведение в степень}
+\subsection{Сценарий 1: Добавление нового контакта}
 
-Функция \texttt{power\_iterative(base, exp)} выполняет возведение целого числа \texttt{base} в степень \texttt{exp} с использованием итеративного алгоритма \textbf{быстрого возведения в степень} (или двоичного возведения в степень).
+\subsubsection{Шаг 1: Заполнение формы}
 
-Временная сложность этого алгоритма — $\Theta(\log n)$, где $n$ — показатель степени. Пространственная сложность — $\Theta(1)$, поскольку он не использует дополнительную память, пропорциональную показателю степени.
+Пользователь заполняет все поля формы корректными данными:
 
-\begin{algorithm}
-\caption{power\_iterative(base, exp)}
-\begin{algorithmic}[1]
+\begin{itemize}
+    \item \textbf{Фамилия:} Иванов
+    \item \textbf{Имя:} Иван
+    \item \textbf{Отчество:} Иванович
+    \item \textbf{Адрес:} г. Москва, ул. Ленина, д. 1, кв. 10
+    \item \textbf{Дата рождения:} 15.03.1990 (выбор через календарь)
+    \item \textbf{Email:} ivan.ivanov@example.com
+    \item \textbf{Телефоны:} +7 (999) 123-45-67, 8-800-555-35-35
+\end{itemize}
 
-\STATE result $\gets$ 1
-\STATE b $\gets$ base
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/add_form_filled.png}
+    \caption{Заполненная форма для добавления контакта}
+    \label{fig:add_form_filled}
+\end{figure}
 
-\WHILE{exp $>$ 0}
-  \IF{exp \% 2 == 1}
-    \STATE result $\gets$ result $\times$ b
-  \ENDIF
-  \STATE b $\gets$ b $\times$ b
-  \STATE exp $\gets$ exp / 2
-\ENDWHILE
+\subsubsection{Шаг 2: Нормализация данных}
 
-\RETURN result
+При вводе данных класс \texttt{ContactValidator} автоматически нормализует некоторые поля:
 
-\end{algorithmic}
-\end{algorithm}
+\begin{itemize}
+    \item \textbf{Имя "иван"} преобразуется в \textbf{"Иван"} (первая буква заглавная);
+    \item \textbf{Телефон "8-800-555-35-35"} преобразуется в \textbf{"+78005553535"} (международный формат);
+    \item \textbf{Email "Ivan.Ivanov@Example.COM"} преобразуется в \textbf{"ivan.ivanov@example.com"} (нижний регистр).
+\end{itemize}
 
+Если происходит нормализация, пользователю выводится предупреждение с указанием изменений (см. рисунок~\ref{fig:format_warning}).
 
-\subsubsection*{power\_recursive — рекурсивное возведение в степень}
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{myPhoto/format_warning.png}
+    \caption{Предупреждение о нормализации данных}
+    \label{fig:format_warning}
+\end{figure}
 
-	Функция \texttt{power\_recursive(base, exp)} выполняет возведение целого числа \texttt{base} в степень \texttt{exp} с использованием рекурсивного подхода, основанного на методе «возведение в степень через разложение». Это позволяет сократить глубину рекурсии и повысить эффективность. Временная сложность — $\Theta(\log n)$, пространственная — $\Theta(\log n)$ из-за глубины рекурсивного стека.
-	
-	\begin{algorithm}
-	\caption{power\_recursive(base, exp)}
-	\begin{algorithmic}[1]
-	\IF{exp = 0}
-			\RETURN 1
-	\ENDIF
-	\IF{exp = 1}
-			\RETURN base
-	\ENDIF
-	\STATE half $\gets$ power\_recursive(base, exp $\div$ 2)
-	\IF{exp mod 2 = 0}
-			\RETURN half $\times$ half
-	\ELSE
-			\RETURN half $\times$ half $\times$ base
-	\ENDIF
-	\end{algorithmic}
-	\end{algorithm}
+\subsubsection{Шаг 3: Успешное добавление}
 
-\newpage
-	
-	
+После нажатия кнопки "Добавить" происходит:
 
-\subsubsection{Создание библиотек}
-
-\noindent\textbf{Статическая линковка и её особенности}\vspace{0.5cm}
-
-При использовании статической компоновке весь необходимый код внешних библиотек включается непосредственно в итоговый исполняемый файл. Такой подход делает программу полностью автономной, не зависящей от наличия соответствующих библиотек в системе пользователя. В результате существенно увеличивается размер скомпилированного файла, поскольку он содержит не только основной код, но и все подключённые зависимости.
-
-Такой способ сборки особенно полезен при распространении программного обеспечения, поскольку позволяет доставлять один самодостаточный исполняемый файл. Однако при обновлении исходных библиотек необходимо пересобирать проект, чтобы воспользоваться новыми версиями или исправлениями — автоматическое обновление в этом случае невозможно.\vspace{0.5cm}
-
-\noindent\textbf{Создание статической библиотеки}\vspace{0.5cm}
-
-Для создания статической библиотеки использовался генератор сборки CMake. Библиотека была определена с использованием директивы \texttt{STATIC}, что указывает компилятору на необходимость создания именно статической версии:
-
-\begin{verbatim}
-add_library(power_static STATIC src/power.c)
-set_target_properties(power_static PROPERTIES OUTPUT_NAME "power")
-
-add_executable(main_static main.c)
-target_link_libraries(main_static power_static)
-\end{verbatim}
-
-При подключении такой библиотеки весь её код будет встроен в исполняемый файл во время сборки, обеспечивая автономную работу без внешних зависимостей.\vspace{0.5cm}
-
-\noindent\textbf{Динамическая линковка и подключение библиотеки во время выполнения}\vspace{0.5cm}
-
-При динамической компоновке внешний код не встраивается в исполняемый файл на этапе сборки. Вместо этого, программа получает доступ к библиотекам во время выполнения. Операционная система автоматически загружает необходимые \texttt{.so}-файлы из известных путей или тех, что определены переменными окружения.
-
-Такой подход позволяет существенно сократить размер исполняемого файла, поскольку нет необходимости включать весь внешний код внутрь бинарника. Это также упрощает обслуживание программы: при обновлении библиотеки, её использование актуализируется автоматически без необходимости пересборки проекта.
-
-Однако, существует и зависимость от окружения. Если необходимая библиотека отсутствует или недоступна, программа не сможет запуститься. Поэтому важно убедиться, что все зависимости установлены в системе.\vspace{0.5cm}
-
-\noindent\textbf{Создание динамической библиотеки}\vspace{0.5cm}
-
-Для генерации динамической библиотеки в проекте использовался генератор сборки \texttt{CMake}. Соответствующий фрагмент конфигурационного файла имеет следующий вид:
-
-\begin{verbatim}
-add_library(power_shared SHARED src/power.c)
-set_target_properties(power_shared PROPERTIES OUTPUT_NAME "power")
-
-add_executable(main_shared main.c)
-target_link_libraries(main_shared power_shared)
-\end{verbatim}
-
-Ключевое отличие от статической версии — использование ключевого слова \texttt{SHARED}, обозначающего создание разделяемой библиотеки. После сборки формируется файл с расширением \texttt{.so}, который затем связывается с исполняемым файлом во время выполнения.\vspace{0.5cm}
-% TODO: надо зафиксить это и добавить про dlopen()
-
-
-\noindent\textbf{Тестирование статической и динамической линковки}\vspace{0.5cm}
-
-\noindent\textbf{Тестируются две версии алгоритма:}\vspace{0.5cm}
 \begin{enumerate}
-    \item power\_iterative - итеративная версия
-    \item power\_recurvice - рекурсивная версия
+    \item Валидация всех полей формы;
+    \item Проверка на дубликаты;
+    \item Добавление контакта в \texttt{ContactStorage};
+    \item Автоматическое сохранение в файл \texttt{phonebook.json};
+    \item Отображение контакта в таблице;
+    \item Сохранение действия в стек отмены;
+    \item Очистка полей формы;
+    \item Показ информационного сообщения об успешном добавлении.
 \end{enumerate}
 
-\par Результаты тестирования представлены в разделе~\ref{sec:my-section}, поэтому все подробности с точностью до микросекунд можно посмотреть там.
-
-\subsubsection*{main.c — тестирование функций возведения в степень}
-
-Программа \texttt{main.c} предназначена для сравнения производительности двух реализаций возведения числа в степень: рекурсивной и итеративной. Измерение времени осуществляется с помощью стандартной библиотеки \texttt{time.h}. Количество повторов задаётся константой \texttt{REPEATS}.
-
-\begin{algorithm}
-\caption{main(base, exp)}
-\begin{algorithmic}[1]
-\IF{количество аргументов < 3}
-    \STATE вывести сообщение об ошибке
-    \STATE завершить выполнение
-\ENDIF
-\STATE base $\gets$ \texttt{atoi(argv[1])}
-\STATE exp $\gets$ \texttt{atoi(argv[2])}
-
-\STATE объявить переменные: \texttt{start}, \texttt{end}, \texttt{result\_iter}, \texttt{result\_rec}
-\STATE \texttt{iter\_total} $\gets$ 0
-\STATE \texttt{rec\_total} $\gets$ 0
-
-\COMMENT{Рекурсивный тест}
-\STATE start $\gets$ текущее время
-\FOR{$i = 0$ \TO REPEATS $-1$}
-    \STATE result\_rec $\gets$ power\_recursive(base, exp)
-\ENDFOR
-\STATE end $\gets$ текущее время
-\STATE rec\_total $\gets$ end $-$ start
-
-\COMMENT{Итеративный тест}
-\STATE start $\gets$ текущее время
-\FOR{$i = 0$ \TO REPEATS $-1$}
-    \STATE result\_iter $\gets$ power\_iterative(base, exp)
-\ENDFOR
-\STATE end $\gets$ текущее время
-\STATE iter\_total $\gets$ end $-$ start
-
-\STATE вывести количество повторов
-\STATE вывести result\_iter и среднее время итеративной реализации
-\STATE вывести result\_rec и среднее время рекурсивной реализации
-
-\RETURN 0
-\end{algorithmic}
-\end{algorithm}
-
-\newpage
-
-\noindent\textbf{Реализация динамической загрузки с использованием \texttt{dlopen()}}\vspace{0.5cm}
-
-Для демонстрации возможностей динамической загрузки во время выполнения была разработана программа, позволяющая загрузить библиотеку \texttt{libpower.so} и вызвать реализованные в ней функции возведения в степень. Такой подход позволяет гибко управлять подключением зависимостей и обеспечивает модульность (см. рисунок ~\ref{fig:main_dl.c}).
-
-\begin{figure}[h]
-	\centering
-	\href{https://example.com/fullsize-image}{%
-			\includegraphics[width=0.59\textwidth]{myPhoto/main_dl.jpg}
-	}
-	\caption{Динамическая загрузка}
-	\label{fig:main_dl.c}
-\end{figure}
-
-\begin{algorithm}
-	\caption{main(base, expr)}
-	\begin{algorithmic}[1]
-	\IF{количество аргументов < 3}
-			\STATE вывести сообщение "Usage: <имя_программы> <base> <exponent>"
-			\STATE завершить выполнение с кодом 1
-	\ENDIF
-	\STATE base $\gets$ \texttt{atoi(argv[1])}
-	\STATE exp $\gets$ \texttt{atoi(argv[2])}
-	
-	\STATE handle $\gets$ \texttt{dlopen("./libpower.so", RTLD\_LAZY)}
-	\IF{handle равно NULL}
-			\STATE вывести сообщение об ошибке \texttt{dlerror()} в stderr
-			\STATE завершить выполнение с кодом 1
-	\ENDIF
-	
-	\STATE power\_iterative $\gets$ \texttt{(power\_iter\_t)dlsym(handle, "power\_iterative")}
-	\STATE power\_recursive $\gets$ \texttt{(power\_rec\_t)dlsym(handle, "power\_recursive")}
-	
-	\IF{произошла ошибка \texttt{dlsym}}
-			\STATE вывести сообщение об ошибке \texttt{dlerror()} в stderr
-			\STATE \texttt{dlclose(handle)}
-			\STATE завершить выполнение с кодом 1
-	\ENDIF
-	
-	\STATE объявить переменные: \texttt{start}, \texttt{end}, \texttt{result\_iter}, \texttt{result\_rec}
-	\STATE \texttt{iter\_total} $\gets$ 0.0
-	\STATE \texttt{rec\_total} $\gets$ 0.0
-	
-	\COMMENT{Рекурсивный тест}
-	\STATE start $\gets$ \texttt{clock()}
-	\FOR{$i = 0$ \TO REPEATS $-1$}
-			\STATE result\_rec $\gets$ \texttt{power\_recursive(base, exp)}
-	\ENDFOR
-	\STATE end $\gets$ \texttt{clock()}
-	\STATE rec\_total $\gets$ (double)(end $-$ start) / CLOCKS\_PER\_SEC
-	
-	\COMMENT{Итеративный тест}
-	\STATE start $\gets$ \texttt{clock()}
-	\FOR{$i = 0$ \TO REPEATS $-1$}
-			\STATE result\_iter $\gets$ \texttt{power\_iterative(base, exp)}
-	\ENDFOR
-	\STATE end $\gets$ \texttt{clock()}
-	\STATE iter\_total $\gets$ (double)(end $-$ start) / CLOCKS\_PER\_SEC
-	
-	\STATE вывести "Тест на REPEATS повторов:"
-	\STATE вывести \texttt{result\_iter}, \texttt{iter\_total}, и \texttt{iter\_total / REPEATS}
-	\STATE вывести \texttt{result\_rec}, \texttt{rec\_total}, и \texttt{rec\_total / REPEATS}
-	
-	\STATE \texttt{dlclose(handle)}
-	\RETURN 0
-	\end{algorithmic}
-	\end{algorithm}
-
-\subsection*{Выполняются следующие шаги:}
-
-С помощью POSIX API (Portable Operating System Interface — это набор стандартов) производится динамическая загрузка разделяемой библиотеки:
-\begin{itemize}
-    \item Используется вызов \texttt{dlopen()} с флагом \texttt{RTLD\_LAZY} для отложенного связывания.
-    \item С помощью \texttt{dlsym()} получаются указатели на функции \texttt{power\_iterative} и \texttt{power\_recursive}, реализующие итеративный и рекурсивный алгоритмы возведения в степень.
-    \item После выполнения поиск вызывается через полученные указатели, а длительность каждого из вызовов измеряется с помощью \texttt{clock()} и \texttt{CLOCKS\_PER\_SEC}.
-\end{itemize}
-
-
-\newpage
-
-\subsection{Задание 2. Реализация основной структуры}
-
-\subsubsection{Заголовочный файл znak.h}
-
-Индивидуальное задание: реализовать структуру с именем \textbf{ZNAK}, содержащую следующие поля:
-\begin{itemize}
-    \item Фамилия (строка Си);
-    \item Имя (строка Си);
-    \item Знак Зодиака (перечисляемый тип);
-    \item Дата рождения (битовая структура).
-\end{itemize}
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.59\textwidth]{myPhoto/mydb.jpg}
-    }
-    \caption{Заголовочный файл znak.h}
-    \label{fig:znak.h}
+    % \includegraphics[width=1\linewidth]{myPhoto/contact_added.png}
+    \caption{Контакт успешно добавлен в таблицу}
+    \label{fig:contact_added}
 \end{figure}
 
-На приведенном скриншоте~\ref{fig:znak.h} представлена реализация заголовочного файла znak.h, в котором описывается структура данных для представления информации о человеке. Во избежание повторного включения используется стандартная защита с помощью препроцессорных директив:
+\subsection{Сценарий 2: Валидация некорректных данных}
 
-\begin{verbatim}
-#pragma once
-\end{verbatim}
+\subsubsection{Пример 1: Некорректное имя}
 
-\subsubsection{Контроль целостности данных с помощью CRC-32}
-
-Для проверки целостности бинарной базы данных используется контроль- ная сумма CRC-32 (см. рисунок ~\ref{fig:calculate_crc32}), реализованная через стандартную библиотеку zlib. Это позволяет обнаруживать нарушения структуры при загрузке данных, обеcпечивая надёжность хранения информации.
-Контрольная сумма вычисляется только по содержимому массива структур, исключая заголовок. Алгоритм основан на вызове crc32(). Обновление суммы и её проверка происходят на этапе сохранения файла. При несоответствии значений загрузка данных отменяется, сигнализируя о повреждении файла.
-
-
-
-\begin{figure}[h]
-    \centering
-    \href{https://example.com/fullsize-image}{%
-        \includegraphics[width=0.89\textwidth]{myPhoto/crc.jpg}
-    }
-    \caption{Функция расчета crc32}
-    \label{fig:calculate_crc32}
-\end{figure}
-
-\subsubsection{Реализация в файле znak\_ncurses\_app.c}
-
-Файл \texttt{znak\_ncurses\_app.c} содержит реализацию функций для работы с базой данных. Основные функции включают:
-
-\begin{itemize}
-  \item загрузку и сохранение данных;
-  \item поиск человека по фамилии;
-  \item создание нового файла, если его нет.
-\end{itemize}
-\newpage
-
-
-\subsection{Задание 2. Реализация программы с использованием псевдографической библиотеки ncurses}
-
-\subsubsection{Использование библиотеки \texttt{ncurses}}
-
-В ходе реализации проекта был разработан текстовый пользовательский интерфейс с применением библиотеки \texttt{ncurses}, которая обеспечивает контроль над отображением содержимого терминала, обработкой пользовательского ввода, а также предоставляет механизмы для построения псевдографических интерфейсов.\vspace{0.5cm}
-
-\noindent\textbf{Основные функции, использованные в проекте}
-
-\begin{itemize}
-    \item \texttt{initscr()} — инициализация библиотеки \texttt{ncurses}, создаёт основной экран и подготавливает терминал к работе
-    \item \texttt{cbreak()} — отключает буферизацию строкового ввода, позволяя обрабатывать символы по мере их ввода
-    \item \texttt{refresh()} — обновляет физический экран, синхронизируя его с внутренним буфером
-    \item \texttt{clear()} — очищает содержимое экрана перед отрисовкой новых элементов
-    \item \texttt{mvprintw()} — функция для вывода отформатированного текста на экран (аналог \texttt{printf})
-\end{itemize}\vspace{0.5cm}
-
-\noindent\textbf{Обработка пользовательского ввода}\vspace{0.5cm}
-
-Для организации безопасного и интерактивного ввода данных в терминале использовались следующие функции библиотеки \texttt{ncurses}:
-\begin{itemize}
-    \item \texttt{getnstr()} — выполняет ввод строки с ограничением по длине, предотвращая переполнение буфера. Применяется для безопасного считывания текстовых данных.
-    \item \texttt{getch()} — ожидает нажатия клавиши пользователем и возвращает символ или код, соответствующий этой клавише. Используется для обработки выбора пользователя или подтверждения действия.
-    \item \texttt{echo()} и \texttt{noecho()} — включают или отключают отображение вводимых символов в терминале. Используются для управления видимостью данных при вводе.
-\end{itemize}\vspace{0.5cm}
-
-\noindent\textbf{Завершение работы программы}
-
-\begin{itemize}
-    \item \texttt{endwin()} — корректно завершает работу с библиотекой \texttt{ncurses}, восстанавливая стандартное поведение терминала. Вызывается перед выходом из программы для освобождения ресурсов.
-\end{itemize}\vspace{0.5cm}
-
-\noindent\textbf{Где были задействованы данные функции}
-
-\begin{itemize}
-    \item Функция \textbf{run\_ui()} использует комбинацию \texttt{initscr()}, \texttt{cbreak()}, \texttt{noecho()}, \texttt{echo()} и \texttt{clear()}.
-    \item Функция \textbf{input\_record()} использует комбинацию \texttt{clear()}, \texttt{getch()}, \texttt{echo()} и \texttt{noecho()}
-\end{itemize}
-
-\par В ходе выполнения операций с базой данных вывод результата осуществляется с помощью функции \texttt{mvprintw()}, которая позволяет позиционировать текст в окне терминала с точностью до строки и столбца. Это обеспечивает более гибкое и структурированное отображение информации на экране.
-\par Использование \texttt{mvprintw()} позволяет отображать статус выполнения операций, уведомления о загрузке или сохранении данных, а также подтверждения ввода, делая интерфейс более информативным и удобным для пользователя.
-\par Таким образом, библиотека \texttt{ncurses} предоставила все необходимые средства для построения интерактивного текстового интерфейса: реализация меню, форматированный вывод результатов и пошаговый ввод данных. Всё это поддерживает кроссплатформенность, стабильную работу в терминале и полностью отвечает требованиям задания.
-
-\subsubsection{Операции с базой данных}
-
-Для реализации работы с записями были использованы следующие функции, отвечающие за загрузку, сохранение и контроль целостности данных в бинарном файле:
-
-\begin{itemize}
-    \item \texttt{calculate\_crc32()} — вычисляет контрольную сумму CRC-32 по массиву записей, обеспечивая проверку целостности данных при сохранении и загрузке из файла.
-    
-    \item \texttt{save\_to\_file()} — осуществляет сохранение заголовка и массива записей в файл. Формирует структуру \texttt{DB\_HEADER}, записывает в неё количество записей, идентификатор транзакции и CRC. Затем последовательно сохраняет заголовок и все людей в бинарном формате.
-    
-    \item \texttt{load\_from\_file()} — загружает данные из существующего бинарного файла. Считывает заголовок и массив данных. После успешной загрузки актуализирует идентификатор транзакции \texttt{current\_tx\_id} для обеспечения уникальности новых операций.
-\end{itemize}
-
-\subsubsection{Функции пользовательского интерфейса}
-
-Пользовательский интерфейс реализован с помощью библиотеки \texttt{ncurses} и включает следующие функции:
-
-\begin{itemize}
-    \item \texttt{input\_record()} —  обеспечивает ввод новой записи, считывая у пользователя фамилию, имя, дату рождения и знак зодиака. Добавляет данные в локальный массив.
-    \item \texttt{show\_records()} — отображает таблицу текущих данных с выравниванием по столбцам. Позволяет пользователю просмотреть внесённые данные.
-    \item \texttt{find\_by\_surname()} — позволяет найти и вывести все записи, соответствующие введённой пользователем фамилии. Если совпадений нет, выдаёт соответствующее сообщение.
-    \item \texttt{run\_ui()} — основная функция интерфейса, управляющая главным меню программы и навигацией между всеми остальными функциями: вводом, просмотром, поиском, а также сохранением и загрузкой данных из файла.
-    \item Функция \texttt{main()} является точкой входа в приложение. Она вызывает \texttt{run\_ui()}, которая инициализирует библиотеку \texttt{ncurses} и управляет основным циклом взаимодействия с пользователем через текстовое меню.
-\end{itemize}
-
-\par Надёжность работы обеспечивается тем, что каждая стадия — от чтения и записи файла до обработки пользовательского выбора — включает встроенные механизмы обработки ошибок. Контроль целостности данных при этом выполняется с использованием контрольных сумм по алгоритму CRC-32.
-\newpage
-
-\subsubsection{Реализация функции интерфейса}
-
-\subsection*{Функция \texttt{input\_record()} — ввод новой записи}
-\begin{algorithm}
-\caption{input\_record()}
-\begin{algorithmic}[1]
-\STATE Создать объект \texttt{ZNAK z}
-\STATE Создать строку \texttt{tmp} длиной 50 символов
-\STATE Очистить экран
-\STATE Вывести заголовок <<Добавление новой записи>>
-\STATE Ввести фамилию $\rightarrow$ \texttt{z.surname}
-\STATE Ввести имя $\rightarrow$ \texttt{z.name}
-\STATE Ввести день рождения $\rightarrow$ \texttt{z.birth.day}
-\STATE Ввести месяц рождения $\rightarrow$ \texttt{z.birth.month}
-\STATE Ввести год рождения $\rightarrow$ \texttt{z.birth.year}
-\STATE Ввести знак зодиака (0--11) $\rightarrow$ \texttt{z.zodiac}
-\IF{\texttt{z.zodiac} < 0 \OR \texttt{z.zodiac} > 11}
-    \STATE \texttt{z.zodiac} $\gets$ 0
-\ENDIF
-\STATE Добавить \texttt{z} в массив \texttt{records}
-\STATE Увеличить \texttt{record\_count}
-\STATE Увеличить \texttt{transaction\_id}
-\STATE Вывести сообщение <<Запись добавлена>>
-\STATE Ожидать нажатие клавиши
-\end{algorithmic}
-\end{algorithm}
-
-
-\vspace{1em}
-
-
-\subsection*{Функция \texttt{show\_records()} — отображение всех записей}
-
-\begin{algorithm}
-\caption{show\_records()}
-\begin{algorithmic}[1]
-\STATE Очистить экран
-\STATE Вывести заголовок <<Список записей>>
-\STATE Вывести таблицу: <<№ | Surname | Name | Birthday | Zodiac>>
-\FOR{$i = 0$ \TO \texttt{record\_count} $-1$}
-    \STATE Вывести номер $i+1$, \texttt{records[i].surname}, \texttt{name}, \texttt{birth}, \texttt{zodiac}
-\ENDFOR
-\STATE Вывести <<Нажмите любую клавишу для возврата>>
-\STATE Ожидать нажатие клавиши
-\end{algorithmic}
-\end{algorithm}
-
-\vspace{1em}
-\newpage
-
-\subsection*{Функция \texttt{find\_by\_surname()} — поиск по фамилии}
-
-\begin{algorithm}
-\caption{find\_by\_surname()}
-\begin{algorithmic}[1]
-\STATE Создать строку \texttt{tmp} длиной 32 символа
-\STATE Очистить экран
-\STATE Вывести <<Введите фамилию для поиска>>
-\STATE Считать \texttt{tmp}
-\STATE \texttt{found} $\gets$ 0
-\FOR{$i = 0$ \TO \texttt{record\_count} $-1$}
-    \IF{\texttt{records[i].surname} = \texttt{tmp}}
-        \STATE Вывести имя, дату рождения, знак зодиака
-        \STATE \texttt{found} $\gets$ \texttt{found} $+ 1$
-    \ENDIF
-\ENDFOR
-\IF{\texttt{found} = 0}
-    \STATE Вывести <<Людей с такой фамилией не найдено>>
-\ENDIF
-\STATE Увеличить \texttt{transaction\_id}
-\end{algorithmic}
-\end{algorithm}
-
-\vspace{1em}
-
-\subsection*{Функция \texttt{save\_to\_file()} — сохранение базы данных}
-
-\begin{algorithm}
-\caption{save\_to\_file()}
-\begin{algorithmic}[1]
-\STATE Открыть файл \texttt{DB\_PATH} в режиме \texttt{"wb"}
-\IF{файл не открыт}
-    \STATE Вывести <<Не удалось открыть файл для записи>>
-    \RETURN
-\ENDIF
-\STATE \texttt{header.signature} $\gets$ "adia"
-\STATE \texttt{header.transaction\_id} $\gets$ \texttt{transaction\_id} $+ 1$
-\STATE \texttt{header.record\_count} $\gets$ \texttt{record\_count}
-\STATE \texttt{header.crc32} $\gets$ \texttt{calculate\_crc32(records, record\_count)}
-\STATE Записать \texttt{header} и \texttt{records} в файл
-\STATE Закрыть файл
-\STATE Вывести <<Файл успешно сохранён>>
-\end{algorithmic}
-\end{algorithm}
-
-\vspace{1em}
-\newpage
-
-\subsection*{Функция \texttt{load\_from\_file()} — загрузка базы данных}
-
-\begin{algorithm}
-\caption{load\_from\_file()}
-\begin{algorithmic}[1]
-\STATE Открыть файл \texttt{DB\_PATH} в режиме \texttt{"rb"}
-\IF{файл не открыт}
-    \STATE Вывести <<Файл не найден. Введите новые данные>>
-    \RETURN
-\ENDIF
-\STATE Считать \texttt{header}
-\STATE Считать \texttt{records} (кол-во: \texttt{header.record\_count})
-\STATE \texttt{record\_count} $\gets$ \texttt{header.record\_count}
-\STATE \texttt{transaction\_id} $\gets$ \texttt{header.transaction\_id} $+ 1$
-\STATE Закрыть файл
-\STATE Вывести <<Загружено записей: record\_count>>
-\end{algorithmic}
-\end{algorithm}
-
-\vspace{1em}
-\newpage
-
-\subsection*{Функция \texttt{run\_ui()} — главное меню}
-
-\begin{algorithm}
-\caption{run\_ui()}
-\begin{algorithmic}[1]
-\STATE Инициализировать ncurses: \texttt{initscr()}, \texttt{cbreak()}, \texttt{noecho()}
-\WHILE{true}
-    \STATE Очистить экран
-    \STATE Вывести пункты меню:
-    \STATE 1. Добавить новую запись
-    \STATE 2. Показать все записи
-    \STATE 3. Найти по фамилии
-    \STATE 4. Сохранить в файл
-    \STATE 5. Загрузить из файла
-    \STATE 6. Выйти
-    \STATE Считать выбор пользователя $\rightarrow$ \texttt{choice}
-    \IF{\texttt{choice} = 1} \STATE Вызвать \texttt{input\_record()} \ENDIF
-    \IF{\texttt{choice} = 2} \STATE Вызвать \texttt{show\_records()} \ENDIF
-    \IF{\texttt{choice} = 3} \STATE Вызвать \texttt{find\_by\_surname()} \ENDIF
-    \IF{\texttt{choice} = 4} \STATE Вызвать \texttt{save\_to\_file()} \ENDIF
-    \IF{\texttt{choice} = 5} \STATE Вызвать \texttt{load\_from\_file()} \ENDIF
-    \IF{\texttt{choice} = 6}
-        \STATE Завершить ncurses: \texttt{endwin()}
-        \STATE \textbf{return}
-    \ENDIF
-\ENDWHILE
-\end{algorithmic}
-\end{algorithm}
-\newpage
-
-
-\vspace{0.5cm}
-
-\noindent\textbf{Основной цикл интерфейса: \texttt{run\_ui()}}\vspace{0.5cm}
-
-Функция \texttt{run\_ui()} отвечает за запуск и работу пользовательского текстового интерфейса с использованием библиотеки \texttt{ncurses} (см. рисунок ~\ref{fig:interface}). На начальном этапе осуществляется инициализация экрана, переход в постсимвольный режим ввода и отключение отображения вводимых символов:
-
-\begin{itemize}
-    \item \texttt{initscr()} — создаёт главное окно и подготавливает терминал к выводу;
-    \item \texttt{cbreak()} — отключает буферизацию ввода;
-    \item \texttt{noecho()} — предотвращает отображение вводимых пользователем символов.
-\end{itemize}
-
-Затем программа входит в бесконечный цикл, внутри которого отображается главное меню. В зависимости от выбора пользователя (переменная \texttt{choice}), вызываются соответствующие функции:
-
-\begin{itemize}
-    \item \texttt{input\_records()} — ввод новой записи
-    \item \texttt{show\_records()} — вывод таблицы записей;
-    \item \texttt{find\_by\_surname()} — осуществляет поиск записей по введённой фамилии;
-    \item \texttt{save\_to\_file()} — сохранение в файл;
-    \item \texttt{load\_from\_file()} — загрузка данных из файла;
-    \item \texttt{endwin()} — завершение работы с библиотекой \texttt{ncurses} и выход из интерфейса.
-\end{itemize}
-
-Конструкция \texttt{switch-case} используется для определения выбранного действия и управления логикой программы. Интерфейс формируется через \texttt{mvprintw()}, обеспечивая чёткое позиционирование элементов на экране терминала.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/menu.jpg}
-    \caption{Пользовательский Интерфейс}
-    \label{fig:interface}
-\end{figure}
-
-При вводе некорректного выбора, программа запрашивает повторный ввод у пользователя. Это также показывает, что программа рассматривает ошибки и не при этом не падает.
-
-\newpage
-
-\section{Результаты работы и эксперименты}
-
-\subsection{Результаты тестирования и анализ зависимостей задания 1}
-\label{sec:my-section}
-
-\subsubsection{Постановка и методика эксперимента реализаций алгоритма возведения в степень целого числа}
-
-Для объективной оценки производительности реализаций алгоритма возведения в степень — итеративной (power\_iterative) и рекурсивной (power\_recursive), был проведён эксперимент с использованием замеров времени исполнения.
-
-Условия проведения:
-\begin{itemize}
-    \item в качестве входных данных для функций использовались фиксированные значения: основание \textbf{base} и показатель степени \textbf{exp}, которые задаются пользователем.
-    \item каждая реализация запускается \textbf{100000 раз} с одними и теми же входными параметрами для получения статистически значимых данных.
-    \item замеры времени осуществляются с помощью функции \texttt{clock()} из стандартной библиотеки \texttt{<time.h>};
-    \item фиксируются общее и среднее время выполнения каждого алгоритма, что позволяет сравнить их эффективность;
-    \item в ходе эксперимента не проводилась проверка на корректность выходного значения, только на скорость выполнения.
-\end{itemize}
-
-\begin{figure}[h!]
-    \centering
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im1.jpg}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im2.jpg}
-    \end{minipage}
-    \caption{Тестирование статической}
-    \label{fig:two-pics}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im3.jpg}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im4.jpg}
-    \end{minipage}
-    \caption{Тестирование динамической}
-    \label{fig:two-pictures}
-\end{figure}
-
-\newpage
-
-\subsubsection{Влияние флагов оптимизации на скорость выполнения}
-
-Для анализа влияния флагов оптимизации компилятора были проведены тесты с ключами: \texttt{-O0}, \texttt{-O1}, \texttt{-O2}, \texttt{-Os}. Целью эксперимента было определить, как различные уровни оптимизации отражаются на производительности программы.
-
-Полученные результаты позволили сравнить продолжительность выполнения одного и того же фрагмента кода при использовании разных флагов, сделать выводы об эффективности компиляции в зависимости от заданного уровня оптимизации.
-
-\begin{figure}[h!]
-    \centering
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im5.jpg}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im6.jpg}
-    \end{minipage}
-    \caption{Тестирование статической}
-    \label{fig:two-pics}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering 
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im7.jpg}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.49\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{myPhoto/im8.jpg}
-    \end{minipage}
-    \caption{Тестирование динамической}
-    \label{fig:two-pictures}
-\end{figure}
-
-В ходе тестирования программы с различными уровнями оптимизации были получены следующие результаты:
-
-\begin{itemize}
-    \item \textbf{-O0 (отключена оптимизация)}:
-    \begin{itemize}
-        \item Итеративно: 0{,}00000002–0{,}00000005 с
-        \item Рекурсивно: 0{,}00000002–0{,}00000006 с
-        \item используется для отладки
-    \end{itemize}
-
-    \item \textbf{-O1 (базовая оптимизация)}:
-    \begin{itemize}
-        \item Итеративно: 0{,}00000002–0{,}00000003 с
-        \item Рекурсивно: 0{,}00000002–0{,}00000005 с
-    \end{itemize}
-
-    \item \textbf{-O2 (расширенная оптимизация)}:
-    \begin{itemize}
-        \item Итеративно: 0{,}00000002–0{,}00000004 с
-        \item Рекурсивно: 0{,}00000003–0{,}00000005 с
-    \end{itemize}
-
-    \item \textbf{-Os (оптимизация по размеру)}:
-    \begin{itemize}
-        \item Итеративно: 0{,}00000002–0{,}00000004 с
-        \item Рекурсивно: 0{,}00000002–0{,}00000005 с
-        \item Приемлемая скорость
-    \end{itemize}
-\end{itemize}
-
-\textbf{Анализ результатов}
-\begin{itemize}
-    \item \texttt{-O0} — показал наихудшие временные характеристики для обеих реализаций. Этот уровень оптимизации не выполняет никаких преобразований кода, что делает его полезным для отладки, где важна точная связь между исходным кодом и исполняемой программой. Время выполнения при этом высокое и нестабильное.
-    
-    \item \texttt{-O1} - даёт некоторое ускорение по сравнению с \texttt{-O0}, особенно в рекурсивной реализации, но результаты нестабильные и по времени в ряде случаев хуже, чем у \texttt{-O2}. Этот уровень можно рассматривать как компромисс между скоростью компиляции и умеренным ускорением, но он не оптимален для производительности.
-    
-    \item \texttt{-O2} — продемонстрировал наилучшую производительность в обоих вариантах реализации (как итеративной, так и рекурсивной). Времена выполнения стабильные, минимальные среди всех уровней. Является предпочтительным флагом для задач, где критична скорость выполнения.
-    
-    \item \texttt{-Os} — результаты близки к \texttt{-O1} и в некоторых случаях немного лучше, но в целом уступают \texttt{-O2}. Основное назначение этого уровня — уменьшение размера исполняемого файла. Оптимален, если приоритет — компактность программы при приемлемом времени выполнения.
-\end{itemize}
-
-\subsubsection{Сравнение типов линковок}
-
-\textbf{Статическая линковка} (`-static`):
-
-\begin{itemize}
-    \item итеративная реализация показала \textbf{наименьшее среднее время выполнения} — \texttt{0{,}00000023} с;
-    \item также отличалась \textbf{наименьшей вариативностью между запусками}, обеспечивая стабильность результатов;
-    \item размер исполняемого файла значительно увеличился;
-    \item полная независимость от внешних библиотек повышает переносимость и автономность.
-\end{itemize}
-
-\textbf{Динамическая линковка} (`-shared`):
-
-\begin{itemize}
-    \item итеративная версия показывала минимальную вариативность между запусками
-    \item незначительно уступает статической по скорости
-    \item обеспечивает меньший размер файла
-    \item требует наличия соответствующих библиотек на целевой системе.
-\end{itemize}
-
-\textbf{Вывод:} выбор между статической и динамической линковкой зависит от приоритетов конкретной задачи.
-\begin{itemize}
-	\item если важны стабильность работы и независимость от окружения — предпочтительнее статическая сборка.
-	\item если критичен размер исполняемого файла и допустима зависимость от системных библиотек — рациональнее использовать динамическую линковку.
-\end{itemize}
-
-\subsubsection{Анализ зависимостей исполняемого файла}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.79\linewidth]{myPhoto/ldd.jpg}
-    \caption{Результаты команды ldd}
-    \label{fig:ldd}
-\end{figure}
-\newpage
-
-\noindent\textbf{Выводы о зависимостях, представленных на рисунке ~\ref{fig:ldd}}
-\begin{itemize}
-    \item \textbf{main\_static}:
-    \begin{itemize}
-        \item Не содержит явной зависимости от динамически подключаемой библиотеки \texttt{libpower.so}
-        \item В список зависимостей входят только стандартные системные библиотеки: \texttt{libc.so.6}, \texttt{ld-linux-aarch64.so.1}
-        \item Подтверждает факт статической линковки — все необходимые компоненты встроены в исполняемый файл
-        \item Повышает переносимость, но увеличивает размер
-    \end{itemize}
-
-    \item \textbf{main\_shared}:
-    \begin{itemize}
-        \item Зависит от внешней библиотеки \texttt{libpower.so}, путь к которой явно указан
-        \item Необходимость наличия этой библиотеки в системе при запуске
-        \item Размер исполняемого файла меньше, чем у статически собранного
-        \item Облегчает обновление библиотеки без перекомпиляции основного кода
-    \end{itemize}
-
-    \item \textbf{main\_dl}:
-    \begin{itemize}
-        \item Не содержит прямой ссылки на \texttt{libpower.so} при проверке `ldd`
-        \item Подразумевает, что подключение библиотеки осуществляется динамически (через \texttt{dlopen()} во время выполнения)
-        \item Позволяет загружать библиотеки по требованию и реализовать плагиноподобную архитектуру
-        \item Требует дополнительной обработки ошибок при загрузке
-    \end{itemize}
-\end{itemize}
-
-\noindent\textbf{Сходства при наблюдении}
-
-\noindent\textbf{Общие черты линковки: статической, динамической и через dlopen}\vspace{0.5cm}
-
-Несмотря на различия в реализации и способе подключения библиотек, все три подхода объединяет ряд характеристик:
-
-\begin{itemize}
-    \item \textbf{Работают с одной и той же функциональностью:} 
-    независимо от способа подключения, во всех трёх случаях вызываются одни и те же функции из библиотеки поиска — поведение основного кода идентично
-    \item Разница между статической и динамической сборкой подтверждается наличием или отсутствием зависимости от \texttt{libpower.so}
-    \item Отсутствие libpower.so в зависимостях main\_dl указывает на динамическую загрузку через dlopen
-    \item \textbf{Совместимость с Unix-средой:}
-    все подходы опираются на стандартные системные библиотеки (ld-linux-aarch64.so), что обеспечивает переносимость в рамках Linux-среды.
-\end{itemize}
-
-\subsection{Результаты тестирования и анализ зависимостей задания 2}
-
-\subsubsection{Постановка и методика эксперимента}
-
-Целью проводимых экспериментов является проверка корректности и устойчивости работы программного обеспечения, реализующего консольную систему управления платёжными поручениями с использованием библиотеки ncurses, а также верификация индивидуального функционала и анализ зависимостей исполняемого файла.\vspace{0.5cm}
-
-\textbf{Объект тестирования:} приложение \texttt{znak\_ncurses\_app}, реализующее следующие функции:
-
-\begin{itemize}
-    \item добавление новой записи;
-    \item отображение списка записей;
-    \item поиск человека по фамилии;
-    \item сохранение и загрузка базы данных в бинарном виде;
-    \item управление внутренним счётчиком транзакций.
-\end{itemize}
-
-\textbf{Средства тестирования:}
-
-\begin{itemize}
-    \item тестовый файл базы данных \texttt{znak.db};
-    \item интерфейсные действия пользователя в меню программы;
-    \item утилита анализа зависимостей \texttt{ldd};
-    \item просмотр содержимого бинарного файла через hex-редактор.
-\end{itemize}
-
-\subsubsection{Главное меню программы}
-
-После запуска пользователю отображается главное меню системы записи людей (см. рисунок~\ref{fig:menu}). Интерфейс выполнен в текстовом режиме с использованием библиотеки \texttt{ncurses} и предлагает понятную навигацию по основным функциям программы. В меню представлены следующие пункты:
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.59\linewidth]{myPhoto/menu.jpg}
-    \caption{Меню программы}
-    \label{fig:menu}
-\end{figure}
-
-\newpage
-
-\subsubsection{Создание новой записи}
-\par При добавлении новой записи (см. рисунок~\ref{fig:addnew}) система запрашивает у пользователя: фамилию, знак Зодиака и дату рождения. После успешного ввода данных программа сообщает, что новая запись добавлена, и предлагает нажать любую клавишу для продолжения работы.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.79\linewidth]{myPhoto/addnew.jpg}
-    \caption{Добавление записи}
-    \label{fig:addnew}
-\end{figure}
-
-Также реализована проверка корректности ввода. Если пользователь, неверно укажет дату рождения, система уведомляет о неправильном вводе и подставляет значение по умолчанию (см. рисунок ~\ref{fig:vvod0}). Это позволяет избежать аварийного завершения программы и обеспечивает стабильность её работы.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.79\linewidth]{myPhoto/vvod0.jpg}
-    \caption{Обработка пользовательского ввода}
-    \label{fig:vvod0}
-\end{figure}
-
-\newpage
-
-\subsection*{После добавления запись появляется в списке}
-
-Результат показан на рисунке ~\ref{fig:spisok}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.65\linewidth]{myPhoto/spisok.jpg}
-    \caption{Список записей}
-    \label{fig:spisok}
-\end{figure}
-
-\par После ввода всех данных программа создает файл базы данных и сохраняет данные в бинарном формате (это можно сделать через команду под номером '4'). Результат представлен на рисунках ~\ref{fig:filesave} и ~\ref{fig:binar}:
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.59\linewidth]{myPhoto/filesave.jpg}
-    \caption{Сохранение в файл}
-    \label{fig:filesave}
-\end{figure}
-\vspace{1em}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/hex.jpg}
-    \caption{Файл базы данных в шестнадцатиричном виде}
-    \label{fig:binar}
-\end{figure}
-
-\newpage
-
-\par После ввода всех записей пользователь имеет возможность вывести их все (это можно сделать через команду под
-номером ’2’). Результат представлен на рисунке ~\ref{fig:show}:
+Пользователь вводит имя, начинающееся с дефиса: "-Петр". Система выводит ошибку валидации (см. рисунок~\ref{fig:validation_error}).
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.59\linewidth]{myPhoto/show.jpg}
-    \caption{Вывод базы данных}
-    \label{fig:show}
+    % \includegraphics[width=0.8\linewidth]{myPhoto/validation_error.png}
+    \caption{Ошибка валидации имени}
+    \label{fig:validation_error}
 \end{figure}
 
-\newpage
+\textbf{Сообщение об ошибке:} "Имя не может начинаться или заканчиваться на дефис"
 
-\subsubsection{Тестирование индивидуального задания}
+\subsubsection{Пример 2: Некорректный телефон}
 
-Для достоверной проверки работы программы были рассмотрены несколько случаев:  
+Пользователь вводит телефон без знака "+": "79991234567". Класс \texttt{ContactValidator} автоматически добавляет "+" в начало, преобразуя номер в "+79991234567".
+
+Если длина телефона меньше 10 цифр, выводится ошибка: "Телефон должен содержать минимум 10 цифр".
+
+\subsubsection{Пример 3: Некорректный email}
+
+Пользователь вводит email без символа "@": "ivanovexample.com". Система выводит ошибку:
+
+\textbf{Сообщение об ошибке:} "Email должен содержать символ @"
+
+\subsubsection{Пример 4: Некорректная дата рождения}
+
+Пользователь не сможет выбрать дату которая больше текущей
+
+\subsection{Сценарий 3: Редактирование существующего контакта}
+
+\subsubsection{Шаг 1: Выбор контакта}
+
+Пользователь кликает на строку в таблице. При этом:
+
+\begin{itemize}
+    \item Данные контакта автоматически загружаются в форму;
+    \item Активируются кнопки "Редактировать" и "Удалить";
+    \item Строка в таблице подсвечивается.
+\end{itemize}
+
+\subsubsection{Шаг 2: Переход в режим редактирования}
+
+После нажатия кнопки "Редактировать":
+
+\begin{itemize}
+    \item Приложение переходит в режим редактирования (\texttt{m\_isEditing = true});
+    \item Кнопка "Добавить" меняет текст на "Сохранить";
+    \item Кнопки "Редактировать" и "Удалить" становятся неактивными;
+    \item Появляется кнопка "Отмена";
+    \item Таблица блокируется (нельзя выбрать другую строку);
+    \item Все поля формы доступны для изменения.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/edit_mode.png}
+    \caption{Режим редактирования контакта}
+    \label{fig:edit_mode}
+\end{figure}
+
+\subsubsection{Шаг 3: Изменение данных и сохранение}
+
+Пользователь изменяет необходимые поля (например, номер телефона) и нажимает "Сохранить". Происходит:
 
 \begin{enumerate}
-    \item Поиск информации о людях по фамилии, введённой с клавиатуры, когда такая фамилия существует в базе (см. рисунок~\ref{fig:individ1}).
-    \item Поиск по фамилии, которой нет среди данных (см. рисунок~\ref{fig:individ2}).
-\end{enumerate} 
-
-% Пример вставки рисунков
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.6\textwidth]{myPhoto/individ1.jpg}
-    \caption{Пример поиска по существующей фамилии}
-    \label{fig:individ1}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.6\textwidth]{myPhoto/individ2.jpg}
-    \caption{Результат поиска по отсутствующей фамилии}
-    \label{fig:individ2}
-\end{figure}
-\newpage
-
-\subsubsection{Увеличение счетчика транзакций при доступе к базе данных}
-
-\par При каждом обращении к базе данных значение счётчика транзакций, хранящегося в заголовке файла, увеличивается. Это позволяет отслеживать все произведённые операции. Изменение счётчика можно наблюдать при просмотре файла в шестнадцатеричном формате (см. рисунки~\ref{fig:binar52},~\ref{fig:binar122}).
-
-\begin{figure}[h!]
-    \centering
-    \begin{subfigure}{\linewidth}
-        \centering
-        \includegraphics[width=0.99\linewidth]{myPhoto/hexdump1.jpg}
-    \end{subfigure}
-    
-    \vspace{0.5em} % расстояние между изображениями
-
-    \begin{subfigure}{\linewidth}
-        \centering
-        \includegraphics[width=0.99\linewidth]{myPhoto/hexdump2.jpg}
-    \end{subfigure}
-    
-    \caption{Изменение в файле после добавления и сохранения записи}
-    \label{fig:binar52}
-\end{figure}
-
-\par Счётчик транзакций, хранящийся в структуре \texttt{DB\_HEADER}, увеличивается при каждом действии с базой данных — создании файла, записи, чтения, выполнении поиска по фамилии. Это позволяет фиксировать количество операций и проверять ожидаемое значение при чтении базы, тем самым обеспечивая контроль целостности. На рисунке ~\ref{fig:binar52} поле счётчика, расположенное сразу после сигнатуры файла, поначалу занимает 88 байт (\texttt{uint32\_t}), но после загрузки из файла и сохранения в файл (это можно сделать через команду под
-номером ’5’ и '4') уже занимает 160 байта (\texttt{uint32\_t}).
+    \item Валидация изменённых данных;
+    \item Проверка на дубликаты (исключая текущий редактируемый контакт);
+    \item Обновление контакта в \texttt{ContactStorage};
+    \item Сохранение старой версии контакта в стек отмены;
+    \item Автоматическое сохранение в файл;
+    \item Возврат в режим просмотра;
+    \item Показ сообщения об успешном редактировании.
+\end{enumerate}
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}{\linewidth}
-        \centering
-        \includegraphics[width=0.99\linewidth]{myPhoto/hexdump3.jpg}
-    \end{subfigure}
-    
-    \vspace{0.5em} % расстояние между изображениями
-
-    \begin{subfigure}{\linewidth}
-        \centering
-        \includegraphics[width=0.99\linewidth]{myPhoto/hexdump4.jpg}
-    \end{subfigure}
-    
-    \caption{Изменение в файле после загрузки и сохранения}
-    \label{fig:binar122}
+    % \includegraphics[width=1\linewidth]{myPhoto/contact_edited.png}
+    \caption{Контакт успешно отредактирован}
+    \label{fig:contact_edited}
 \end{figure}
 
-\newpage
+\subsubsection{Шаг 4: Отмена редактирования}
 
-\subsubsection{Анализ зависимостей исполняемого файла}
-
-Для анализа зависимостей исполняемого файла использовалась утилита \texttt{ldd}, позволяющая определить динамические библиотеки, необходимые для запуска программы. Результат выполнения команды \texttt{ldd ./znak\_ncurses\_app} представлен ниже на рисунке~\ref{fig:order52}:
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.99\linewidth]{myPhoto/znak_dep.jpg}
-    \caption{Результат выполнения команды \texttt{ldd ./znak\_ncurses\_app}}
-    \label{fig:order52}
-\end{figure}
-
-\noindent
-Интерпретация результатов:
+При нажатии кнопки "Отмена":
 
 \begin{itemize}
-    \item \textbf{linux-vdso.so.1} — специальная виртуальная библиотека, ускоряющая выполнение системных вызовов
-    \item \textbf{libncurses.so.6} — отвечает за отображение текстового интерфейса и взаимодействие с терминалом
-    \item \textbf{libtinfo.so.6} — низкоуровневая часть \texttt{ncurses}, обеспечивающая работу с терминальными возможностями
-    \item \textbf{libz.so.1} — библиотека для работы с сжатием данных и проверки их целостности (например, с использованием CRC32)
-    \item \textbf{libc.so.6} — основная системная библиотека C, включающая базовые функции управления памятью, строками и вводом-выводом
-    \item \textbf{ld-linux-aarch64.so.1} — динамический загрузчик программ в 64-битных Linux-системах на архитектуре ARM (AArch64), отвечающий за поиск и подключение необходимых динамических библиотек при запуске приложений.
+    \item Все изменения откатываются;
+    \item Приложение возвращается в режим просмотра;
+    \item Поля формы очищаются;
+    \item Таблица снова становится активной.
 \end{itemize}
-\newpage
 
-\noindent\textbf{Дерево зависимостей \texttt{znak\_ncurses\_app}}\vspace{0.5cm}
+\subsection{Сценарий 4: Удаление контакта}
 
-\par Представленная конфигурация (см. рисунок~\ref{fig:znak52}) полностью соответствует заявленным техническим требованиям: библиотека \texttt{ncurses} используется для реализации пользовательского интерфейса, а \texttt{zlib} — для вычисления контрольных сумм. Обе библиотеки имеют стандартную зависимость от системной библиотеки языка C, что типично для Unix-подобных операционных систем.
+\subsubsection{Шаг 1: Выбор контакта для удаления}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.59\linewidth]{myPhoto/arch.jpg}
-	\caption{Дерево зависимостей \texttt{znak\_ncurses\_app}}
-	\label{fig:znak52}
+Пользователь выбирает строку в таблице и нажимает кнопку "Уд��лить".
+
+\subsubsection{Шаг 2: Подтверждение удаления}
+
+Система выводит диалоговое окно с запросом подтверждения (см. рисунок~\ref{fig:delete_confirmation}).
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.7\linewidth]{myPhoto/delete_confirmation.png}
+    \caption{Запрос подтверждения удаления контакта}
+    \label{fig:delete_confirmation}
 \end{figure}
 
+\textbf{Сообщение:} "Вы уверены, что хотите удалить контакт 'Иванов Иван Иванович'?"
 
+\subsubsection{Шаг 3: Удаление и сохранение}
 
+Если пользователь подтверждает удаление:
 
+\begin{enumerate}
+    \item Контакт сохраняется в стек отмены;
+    \item Контакт удаляется из \texttt{ContactStorage};
+    \item Автоматическое сохранение в файл;
+    \item Обновление таблицы;
+    \item Показ сообщения "Контакт удалён".
+\end{enumerate}
 
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/contact_deleted.png}
+    \caption{Контакт удалён из таблицы}
+    \label{fig:contact_deleted}
+\end{figure}
 
+Если пользователь отменяет удаление, никаких изменений не происходит.
 
+\subsection{Сценарий 5: Поиск контактов}
 
+\subsubsection{Поиск по текстовым полям}
 
+Пользователь вводит текст в поле поиска и выбирает поле для поиска из выпадающего списка (Имя, Фамилия, Отчество, Email, Телефон, Адрес).
 
+\textbf{Пример:} Поиск по фамилии "Иванов"
+
+Система выполняет поиск подстроки без учета регистра. Все контакты, содержащие "иванов", "Иванов", "ИВАНОВ" в поле фамилии, отображаются в таблице (см. рисунок~\ref{fig:search_result}).
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/search_result.png}
+    \caption{Результат поиска по фамилии}
+    \label{fig:search_result}
+\end{figure}
+
+\subsubsection{Поиск по дате рождения}
+
+При выборе поля "Дата рождения":
+
+\begin{itemize}
+    \item Поле текстового ввода скрывается;
+    \item Отображается \texttt{QDateEdit} для выбора даты;
+    \item Отображается \texttt{QComboBox} с типами сравнения: "Точное совпадение", "До даты", "После даты".
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/date_search.png}
+    \caption{Панель поиска по дате рождения}
+    \label{fig:date_search}
+\end{figure}
+
+\textbf{Пример 1: Точное совпадение}
+
+Пользователь выбирает дату "15.03.1990" и тип "Точное совпадение". В таблице отображаются только контакты, родившиеся именно в этот день.
+
+\textbf{Пример 2: До даты}
+
+Пользователь выбирает дату "01.01.2000" и тип "До даты". В таблице отображаются все контакты, родившиеся до 1 января 2000 года включительно.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/date_search_result.png}
+    \caption{Результат поиска по дате (до 01.01.2000)}
+    \label{fig:date_search_result}
+\end{figure}
+
+\subsubsection{Сброс поиска}
+
+При нажатии кнопки "Сбросить поиск":
+
+\begin{itemize}
+    \item Поле поиска очищается;
+    \item Таблица отображает все контакты;
+    \item Восстанавливается исходная сортировка.
+\end{itemize}
+
+Если результаты поиска пусты, выводится сообщение "Ничего не найдено".
+
+\subsection{Сценарий 6: Сортировка данных}
+
+Пользователь кликает на заголовок любого столбца таблицы. Происходит сортировка по этому столбцу:
+
+\begin{itemize}
+    \item Первый клик — сортировка по возрастанию;
+    \item Второй клик — сортировка по убыванию;
+    \item Третий клик — возврат к исходной сортировке.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=1\linewidth]{myPhoto/sorted_table.png}
+    \caption{Таблица, отсортированная по дате рождения}
+    \label{fig:sorted_table}
+\end{figure}
+
+Сортировка работает для всех столбцов:
+\begin{itemize}
+    \item \textbf{Текстовые поля} — лексикографическая сортировка;
+    \item \textbf{Дата рождения} — хронологическая сортировка;
+    \item \textbf{Телефоны} — сортировка как строки.
+\end{itemize}
+
+\subsection{Сценарий 7: Отмена последнего действия}
+
+\subsubsection{Отмена добавления}
+
+Пользователь добавил контакт, но сразу нажал кнопку "Отменить". Происходит:
+
+\begin{enumerate}
+    \item Извлечение последнего действия из стека (\texttt{m\_undoStack.pop()});
+    \item Определение типа действия (Add);
+    \item Удаление контакта из \texttt{ContactStorage};
+    \item Автоматическое сохранение в файл;
+    \item Обновление таблицы;
+    \item Показ сообщения "Добавление отменено".
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.7\linewidth]{myPhoto/undo_action.png}
+    \caption{Сообщение об отмене последнего действия}
+    \label{fig:undo_action}
+\end{figure}
+
+\subsubsection{Отмена редактирования}
+
+Пользователь отредактировал контакт и нажал "Отменить". Система восстанавливает старую версию контакта из стека и сохраняет изменения.
+
+\subsubsection{Отмена удаления}
+
+Пользователь удалил контакт и нажал "Отменить". Система восстанавливает удалённый контакт на его прежнюю позицию в списке.
+
+\subsubsection{Попытка отмены при пустом стеке}
+
+Если стек отмены пуст, при нажатии кнопки "Отменить" выводится сообщение: "Нечего отменять".
+
+\subsection{Сценарий 8: Проверка на дубликаты}
+
+\subsubsection{Обнаружение дубликата}
+
+Пользователь пытается добавить контакт с данными, идентичными существующему (кроме телефонов). Система обнаруживает дубликат и выводит предупреждение (см. рисунок~\ref{fig:duplicate_error}).
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{myPhoto/duplicate_error.png}
+    \caption{Предупреждение о дубликате контакта}
+    \label{fig:duplicate_error}
+\end{figure}
+
+\textbf{Сообщение:} "Контакт с такими данными уже существует. Продолжить добавление?"
+
+\subsubsection{Варианты действий}
+
+\begin{itemize}
+    \item \textbf{Пользователь нажимает "Да"} — контакт добавляется, несмотря на дублирование;
+    \item \textbf{Пользователь нажимает "Нет"} — операция отменяется, форма остаётся заполненной.
+\end{itemize}
+
+Проверка на дубликаты учитывает следующие поля:
+\begin{itemize}
+    \item Имя, Фамилия, Отчество
+    \item Дата рождения
+    \item Email
+    \item Адрес
+\end{itemize}
+
+Телефоны не учитываются при проверке, поскольку у одного человека может быть несколько номеров.
+
+\subsection{Сценарий 9: Сохранение и загрузка данных}
+
+\subsubsection{Автоматическое сохранение}
+
+После каждого изменения данных (добавление, редактирование, удаление) приложение автоматически вызывает метод \texttt{ContactStorage::save()}, который записывает все контакты в файл \texttt{phonebook.json}.
+
+\textbf{Формат файла (JSON):}
+
+\begin{lstlisting}[style=cstyle, language=json, caption={Пример phonebook.json}]
+[
+    {
+        "firstName": "Иван",
+        "lastName": "Иванов",
+        "middleName": "Иванович",
+        "address": "г. Москва, ул. Ленина, д. 1, кв. 10",
+        "birthDate": "1990-03-15",
+        "email": "ivan.ivanov@example.com",
+        "phoneNumbers": ["+79991234567", "+78005553535"]
+    },
+    {
+        "firstName": "Петр",
+        "lastName": "Петров",
+        "middleName": "Петрович",
+        "address": "г. Санкт-Петербург, Невский пр., д. 50",
+        "birthDate": "1985-07-20",
+        "email": "petr.petrov@example.com",
+        "phoneNumbers": ["+79161234567"]
+    }
+]
+\end{lstlisting}
+
+\subsubsection{Загрузка при запуске}
+
+При запуске приложения автоматически вызывается метод \texttt{ContactStorage::load()}, который загружает данные из файла. Если файл не существует или содержит некорректные данные, приложение начинает с пустой базы.
+
+\subsubsection{Ручное сохранение и загрузка}
+
+Кнопки "Сохранить файл" и "Загрузить файл" позволяют пользователю вручную управлять файлом данных. При нажатии кнопки "Загрузить файл" все несохранённые изменения будут потеряны (после подтверждения).
+
+\subsection{Итоги тестирования}
+
+Все сценарии использования приложения были успешно протестированы. Приложение корректно обрабатывает:
+
+\begin{itemize}
+    \item Валидацию пользовательского ввода с помощью регулярных выражений;
+    \item Нормализацию данных перед сохранением;
+    \item Операции CRUD (создание, чтение, обновление, удаление);
+    \item Поиск по текстовым полям и по дате рождения;
+    \item Сортировку данных по любому столбцу;
+    \item Отмену последнего действия;
+    \item Проверку на дубликаты;
+    \item Автоматическое сохранение в файл формата JSON.
+\end{itemize}
+
+Графический интерфейс отзывчив и интуитивно понятен. Все операции сопровождаются информационными сообщениями, что повышает удобство использования приложения.
