@@ -141,7 +141,7 @@ string BigArithmeticCalc::divideByHasse(const string& a, const string& b) const 
     }
     
     if (inverseMap.find(b) == inverseMap.end()) {
-        return "ERR: cant find b^-1";
+        return "ERR";
     }
     
     string bInverse = inverseMap.at(b);
@@ -454,47 +454,35 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
         string current(1, larger[i]);
         string digit2(1, smaller[i]);
         
-        // если был заем из предыдущего разряда, вычитаем единицу
         if (borrow) {
-            // проверяем, можем ли вычесть единицу из текущего разряда
-            if (current == additiveIdentity) {
-                // если текущий разряд = 0, то после вычитания заема получаем 7
-                // и заем переносится дальше
-                current = alphabet.back(); // 7 в Z8
-                // заем остается true
+			if (current == additiveIdentity) {
+                current = alphabet.back(); // 7
             } else {
-                // вычитаем единицу из текущего разряда
                 current = subtractByHasse(current, multiplicativeIdentity);
-                borrow = false; // заем погашен
+                borrow = false;
             }
         }
         
-        // теперь вычитаем digit2 из current
         int cmp_digits = compareSymbols(current, digit2);
         
         if (cmp_digits >= 0) {
-            // можем вычесть напрямую
             string result_digit = subtractByHasse(current, digit2);
             result = result_digit + result;
         } else {
-            // нужен заем из следующего (старшего) разряда
-            // добавляем N (8 в Z8) к current
-            string temp = current;
+            string temp = current; // аналог 10 + a (если нужем заем)
             for (int j = 0; j < N; j++) {
                 temp = nextSymbol(temp);
             }
-            // теперь можем вычесть
+
+            // теперь вычетаем
             string result_digit = subtractByHasse(temp, digit2);
             result = result_digit + result;
-            borrow = true; // устанавливаем флаг заема для следующего разряда
+            borrow = true; // флаг
         }
     }
-    // если после обработки всех разрядов остался заем - это ошибка
-    // (такого не должно быть, т.к. larger >= smaller)
     if (borrow) {
         return "ERR: borrow after subtraction";
     }
-
     return deleteTrashZeros(result);
 }
 
@@ -711,14 +699,6 @@ string BigArithmeticCalc::add(const string& a, const string& b) const {
 	функция для вычитания больших чисел со знаком
 	используем правило: a - b = a + (-b)
 */
-// string BigArithmeticCalc::subtract(const string& a, const string& b) const {
-//     // a - b = a + (-b)
-//     bool neg_b = isNegative(b);
-//     string unsign_b = removeSign(b);
-//     string negated_b = addSign(unsign_b, !neg_b);
-    
-//     return add(a, negated_b);
-// }
 
 string BigArithmeticCalc::subtract(const string& a, const string& b) const {
     bool neg_a = isNegative(a);
@@ -727,7 +707,7 @@ string BigArithmeticCalc::subtract(const string& a, const string& b) const {
     string ua = removeSign(a);
     string ub = removeSign(b);
 
-    // (1)  a - b  (оба ≥ 0)
+    //  a - b  (оба ≥ 0)
     if (!neg_a && !neg_b) {
         int cmp = compareBigUnsigned(ua, ub);
         if (cmp >= 0) return subtractBigUnsigned(ua, ub);
@@ -735,19 +715,19 @@ string BigArithmeticCalc::subtract(const string& a, const string& b) const {
         return addSign(diff, true); // отрицательный результат
     }
 
-    // (2)  a - (-b) = a + b
+    //  a - (-b) = a + b
     if (!neg_a && neg_b) {
         return addBigUnsigned(ua, ub);
     }
 
-    // (3) -a - b = -(a + b)
+    // -a - b = -(a + b)
     if (neg_a && !neg_b) {
         string sum = addBigUnsigned(ua, ub);
         if (sum.substr(0, 4) == "ERR:") return sum;
         return addSign(sum, true);
     }
 
-    // (4) -a - (-b) = b - a
+    // -a - (-b) = b - a
     if (neg_a && neg_b) {
         int cmp = compareBigUnsigned(ua, ub);
         if (cmp > 0) {
@@ -755,9 +735,9 @@ string BigArithmeticCalc::subtract(const string& a, const string& b) const {
             return addSign(diff, true);   // -(a - b)
         } else if (cmp < 0) {
             string diff = subtractBigUnsigned(ub, ua);
-            return diff;                 // положительный результат
+            return diff;
         }
-        return additiveIdentity; // равны → 0
+        return additiveIdentity;
     }
 
     return "ERR: unreachable case subtract()";
