@@ -103,8 +103,8 @@ public:
     BigArithmeticCalc(int n, 
                      const map<string, string>& rule, 
                      const vector<string>& alph,
-                     const string& addId = "0",
-                     const string& mulId = "1");
+                     const string& addId = "a",
+                     const string& mulId = "b");
     
     // геттеры
     const vector<string>& getAlphabet() const;
