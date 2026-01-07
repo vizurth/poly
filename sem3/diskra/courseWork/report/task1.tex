@@ -1,0 +1,295 @@
+\section{Особенности реализации}
+
+Программная часть проекта реализована на языке C++ с применением стандартной библиотеки шаблонов (STL). Код программы структурирован по отдельным файлам, каждый из которых отвечает за определённый участок функционала, что обеспечивает модульность системы и упрощает её дальнейшее сопровождение и развитие.
+
+\subsection{Структура проекта}
+Проект имеет следующую структуру:
+\begin{itemize}
+    \item \texttt{Gray.hpp} и \texttt{Gray.cpp}: содержат функцию генерации бинарного кода Грея.
+    \item \texttt{Multiset.hpp} и \texttt{Multiset.cpp}: содержат описание и реализацию класса \texttt{Multiset}, который служит основной структурой для хранения данных мультимножеств.
+    \item \texttt{UI.hpp} и \texttt{UI.cpp}: отвечают за пользовательский интерфейс и взаимодействие с пользователем. Здесь реализовано основное меню программы и обработка пользовательского ввода.
+    \item \texttt{main.cpp}: точка входа в программу, инициализация объектов и запуск пользовательского интерфейса.
+    \item \texttt{Makefile}: автоматизация процесса сборки проекта.
+\end{itemize}
+
+\subsection{Структуры данных}
+
+Для эффективного представления и управления данными мультимножеств в проекте был разработан специализированный класс \texttt{Multiset}. Он инкапсулирует в себе все необходимые данные и операции, предоставляя высокоуровневый интерфейс.
+
+\subsubsection{Внутренняя структура класса Multiset}
+
+Класс содержит следующие ключевые поля:
+\begin{itemize}
+    \item \texttt{map<string, int> elements}: Основная структура данных для хранения мультимножества. Контейнер \texttt{std::map} хранит пары «ключ-значение», где \textbf{ключ} — строка с бинарным кодом Грея, а \textbf{значение} — целое число, представляющее кратность этого элемента. Использование \texttt{std::map} обеспечивает упорядоченное хранение и эффективный доступ к элементам с логарифмической сложностью.
+    
+    \item \texttt{int totalCardinality}: Поле для хранения общей мощности мультимножества (суммы всех кратностей). Это позволяет получать мощность за константное время $O(1)$, избегая повторных итераций по контейнеру.
+    
+    \item \texttt{static Multiset Universum}: Статическое поле класса, хранящее универсальное множество, общее для всех экземпляров класса \texttt{Multiset}.
+\end{itemize}
+
+\subsection{Интерфейс класса Multiset}
+
+Класс предоставляет следующие публичные методы:
+
+\begin{lstlisting}[style=cstyle, caption={Объявление класса Multiset}]
+class Multiset {
+private:
+    map<string, int> elements;
+    int totalCardinality = 0;
+    void recount();
+
+public:
+    static Multiset Universum;
+
+    Multiset() : totalCardinality(0) {}
+    int getCardinality() const;
+    const map<string, int>& getElements() const;
+
+    void fillUniverse(int n);
+    void fillByHand();
+    void fillAutomaticly(int n);
+
+    bool isEmpty() const;
+    void print(const string& str) const;
+
+    Multiset Union(const Multiset& other) const;
+    Multiset Intersection(const Multiset& other) const;
+    Multiset Complement() const;
+    Multiset Diff(const Multiset& other) const;
+    Multiset SimmDiff(const Multiset& other) const;
+
+    Multiset operator+(const Multiset& other) const;
+    Multiset operator-(const Multiset& other) const;
+    Multiset operator*(const Multiset& other) const;
+    Multiset operator/(const Multiset& other) const;
+};
+\end{lstlisting}
+
+\subsection{Реализация ключевых функций}
+
+\subsubsection{Функция generateGrayCode(int n)}
+
+\textbf{Назначение:} Генерирует вектор строк, содержащий все бинарные коды Грея заданной разрядности $n$.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{int n}: Разрядность кода Грея.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{vector<string>}: Вектор строк с кодами Грея.
+\end{itemize}
+
+\textbf{Алгоритм:} Функция использует формулу $G(i) = i \oplus (i \gg 1)$ для вычисления $i$-го кода Грея, затем преобразует результат в двоичную строку заданной длины $n$.
+
+\begin{lstlisting}[style=cstyle, caption={Реализация generateGrayCode()}]
+static inline int grayOf(int x) { return x ^ (x >> 1); }
+
+vector<string> generateGrayCode(int n){
+    vector<string> gray;
+    int total = 1 << n;  // 2^n
+    for (int i = 0; i < total; ++i) {
+        int g = grayOf(i);
+        string code;
+        for (int j = n - 1; j >= 0; --j) {
+            code += ((g >> j) & 1) ? '1' : '0';
+        }
+        gray.push_back(code);
+    }
+    return gray;
+}
+\end{lstlisting}
+
+\subsubsection{Метод fillUniverse(int n)}
+
+\textbf{Назначение:} Заполняет универсум мультимножеств на основе кодов Грея разрядности $n$, присваивая каждому элементу случайную кратность.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{int n}: Разрядность для генерации универсума.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{void}: Метод модифицирует статическое поле \texttt{Universum}.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация fillUniverse()}]
+void Multiset::fillUniverse(int n) {
+    elements.clear();
+    totalCardinality = 0;
+
+    if (n <= 0) {
+        cout << "Создан пустой универсум (разрядность 0)\n";
+        return;
+    }
+
+    vector<string> grayCodes = generateGrayCode(n);
+    random_device rb;
+    mt19937 gen(rb());
+    uniform_int_distribution<> dist(1, 50);
+
+    for (const auto& code : grayCodes) {
+        int car = dist(gen);
+        elements[code] = car;
+        totalCardinality += car;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Метод fillByHand()}
+
+\textbf{Назначение:} Позволяет вручную заполнить мультимножество, запрашивая у пользователя кратность для каждого элемента универсума.
+
+\textbf{Вход:} 
+\begin{itemize}
+    \item Нет параметров (взаимодействие с пользователем через консоль).
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{void}: Метод модифицирует объект мультимножества.
+\end{itemize}
+
+\textbf{Особенности:} Метод включает проверку корректности ввода и обработку исключений при вводе некорректных данных.
+
+\begin{lstlisting}[style=cstyle, caption={Реализация fillByHand()}]
+void Multiset::fillByHand() {
+    elements.clear();
+    totalCardinality = 0;
+
+    if (Universum.isEmpty()) {
+        cout << "Универсум пуст - множество будет пустым.\n";
+        return;
+    }
+
+    for (const auto& pair : Universum.getElements()) {
+        const string& code = pair.first;
+        const int maxCardinality = pair.second;
+
+        while (true) {
+            cout << "Введите кратность для кода " << code
+                 << " (max: " << maxCardinality << "): ";
+
+            int currentCardinality;
+            if (!(cin >> currentCardinality)) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cerr << "Ошибка: нужно ввести целое число.\n";
+                continue;
+            }
+
+            try {
+                if (currentCardinality < 0) {
+                    throw invalid_argument("Ошибка: кратность не может быть отрицательной.");
+                }
+                if (currentCardinality > maxCardinality) {
+                    throw out_of_range("Ошибка: кратность не может превышать " + to_string(maxCardinality));
+                }
+
+                if (currentCardinality > 0) {
+                    elements[code] = currentCardinality;
+                    totalCardinality += currentCardinality;
+                }
+                break;
+
+            } catch (const exception& e) {
+                cerr << e.what() << "\n";
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Метод fillAutomaticly(int desiredCardinality)}
+
+\textbf{Назначение:} Автоматически заполняет мультимножество, выбирая случайные элементы из универсума до достижения заданной мощности.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{int desiredCardinality}: Желаемая мощность мультимножества.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{void}: Метод модифицирует объект мультимножества.
+\end{itemize}
+
+\textbf{Алгоритм:} Метод случайным образом выбирает элементы из универсума и увеличивает их кратность до тех пор, пока общая мощность не достигнет заданного значения.
+
+\begin{lstlisting}[style=cstyle, caption={Реализация fillAutomaticly()}]
+void Multiset::fillAutomaticly(int desiredCardinality) {
+    elements.clear();
+    totalCardinality = 0;
+
+    if (Universum.isEmpty()) {
+        cout << "Универсум пуст — множество останется пустым.\n";
+        return;
+    }
+
+    int universeCardinality = Universum.getCardinality();
+
+    if (desiredCardinality < 0 || desiredCardinality > universeCardinality) {
+        cerr << "Ошибка: мощность должна быть от 0 до "
+             << universeCardinality << ".\n";
+        return;
+    }
+
+    if (desiredCardinality == 0) {
+        cout << "Создано пустое множество.\n";
+        return;
+    }
+
+    vector<string> codes;
+    for (const auto& [code, _] : Universum.getElements()) {
+        codes.push_back(code);
+    }
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<> dist(0, (int)codes.size() - 1);
+    map<string, int> temp;
+
+    int added = 0;
+    while (added < desiredCardinality) {
+        const string& code = codes[dist(gen)];
+        if (temp[code] < Universum.getElements().at(code)) {
+            temp[code]++;
+            ++added;
+        }
+    }
+
+    elements = std::move(temp);
+    totalCardinality = desiredCardinality;
+}
+\end{lstlisting}
+
+\subsubsection{Метод print(const string\& str)}
+
+\textbf{Назначение:} Выводит содержимое мультимножества в консоль с указанием кодов Грея и их кратностей.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& str}: Заголовок для вывода.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{void}: Вывод осуществляется в стандартный поток вывода.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация print()}]
+void Multiset::print(const string& str) const {
+    cout << str;
+    if (elements.empty()) {
+        cout << "(множество пусто)\n";
+        return;
+    }
+
+    for (auto& [code, count] : elements)
+        cout << code << " : " << count << endl;
+
+    cout << "Общая мощность: " << totalCardinality << endl;
+}
+\end{lstlisting}
