@@ -1,295 +1,1037 @@
 \section{Особенности реализации}
 
-Программная часть проекта реализована на языке C++ с применением стандартной библиотеки шаблонов (STL). Код программы структурирован по отдельным файлам, каждый из которых отвечает за определённый участок функционала, что обеспечивает модульность системы и упрощает её дальнейшее сопровождение и развитие.
-
 \subsection{Структура проекта}
-Проект имеет следующую структуру:
+
+Проект имеет следующую структуру: 
 \begin{itemize}
-    \item \texttt{Gray.hpp} и \texttt{Gray.cpp}: содержат функцию генерации бинарного кода Грея.
-    \item \texttt{Multiset.hpp} и \texttt{Multiset.cpp}: содержат описание и реализацию класса \texttt{Multiset}, который служит основной структурой для хранения данных мультимножеств.
-    \item \texttt{UI.hpp} и \texttt{UI.cpp}: отвечают за пользовательский интерфейс и взаимодействие с пользователем. Здесь реализовано основное меню программы и обработка пользовательского ввода.
-    \item \texttt{main.cpp}: точка входа в программу, инициализация объектов и запуск пользовательского интерфейса.
-    \item \texttt{Makefile}: автоматизация процесса сборки проекта.
+    \item \texttt{SmallArithmetic.hpp} и \texttt{SmallArithmetic.cpp}: содержат реализацию малой конечной арифметики на основе диаграммы Хассе.  Класс выполняет операции над однозначными элементами алфавита.
+    
+    \item \texttt{BigArithmeticCalc. hpp} и \texttt{BigArithmeticCalc.cpp}: содержат реализацию большой конечной арифметики. Класс выполняет операции столбиком над многозначными числами.
+    
+    \item \texttt{UI.hpp} и \texttt{UI.cpp}:  реализуют пользовательский интерфейс, обработку команд и арифметических выражений. 
+    
+    \item \texttt{config.hpp}: содержит конфигурацию системы — мощность алфавита, правило "$+1$" и сам алфавит.
+    
+    \item \texttt{main.cpp}: точка входа в программу. 
+    
+    \item \texttt{CMakeLists.txt}: автоматизация сборки проекта.
 \end{itemize}
 
 \subsection{Структуры данных}
 
-Для эффективного представления и управления данными мультимножеств в проекте был разработан специализированный класс \texttt{Multiset}. Он инкапсулирует в себе все необходимые данные и операции, предоставляя высокоуровневый интерфейс.
+Для реализации конечной арифметики используются два класса: \texttt{SmallArithmetic} и \texttt{BigArithmeticCalc}. 
 
-\subsubsection{Внутренняя структура класса Multiset}
+\subsubsection{Класс SmallArithmetic}
 
-Класс содержит следующие ключевые поля:
+Класс хранит следующие основные структуры: 
 \begin{itemize}
-    \item \texttt{map<string, int> elements}: Основная структура данных для хранения мультимножества. Контейнер \texttt{std::map} хранит пары «ключ-значение», где \textbf{ключ} — строка с бинарным кодом Грея, а \textbf{значение} — целое число, представляющее кратность этого элемента. Использование \texttt{std::map} обеспечивает упорядоченное хранение и эффективный доступ к элементам с логарифмической сложностью.
+    \item \texttt{map<string, string> plusOneRule}:  правило перехода к следующему элементу алфавита. 
     
-    \item \texttt{int totalCardinality}: Поле для хранения общей мощности мультимножества (суммы всех кратностей). Это позволяет получать мощность за константное время $O(1)$, избегая повторных итераций по контейнеру.
+    \item \texttt{vector<string> alphabet}:  набор всех элементов алфавита. 
     
-    \item \texttt{static Multiset Universum}: Статическое поле класса, хранящее универсальное множество, общее для всех экземпляров класса \texttt{Multiset}.
+    \item \texttt{map<string, string> inverseMap}: таблица обратных элементов для деления.
+    
+    \item \texttt{map<tuple<... >, pair<...>> additionTableWithCarry}: таблица сложения с переносом для операций столбиком.
+    
+    \item \texttt{vector<vector<string>> addTable, mulTable, subTable, divTable}: таблицы операций малой арифметики.
+    
+    \item \texttt{int N}: мощность алфавита. 
+    
+    \item \texttt{static const int MAX\_DIGITS = 8}: максимальное количество разрядов в числах.
 \end{itemize}
 
-\subsection{Интерфейс класса Multiset}
+\subsubsection{Класс BigArithmeticCalc}
 
-Класс предоставляет следующие публичные методы:
+Класс содержит: 
+\begin{itemize}
+    \item \texttt{SmallArithmetic small}: объект малой арифметики для выполнения посимвольных операций. 
+\end{itemize}
+\subsection{Класс SmallArithmetic}
 
-\begin{lstlisting}[style=cstyle, caption={Объявление класса Multiset}]
-class Multiset {
+\subsubsection{Назначение и структура данных}
+
+Класс \texttt{SmallArithmetic} реализует малую конечную арифметику на заданном алфавите с правилом перехода к следующему элементу (правило "$+1$"). Все операции выполняются через построение диаграммы Хассе.
+
+\begin{lstlisting}[style=cstyle, caption={Интерфейс класса SmallArithmetic}]
+class SmallArithmetic {
 private:
-    map<string, int> elements;
-    int totalCardinality = 0;
-    void recount();
+    int N;
+    map<string, string> plusOneRule;
+    vector<string> alphabet;
+
+    map<string, string> inverseMap;
+
+    map<tuple<string, string, string>, pair<string, string>> additionTableWithCarry;
+    map<string, string> negationMap;
+
+    vector<vector<string>> addTable;
+    vector<vector<string>> mulTable;
+    vector<vector<string>> subTable;
+    vector<vector<string>> divTable;
+
+    string additiveIdentity;
+    string multiplicativeIdentity;
+    string universum;
+    string emptySet;
+
+    static const int MAX_DIGITS = 8;
+
+    string addByHasse(const string& a, const string& b) const;
+    string multiplyByHasse(const string& a, const string& b) const;
+    string subtractByHasse(const string& a, const string& b) const;
+    string divideByHasse(const string& a, const string& b) const;
+
+    optional<string> findMultiplicativeInverse(const string& x);
+    void buildInverseMap();
+
+    void buildAddTable();
+    void buildMulTable();
+    void buildSubTable();
+    void buildDivTable();
+
+    void buildAdditionTableWithCarry();
+    bool checkCarry(const string& start, const string& steps) const;
+    void buildNegationMap();
+
+    string nextSymbol(const string& current) const;
+    int compareSymbols(const string& a, const string& b) const;
+
+    void printTable(const vector<vector<string>>& table) const;
 
 public:
-    static Multiset Universum;
+    SmallArithmetic(int n,
+                    const map<string, string>& rule,
+                    const vector<string>& alph,
+                    const string& addId = "a",
+                    const string& mulId = "b");
 
-    Multiset() : totalCardinality(0) {}
-    int getCardinality() const;
-    const map<string, int>& getElements() const;
+    const vector<string>& getAlphabet() const;
+    int getN() const;
 
-    void fillUniverse(int n);
-    void fillByHand();
-    void fillAutomaticly(int n);
+    const string& getAdditiveIdentity() const;
+    const string& getMultiplicativeIdentity() const;
+    const string& getUniversum() const;
+    const string& getEmptySet() const;
+    int getMaxDigits() const;
+    string getMinNumber() const;
+    string getMaxNumber() const;
 
-    bool isEmpty() const;
-    void print(const string& str) const;
+    bool isValidElement(const string& elem) const;
+    int compareElems(const string& a, const string& b) const;
+    string nextElem(const string& current) const;
+    pair<string, string> addWithCarry(const string& c1,
+                                      const string& c2,
+                                      const string& carry_in) const;
+    string smallSubtract(const string& a, const string& b) const;
 
-    Multiset Union(const Multiset& other) const;
-    Multiset Intersection(const Multiset& other) const;
-    Multiset Complement() const;
-    Multiset Diff(const Multiset& other) const;
-    Multiset SimmDiff(const Multiset& other) const;
+    void printAddTable() const;
+    void printMulTable() const;
+    void printSubTable() const;
+    void printDivTable() const;
+    void printAllTables() const;
+    void printHasseDiagram() const;
+};
 
-    Multiset operator+(const Multiset& other) const;
-    Multiset operator-(const Multiset& other) const;
-    Multiset operator*(const Multiset& other) const;
-    Multiset operator/(const Multiset& other) const;
+
+\end{lstlisting}
+
+\subsection*{Ключевые методы}
+
+\subsubsection{Метод nextSymbol(const string\& current)}
+
+\textbf{Назначение:} Возвращает следующий элемент алфавита согласно правилу "$+1$".  Используется для обхода диаграммы Хассе при выполнении операций сложения и умножения. 
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& current}:  Текущий символ алфавита.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}:  Следующий символ по правилу "$+1$". 
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация nextSymbol()}]
+string SmallArithmetic::nextSymbol(const string& current) const {
+    auto it = plusOneRule.find(current);
+    if (it == plusOneRule.end()) {
+        throw runtime_error("invalid symbol: " + current);
+    }
+    return it->second;
+}
+\end{lstlisting}
+
+\newpage
+
+\subsubsection{Метод compareSymbols(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Сравнивает два элемента алфавита, определяя их относительный порядок в диаграмме Хассе.  Используется для операций сравнения и вычитания.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}: Первый элемент для сравнения. 
+    \item \texttt{const string\& b}: Второй элемент для сравнения.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{int}: $0$ (если $a = b$), $-1$ (если $a < b$), $1$ (если $a > b$).
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация compareSymbols()}]
+int SmallArithmetic::compareSymbols(const string& a, const string& b) const {
+    if (a == b) return 0;
+
+    string current = additiveIdentity;
+    while (true) {
+        if (current == a) return -1;
+        if (current == b) return 1;
+        current = nextSymbol(current);
+        if (current == additiveIdentity) break;
+    }
+    return 0;
+}
+\end{lstlisting}
+
+Алгоритм последовательно проходит по циклу правила "$+1$", начиная с нейтрального элемента, и определяет, какой из элементов встречается раньше.
+
+\subsubsection{Метод addByHasse(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет сложение двух элементов алфавита путём последовательного применения правила "$+1$".  Результат вычисляется как $a + b = \underbrace{(a +1) +1 \ldots +1}_{b \text{ раз}}$. 
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}:  Первое слагаемое.
+    \item \texttt{const string\& b}: Второе слагаемое.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}:  Результат сложения $a + b$.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация addByHasse()}]
+string SmallArithmetic::addByHasse(const string& a, const string& b) const {
+    if (b == additiveIdentity) return a;
+
+    string counter = additiveIdentity;
+    string result = a;
+
+    while (counter != b) {
+        result = nextSymbol(result);
+        counter = nextSymbol(counter);
+    }
+
+    return result;
+}
+\end{lstlisting}
+
+Алгоритм работает следующим образом:
+\begin{enumerate}
+    \item Если второе слагаемое является нейтральным элементом, возвращается первое слагаемое;
+    \item Инициализируется счётчик нейтральным элементом;
+    \item В цикле счётчик увеличивается до значения второго слагаемого;
+    \item Одновременно результат увеличивается на ту же величину;
+    \item Возвращается итоговое значение.
+\end{enumerate}
+
+\newpage
+
+\subsubsection{Метод multiplyByHasse(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет умножение двух элементов алфавита через повторное сложение. Результат вычисляется как $a \times b = \underbrace{a + a + \ldots + a}_{b \text{ раз}}$. 
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}:  Множитель.
+    \item \texttt{const string\& b}:  Множитель.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}: Результат умножения $a \times b$.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация multiplyByHasse()}]
+string SmallArithmetic::multiplyByHasse(const string& a, const string& b) const {
+    if (a == additiveIdentity && b == additiveIdentity) {
+        return universum;
+    }
+
+    if (a == additiveIdentity || b == additiveIdentity) {
+        return additiveIdentity;
+    }
+
+    string counter = additiveIdentity;
+    string result = additiveIdentity;
+
+    while (counter != b) {
+        result = addByHasse(result, a);
+        counter = nextSymbol(counter);
+    }
+
+    return result;
+}
+\end{lstlisting}
+
+Алгоритм: 
+\begin{enumerate}
+    \item Обработка краевого случая:  произведение двух нейтральных элементов по сложению даёт универсум;
+    \item Если хотя бы один множитель — нейтральный элемент, результат — нейтральный элемент;
+    \item Иначе выполняется повторное сложение множимого с самим собой $b$ раз. 
+\end{enumerate}
+
+\subsubsection{Метод subtractByHasse(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет вычитание путём поиска такого элемента $c$, что $b + c = a$. Реализует обратную операцию к сложению.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}: Уменьшаемое. 
+    \item \texttt{const string\& b}: Вычитаемое.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}:  Результат вычитания $a - b$ или строка ошибки.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация subtractByHasse()}]
+string SmallArithmetic::subtractByHasse(const string& a, const string& b) const {
+    for (const auto& candidate : alphabet) {
+        if (addByHasse(b, candidate) == a) {
+            return candidate;
+        }
+    }
+    return "ERR:  with subtract";
+}
+\end{lstlisting}
+
+Алгоритм перебирает все элементы алфавита и проверяет, какой из них при сложении с вычитаемым даёт уменьшаемое. 
+
+\newpage
+
+
+\subsubsection{Метод buildAdditionTableWithCarry()}
+
+\textbf{Назначение:} Строит таблицу для сложения с учётом входящего переноса. Таблица используется в большой арифметике при сложении столбиком.  Для каждой тройки $(a, b, c_{in})$ вычисляется пара $(sum, c_{out})$.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item vector<string> alphabet
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item map<tuple<string, string, string>, pair<string, string>> additionTableWithCarry - таблица для сложения с учётом входящего переноса.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация buildAdditionTableWithCarry()}]
+void SmallArithmetic::buildAdditionTableWithCarry() {
+    additionTableWithCarry.clear();
+    
+    for (const auto& c1 : alphabet) {
+        for (const auto& c2 :  alphabet) {
+            for (const auto& carry_in : alphabet) {
+                string temp = addByHasse(c1, c2);
+                string sum = addByHasse(temp, carry_in);
+                
+                string carry_out = additiveIdentity;
+                string result = sum;
+                
+                if (checkCarry(c1, c2)) {
+                    carry_out = nextSymbol(additiveIdentity);
+                }
+                
+                additionTableWithCarry[make_tuple(c1, c2, carry_in)] = 
+                    make_pair(result, carry_out);
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+Таблица содержит тройки $(a, b, c_{in})$ и соответствующие им пары $(sum, c_{out})$, где: 
+\begin{itemize}
+    \item $a, b$ — слагаемые разрядов;
+    \item $c_{in}$ — входящий перенос из младшего разряда;
+    \item $sum$ — результат сложения в текущем разряде;
+    \item $c_{out}$ — исходящий перенос в старший разряд.
+\end{itemize}
+
+\newpage
+
+\subsection{Класс BigArithmeticCalc}
+
+\subsubsection{Назначение и структура данных}
+
+Класс \texttt{BigArithmeticCalc} реализует большую конечную арифметику — операции над многозначными числами. Внутри использует класс \texttt{SmallArithmetic} для посимвольных операций.
+
+
+
+\begin{lstlisting}[style=cstyle, caption={Интерфейс класса BigArithmeticCalc}]
+class BigArithmeticCalc {
+private:
+    SmallArithmetic small;
+
+    bool isNegative(const string& num) const;
+    string removeSign(const string& num) const;
+    string addSign(const string& num, bool negative) const;
+    
+    bool isValidNumber(const string& num) const;
+    
+    string deleteTrashZeros(const string& num) const;
+    
+    bool isOverflow(const string& num) const;
+
+    string addBigUnsigned(const string& a, const string& b) const;
+    string subtractBigUnsigned(const string& a, const string& b) const;
+    string multiplyBigUnsigned(const string& a, const string& b) const;
+    pair<string, string> divideBigUnsigned(const string& a, const string& b) const;
+    
+    string multiplyByDigit(const string& num, const string& digit) const;
+    
+    int compareBigUnsigned(const string& a, const string& b) const;
+    
+public:
+    BigArithmeticCalc(int n, 
+                      const map<string, string>& rule, 
+                      const vector<string>& alph,
+                      const string& addId = "a",
+                      const string& mulId = "b");
+    
+    const vector<string>& getAlphabet() const;
+    string getMinNumber() const;
+    string getMaxNumber() const;
+    
+    string add(const string& a, const string& b) const;
+    string multiply(const string& a, const string& b) const;
+    string subtract(const string& a, const string& b) const;
+    string divide(const string& a, const string& b) const; 
+    
+    void printAddTable() const;
+    void printMulTable() const;
+    void printSubTable() const;
+    void printDivTable() const;
+    void printAllTables() const;
+    void printInfo() const;
+    void printHasseDiagram() const;
+    void printHelp() const;
 };
 \end{lstlisting}
 
-\subsection{Реализация ключевых функций}
+Класс хранит только один объект малой арифметики, через который выполняются все операции с разрядами.
 
-\subsubsection{Функция generateGrayCode(int n)}
+\subsection*{Вспомогательные методы}
 
-\textbf{Назначение:} Генерирует вектор строк, содержащий все бинарные коды Грея заданной разрядности $n$.
+\subsubsection{Метод isNegative(const string\& num)}
+
+\textbf{Назначение:} Проверяет, является ли число отрицательным (начинается ли строка с символа минус).
 
 \textbf{Вход:}
 \begin{itemize}
-    \item \texttt{int n}: Разрядность кода Грея.
+    \item \texttt{const string\& num}: Число для проверки.
 \end{itemize}
 
 \textbf{Выход:}
 \begin{itemize}
-    \item \texttt{vector<string>}: Вектор строк с кодами Грея.
+    \item \texttt{bool}: \texttt{true}, если число отрицательное, иначе \texttt{false}. 
 \end{itemize}
 
-\textbf{Алгоритм:} Функция использует формулу $G(i) = i \oplus (i \gg 1)$ для вычисления $i$-го кода Грея, затем преобразует результат в двоичную строку заданной длины $n$.
+\begin{lstlisting}[style=cstyle, caption={Реализация isNegative()}]
+bool BigArithmeticCalc::isNegative(const string& num) const {
+    return ! num.empty() && num[0] == '-';
+}
+\end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Реализация generateGrayCode()}]
-static inline int grayOf(int x) { return x ^ (x >> 1); }
+\subsubsection{Метод removeSign(const string\& num)}
 
-vector<string> generateGrayCode(int n){
-    vector<string> gray;
-    int total = 1 << n;  // 2^n
-    for (int i = 0; i < total; ++i) {
-        int g = grayOf(i);
-        string code;
-        for (int j = n - 1; j >= 0; --j) {
-            code += ((g >> j) & 1) ? '1' : '0';
+\textbf{Назначение:} Удаляет знак минус из начала строки, возвращая абсолютное значение числа.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& num}: Число (возможно, с минусом).
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}:  Число без знака.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация removeSign()}]
+string BigArithmeticCalc::removeSign(const string& num) const {
+    if (isNegative(num)) {
+        return num.substr(1);
+    }
+    return num;
+}
+\end{lstlisting}
+
+\newpage
+
+\subsubsection{Метод addSign(const string\& num, bool negative)}
+
+\textbf{Назначение:} Добавляет знак минус к числу, если указан флаг отрицательности.  Нейтральный элемент по сложению всегда возвращается без знака. 
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& num}:  Число без знака.
+    \item \texttt{bool negative}: Флаг отрицательности. 
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}: Число со знаком (если \texttt{negative = true}) или без знака. 
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация addSign()}]
+string BigArithmeticCalc::addSign(const string& num, bool negative) const {
+    if (num == small.getAdditiveIdentity()) return num;
+    return negative ? "-" + num : num;
+}
+\end{lstlisting}
+
+\subsubsection{Метод isValidNumber(const string\& num)}
+
+\textbf{Назначение:} Проверяет, что все символы числа принадлежат алфавиту системы.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& num}: Число для проверки.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{bool}: \texttt{true}, если все символы валидны, иначе \texttt{false}.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация isValidNumber()}]
+bool BigArithmeticCalc::isValidNumber(const string& num) const {
+    if (num.empty()) return false;
+    
+    string unsign_num = removeSign(num);
+    
+    for (char c : unsign_num) {
+        if (!small.isValidElement(string(1, c))) return false;
+    }
+    return true;
+}
+\end{lstlisting}
+
+\subsubsection{Метод isOverflow(const string\& num)}
+
+\textbf{Назначение:} Проверяет, не превышает ли количество разрядов числа максимально допустимое значение (MAX\_DIGITS = 8).
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& num}: Число для проверки. 
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{bool}: \texttt{true}, если произошло переполнение, иначе \texttt{false}.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация isOverflow()}]
+bool BigArithmeticCalc::isOverflow(const string& num) const {
+    string unsign_num = removeSign(num);
+    string withoutZeros = deleteTrashZeros(unsign_num);
+    return withoutZeros.length() > static_cast<size_t>(small.getMaxDigits());
+}
+\end{lstlisting}
+
+\newpage
+
+\subsubsection{Метод deleteTrashZeros(const string\& num)}
+
+\textbf{Назначение:} Удаляет ведущие нули из числа.  Если число состоит только из нулей, возвращает нейтральный элемент по сложению.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& num}: Число с возможными ведущими нулями. 
+\end{itemize}
+
+\textbf{Выход: }
+\begin{itemize}
+    \item \texttt{string}: Число без ведущих нулей.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация deleteTrashZeros()}]
+string BigArithmeticCalc::deleteTrashZeros(const string& num) const {
+    if (num.empty()) return small.getAdditiveIdentity();
+    
+    bool negative = isNegative(num);
+    string unsign_num = removeSign(num);
+    
+    size_t firstNonZero = 0;
+    while (firstNonZero < unsign_num.length() && 
+           string(1, unsign_num[firstNonZero]) == small.getAdditiveIdentity()) {
+        firstNonZero++;
+    }
+    
+    if (firstNonZero == unsign_num.length()) {
+        return small.getAdditiveIdentity();
+    }
+    
+    string result = unsign_num.substr(firstNonZero);
+    
+    return addSign(result, negative);
+}
+\end{lstlisting}
+
+Алгоритм: 
+\begin{enumerate}
+    \item Удаляется знак (если есть);
+    \item Подсчитывается количество ведущих нулей;
+    \item Если все символы — нули, возвращается нейтральный элемент;
+    \item Иначе возвращается подстрока без ведущих нулей со знаком (если необходимо).
+\end{enumerate}
+
+\subsubsection{Метод compareBigUnsigned(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Сравнивает два беззнаковых многозначных числа.
+
+\textbf{Вход: }
+\begin{itemize}
+    \item \texttt{const string\& a}: Первое число.
+    \item \texttt{const string\& b}: Второе число.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{int}: $0$ (если $a = b$), $1$ (если $a > b$), $-1$ (если $a < b$).
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация compareBigUnsigned()}]
+int BigArithmeticCalc:: compareBigUnsigned(const string& a, const string& b) const {
+    string normA = deleteTrashZeros(a);
+    string normB = deleteTrashZeros(b);
+    
+    if (normA.length() > normB.length()) return 1;
+    if (normA. length() < normB.length()) return -1;
+    
+    for (size_t i = 0; i < normA.length(); ++i) {
+        int cmp = small.compareElems(string(1, normA[i]), string(1, normB[i]));
+        if (cmp != 0) return cmp;
+    }
+    
+    return 0;
+}
+\end{lstlisting}
+
+Алгоритм: 
+\begin{enumerate}
+    \item Нормализация чисел (удаление ведущих нулей);
+    \item Сравнение по количеству разрядов;
+    \item При равной длине — посимвольное сравнение слева направо. 
+\end{enumerate}
+
+\newpage
+
+\subsection*{Операции большой арифметики}
+
+\subsubsection{Метод addBigUnsigned(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет сложение двух беззнаковых многозначных чисел столбиком с учётом переноса между разрядами.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}: Первое слагаемое.
+    \item \texttt{const string\& b}: Второе слагаемое.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}:  Сумма $a + b$ без ведущих нулей. 
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация addBigUnsigned()}]
+string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const {
+    string result = "";
+    string carry = small.getAdditiveIdentity();
+    
+    int i = a.length() - 1;
+    int j = b.length() - 1;
+    
+    while (i >= 0 || j >= 0 || carry != small.getAdditiveIdentity()) {
+        string digit_a = (i >= 0) ? string(1, a[i]) : small.getAdditiveIdentity();
+        string digit_b = (j >= 0) ? string(1, b[j]) : small.getAdditiveIdentity();
+        
+        auto [sum, new_carry] = small.addWithCarry(digit_a, digit_b, carry);
+        
+        result = sum + result;
+        carry = new_carry;
+        
+        i--;
+        j--;
+    }
+    
+    return deleteTrashZeros(result);
+}
+\end{lstlisting}
+
+Алгоритм выполняет сложение справа налево (от младших разрядов к старшим), используя таблицу \texttt{additionTableWithCarry} для учёта переносов.
+
+\subsubsection{Метод subtractBigUnsigned(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет вычитание двух беззнаковых многозначных чисел столбиком с учётом заимствования из старших разрядов.  Требует, чтобы $a \geq b$.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}: Уменьшаемое ($a \geq b$).
+    \item \texttt{const string\& b}: Вычитаемое. 
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}: Разность $a - b$ без ведущих нулей.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация subtractBigUnsigned()}]
+string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) const {
+    if (compareBigUnsigned(a, b) < 0) {
+        throw runtime_error("subtraction:  a < b");
+    }
+    
+    string result = "";
+    string borrow = small.getAdditiveIdentity();
+    
+    int i = a.length() - 1;
+    int j = b.length() - 1;
+    
+    while (i >= 0) {
+        string digit_a = string(1, a[i]);
+        string digit_b = (j >= 0) ? string(1, b[j]) : small.getAdditiveIdentity();
+        
+        digit_a = small.smallSubtract(digit_a, borrow);
+        
+        string diff;
+        if (small.compareElems(digit_a, digit_b) >= 0) {
+            diff = small.smallSubtract(digit_a, digit_b);
+            borrow = small.getAdditiveIdentity();
+        } else {
+            string augmented = small.addByHasse(digit_a, small.getMaxSymbol());
+            diff = small.smallSubtract(augmented, digit_b);
+            borrow = small.nextElem(small.getAdditiveIdentity());
         }
-        gray.push_back(code);
+        
+        result = diff + result;
+        i--;
+        j--;
     }
-    return gray;
+    
+    return deleteTrashZeros(result);
 }
 \end{lstlisting}
 
-\subsubsection{Метод fillUniverse(int n)}
+Алгоритм выполняет вычитание справа налево с учётом заимствования из старших разрядов. 
 
-\textbf{Назначение:} Заполняет универсум мультимножеств на основе кодов Грея разрядности $n$, присваивая каждому элементу случайную кратность.
+\newpage
+
+\subsubsection{Метод multiplyBigUnsigned(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет умножение двух беззнаковых многозначных чисел столбиком.  Число $a$ умножается на каждую цифру числа $b$, промежуточные результаты сдвигаются и суммируются.
 
 \textbf{Вход:}
 \begin{itemize}
-    \item \texttt{int n}: Разрядность для генерации универсума.
+    \item \texttt{const string\& a}: Множимое.
+    \item \texttt{const string\& b}: Множитель.
 \end{itemize}
 
 \textbf{Выход:}
 \begin{itemize}
-    \item \texttt{void}: Метод модифицирует статическое поле \texttt{Universum}.
+    \item \texttt{string}: Произведение $a \times b$ без ведущих нулей.
 \end{itemize}
 
-\begin{lstlisting}[style=cstyle, caption={Реализация fillUniverse()}]
-void Multiset::fillUniverse(int n) {
-    elements.clear();
-    totalCardinality = 0;
-
-    if (n <= 0) {
-        cout << "Создан пустой универсум (разрядность 0)\n";
-        return;
+\begin{lstlisting}[style=cstyle, caption={Реализация multiplyBigUnsigned()}]
+string BigArithmeticCalc::multiplyBigUnsigned(const string& a, const string& b) const {
+    string result = small.getAdditiveIdentity();
+    
+    for (int i = b.length() - 1; i >= 0; --i) {
+        string digit = string(1, b[i]);
+        string partial = multiplyByDigit(a, digit);
+        
+        int shift = b.length() - 1 - i;
+        for (int k = 0; k < shift; ++k) {
+            partial += small.getAdditiveIdentity();
+        }
+        
+        result = addBigUnsigned(result, partial);
     }
-
-    vector<string> grayCodes = generateGrayCode(n);
-    random_device rb;
-    mt19937 gen(rb());
-    uniform_int_distribution<> dist(1, 50);
-
-    for (const auto& code : grayCodes) {
-        int car = dist(gen);
-        elements[code] = car;
-        totalCardinality += car;
-    }
+    
+    return deleteTrashZeros(result);
 }
 \end{lstlisting}
 
-\subsubsection{Метод fillByHand()}
+Алгоритм: 
+\begin{enumerate}
+    \item Умножение числа $a$ на каждую цифру числа $b$;
+    \item Сдвиг промежуточных результатов влево на соответствующее количество разрядов;
+    \item Суммирование всех промежуточных результатов. 
+\end{enumerate}
 
-\textbf{Назначение:} Позволяет вручную заполнить мультимножество, запрашивая у пользователя кратность для каждого элемента универсума.
+\subsubsection{Метод multiplyByDigit(const string\& num, const string\& digit)}
 
-\textbf{Вход:} 
+\textbf{Назначение:} Умножает многозначное число на однозначное число (один элемент алфавита). Используется в методе \texttt{multiplyBigUnsigned}.
+
+\textbf{Вход:}
 \begin{itemize}
-    \item Нет параметров (взаимодействие с пользователем через консоль).
+    \item \texttt{const string\& num}: Многозначное число.
+    \item \texttt{const string\& digit}:  Однозначное число (элемент алфавита).
 \end{itemize}
 
-\textbf{Выход:}
+\textbf{Выход: }
 \begin{itemize}
-    \item \texttt{void}: Метод модифицирует объект мультимножества.
+    \item \texttt{string}: Произведение $num \times digit$. 
 \end{itemize}
 
-\textbf{Особенности:} Метод включает проверку корректности ввода и обработку исключений при вводе некорректных данных.
-
-\begin{lstlisting}[style=cstyle, caption={Реализация fillByHand()}]
-void Multiset::fillByHand() {
-    elements.clear();
-    totalCardinality = 0;
-
-    if (Universum.isEmpty()) {
-        cout << "Универсум пуст - множество будет пустым.\n";
-        return;
+\begin{lstlisting}[style=cstyle, caption={Реализация multiplyByDigit()}]
+string BigArithmeticCalc::multiplyByDigit(const string& num, 
+                                          const string& digit) const {
+    if (digit == small.getAdditiveIdentity()) {
+        return small.getAdditiveIdentity();
     }
-
-    for (const auto& pair : Universum.getElements()) {
-        const string& code = pair.first;
-        const int maxCardinality = pair.second;
-
-        while (true) {
-            cout << "Введите кратность для кода " << code
-                 << " (max: " << maxCardinality << "): ";
-
-            int currentCardinality;
-            if (!(cin >> currentCardinality)) {
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                cerr << "Ошибка: нужно ввести целое число.\n";
-                continue;
-            }
-
-            try {
-                if (currentCardinality < 0) {
-                    throw invalid_argument("Ошибка: кратность не может быть отрицательной.");
-                }
-                if (currentCardinality > maxCardinality) {
-                    throw out_of_range("Ошибка: кратность не может превышать " + to_string(maxCardinality));
-                }
-
-                if (currentCardinality > 0) {
-                    elements[code] = currentCardinality;
-                    totalCardinality += currentCardinality;
-                }
-                break;
-
-            } catch (const exception& e) {
-                cerr << e.what() << "\n";
-            }
+    
+    string result = "";
+    string carry = small.getAdditiveIdentity();
+    
+    for (int i = num.length() - 1; i >= 0; --i) {
+        string current_digit = string(1, num[i]);
+        string product = small.multiplyByHasse(current_digit, digit);
+        product = small.addByHasse(product, carry);
+        
+        if (product.length() > 1) {
+            carry = string(1, product[0]);
+            result = string(1, product[1]) + result;
+        } else {
+            result = product + result;
+            carry = small.getAdditiveIdentity();
         }
     }
+    
+    if (carry != small.getAdditiveIdentity()) {
+        result = carry + result;
+    }
+    
+    return result;
 }
 \end{lstlisting}
 
-\subsubsection{Метод fillAutomaticly(int desiredCardinality)}
+% TODO: написать алгоритм
 
-\textbf{Назначение:} Автоматически заполняет мультимножество, выбирая случайные элементы из универсума до достижения заданной мощности.
+\newpage
 
-\textbf{Вход:}
+\subsubsection{Метод divideBigUnsigned(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет деление двух беззнаковых многозначных чисел "уголком".  Возвращает частное и остаток.
+
+\textbf{Вход: }
 \begin{itemize}
-    \item \texttt{int desiredCardinality}: Желаемая мощность мультимножества.
+    \item \texttt{const string\& a}: Делимое.
+    \item \texttt{const string\& b}: Делитель ($b \neq 0$).
 \end{itemize}
 
 \textbf{Выход:}
 \begin{itemize}
-    \item \texttt{void}: Метод модифицирует объект мультимножества.
+    \item \texttt{pair<string, string>}: Пара (частное, остаток).
 \end{itemize}
 
-\textbf{Алгоритм:} Метод случайным образом выбирает элементы из универсума и увеличивает их кратность до тех пор, пока общая мощность не достигнет заданного значения.
-
-\begin{lstlisting}[style=cstyle, caption={Реализация fillAutomaticly()}]
-void Multiset::fillAutomaticly(int desiredCardinality) {
-    elements.clear();
-    totalCardinality = 0;
-
-    if (Universum.isEmpty()) {
-        cout << "Универсум пуст — множество останется пустым.\n";
-        return;
+\begin{lstlisting}[style=cstyle, caption={Реализация divideBigUnsigned()}]
+pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a const string& b) const {
+    if (b == small.getAdditiveIdentity()) {
+        throw runtime_error("division by zero");
     }
-
-    int universeCardinality = Universum.getCardinality();
-
-    if (desiredCardinality < 0 || desiredCardinality > universeCardinality) {
-        cerr << "Ошибка: мощность должна быть от 0 до "
-             << universeCardinality << ".\n";
-        return;
+    
+    if (compareBigUnsigned(a, b) < 0) {
+        return {small.getAdditiveIdentity(), a};
     }
-
-    if (desiredCardinality == 0) {
-        cout << "Создано пустое множество.\n";
-        return;
+    
+    string quotient = "";
+    string remainder = "";
+    
+    for (size_t i = 0; i < a.length(); ++i) {
+        remainder += a[i];
+        remainder = deleteTrashZeros(remainder);
+        
+        string count = small.getAdditiveIdentity();
+        while (compareBigUnsigned(remainder, b) >= 0) {
+            remainder = subtractBigUnsigned(remainder, b);
+            count = small.nextElem(count);
+        }
+        
+        quotient += count;
     }
+    
+    return {deleteTrashZeros(quotient), deleteTrashZeros(remainder)};
+}
+\end{lstlisting}
 
-    vector<string> codes;
-    for (const auto& [code, _] : Universum.getElements()) {
-        codes.push_back(code);
+Алгоритм выполняет деление "уголком", последовательно вычитая делитель из текущего остатка.
+
+\subsection*{Публичные операции с учётом знаков}
+
+\subsubsection{Метод add(const string\& a, const string\& b)}
+
+\textbf{Назначение: } Выполняет сложение двух чисел с учётом знаков. Обрабатывает случаи сложения чисел с одинаковыми и разными знаками.
+
+\textbf{Вход: }
+\begin{itemize}
+    \item \texttt{const string\& a}: Первое слагаемое. 
+    \item \texttt{const string\& b}: Второе слагаемое.
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}: Сумма $a + b$ со знаком.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация add()}]
+string BigArithmeticCalc::add(const string& a, const string& b) const {
+    if (! isValidNumber(a) || !isValidNumber(b)) {
+        throw runtime_error("invalid number format");
     }
-
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dist(0, (int)codes.size() - 1);
-    map<string, int> temp;
-
-    int added = 0;
-    while (added < desiredCardinality) {
-        const string& code = codes[dist(gen)];
-        if (temp[code] < Universum.getElements().at(code)) {
-            temp[code]++;
-            ++added;
+    
+    bool neg_a = isNegative(a);
+    bool neg_b = isNegative(b);
+    
+    string abs_a = removeSign(a);
+    string abs_b = removeSign(b);
+    
+    string result;
+    bool result_negative;
+    
+    if (neg_a == neg_b) {
+        result = addBigUnsigned(abs_a, abs_b);
+        result_negative = neg_a;
+    } else {
+        int cmp = compareBigUnsigned(abs_a, abs_b);
+        if (cmp >= 0) {
+            result = subtractBigUnsigned(abs_a, abs_b);
+            result_negative = neg_a;
+        } else {
+            result = subtractBigUnsigned(abs_b, abs_a);
+            result_negative = neg_b;
         }
     }
-
-    elements = std::move(temp);
-    totalCardinality = desiredCardinality;
+    
+    if (isOverflow(result)) {
+        throw runtime_error("overflow:  result exceeds MAX_DIGITS");
+    }
+    
+    return addSign(result, result_negative);
 }
 \end{lstlisting}
 
-\subsubsection{Метод print(const string\& str)}
+Алгоритм: 
+\begin{enumerate}
+    \item Проверка валидности чисел;
+    \item Извлечение знаков и модулей;
+    \item Если знаки одинаковые — складываются модули;
+    \item Если знаки разные — вычитается меньший модуль из большего;
+    \item Проверка переполнения;
+    \item Добавление знака к результату. 
+\end{enumerate}
 
-\textbf{Назначение:} Выводит содержимое мультимножества в консоль с указанием кодов Грея и их кратностей.
+
+\subsubsection{Метод subtract(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет вычитание двух чисел с учётом знаков. Сводится к сложению с противоположным числом:  $a - b = a + (-b)$.
 
 \textbf{Вход:}
 \begin{itemize}
-    \item \texttt{const string\& str}: Заголовок для вывода.
+    \item \texttt{const string\& a}: Уменьшаемое.
+    \item \texttt{const string\& b}: Вычитаемое.
 \end{itemize}
 
 \textbf{Выход:}
 \begin{itemize}
-    \item \texttt{void}: Вывод осуществляется в стандартный поток вывода.
+    \item \texttt{string}: Разность $a - b$ со знаком.
 \end{itemize}
 
-\begin{lstlisting}[style=cstyle, caption={Реализация print()}]
-void Multiset::print(const string& str) const {
-    cout << str;
-    if (elements.empty()) {
-        cout << "(множество пусто)\n";
-        return;
-    }
-
-    for (auto& [code, count] : elements)
-        cout << code << " : " << count << endl;
-
-    cout << "Общая мощность: " << totalCardinality << endl;
+\begin{lstlisting}[style=cstyle, caption={Реализация subtract()}]
+string BigArithmeticCalc::subtract(const string& a, const string& b) const {
+    string neg_b = isNegative(b) ? removeSign(b) : "-" + b;
+    return add(a, neg_b);
 }
 \end{lstlisting}
+
+\subsubsection{Метод multiply(const string\& a, const string\& b)}
+
+\textbf{Назначение:} Выполняет умножение двух чисел с учётом знаков.  Знак результата определяется правилом: $(-) \times (-) = (+)$, $(+) \times (-) = (-)$, $(+) \times (+) = (+)$.
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}:  Множимое.
+    \item \texttt{const string\& b}: Множитель. 
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}: Произведение $a \times b$ со знаком.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация multiply()}]
+string BigArithmeticCalc::multiply(const string& a, const string& b) const {
+    if (!isValidNumber(a) || !isValidNumber(b)) {
+        throw runtime_error("invalid number format");
+    }
+    
+    bool neg_a = isNegative(a);
+    bool neg_b = isNegative(b);
+    
+    string abs_a = removeSign(a);
+    string abs_b = removeSign(b);
+    
+    string result = multiplyBigUnsigned(abs_a, abs_b);
+    
+    if (isOverflow(result)) {
+        throw runtime_error("overflow: result exceeds MAX_DIGITS");
+    }
+    
+    bool result_negative = (neg_a != neg_b);
+    
+    return addSign(result, result_negative);
+}
+\end{lstlisting}
+
+
+\subsubsection{Метод divide(const string\& a, const string\& b)}
+
+\textbf{Назначение: } Выполняет деление двух чисел с учётом знаков. Возвращает только частное (остаток не выводится). Знак результата определяется правилом умножения. 
+
+\textbf{Вход:}
+\begin{itemize}
+    \item \texttt{const string\& a}:  Делимое.
+    \item \texttt{const string\& b}: Делитель ($b \neq 0$).
+\end{itemize}
+
+\textbf{Выход:}
+\begin{itemize}
+    \item \texttt{string}: Частное $a / b$ со знаком.
+\end{itemize}
+
+\begin{lstlisting}[style=cstyle, caption={Реализация divide()}]
+string BigArithmeticCalc:: divide(const string& a, const string& b) const {
+    if (!isValidNumber(a) || !isValidNumber(b)) {
+        throw runtime_error("invalid number format");
+    }
+    
+    if (removeSign(b) == small.getAdditiveIdentity()) {
+        throw runtime_error("division by zero");
+    }
+    
+    bool neg_a = isNegative(a);
+    bool neg_b = isNegative(b);
+    
+    string abs_a = removeSign(a);
+    string abs_b = removeSign(b);
+    
+    auto [quotient, remainder] = divideBigUnsigned(abs_a, abs_b);
+    
+    bool result_negative = (neg_a != neg_b);
+    
+    return addSign(quotient, result_negative);
+}
+\end{lstlisting}
+
+\newpage

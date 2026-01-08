@@ -1,232 +1,249 @@
 \section{Результаты работы программы}
 
-Программа имеет консольный интерфейс, позволяющий пользователю выполнять все реализованные операции через меню. В данном разделе представлены примеры выполнения основных функций, демонстрирующие корректность работы программы.
+\subsection{Запуск программы}
 
-\subsection{Главное меню программы}
-
-При запуске программы пользователю предоставляется главное меню с следующими опциями (см. рис.~\ref{fig:main_menu}).
+При запуске программа выводит приветственное сообщение и информацию о командах.  Пользователь может вводить команды или арифметические выражения.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/main_menu.jpg}
-    \caption{Главное меню}
-    \label{fig:main_menu}
+      \includegraphics[ width=0.6\linewidth]{screenshots/startup.jpg}
+    \caption{Приветственное сообщение при запуске программы}
+    \label{fig:startup}
 \end{figure}
 
-\subsection{Генерация универсума}
+\newpage
 
-После выбора первой опции пользователь может указать разрядность кода Грея. На рисунке~\ref{fig:univer} показан пример генерации универсума с разрядностью $n = 3$, что приводит к созданию $2^3 = 8$ элементов.
+\subsection{Сценарий 1: Просмотр справки}
+
+\subsubsection{Команда help}
+
+При вводе команды \texttt{help} программа выводит список всех доступных команд и их описание.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/univer.jpg}
-    \caption{Генерация универсума с разрядностью 3}
-    \label{fig:univer}
+      \includegraphics[ width=0.6\linewidth]{screenshots/help_command.jpg}
+    \caption{Результат выполнения команды help}
+    \label{fig: help}
 \end{figure}
 
-Каждому коду Грея присваивается случайная кратность в диапазоне от 1 до 50, что определяет максимальное количество вхождений элемента в любое мультимножество на основе данного универсума.
+\subsubsection{Команда info}
 
-\subsection{Заполнение множеств вручную}
-
-При выборе опции ручного заполнения программа последовательно запрашивает кратность для каждого элемента универсума. Пользователь может указать значение от 0 до максимальной кратности элемента в универсуме (см. рис.~\ref{fig:fillbyhand}).
+При вводе команды \texttt{info} программа выводит информацию о конфигурации системы.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/fillbyhand.jpg}
-    \caption{Ручное заполнение множества}
-    \label{fig:fillbyhand}
+      \includegraphics[ width=0.6\linewidth]{screenshots/info_command.jpg}
+    \caption{Результат выполнения команды info}
+    \label{fig:info}
 \end{figure}
 
-\subsection{Автоматическое заполнение множеств}
 
-Автоматическое заполнение позволяет создать мультимножество заданной мощности путём случайного выбора элементов из универсума (см. рис.~\ref{fig:fillauto}).
+\subsection{Сценарий 2: Просмотр диаграммы Хассе}
+
+\subsubsection{Команда hasse}
+
+При вводе команды \texttt{hasse} программа выводит диаграмму Хассе — визуальное представление отношения порядка на алфавите.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/fillauto.jpg}
-    \caption{Автоматическое заполнение множества}
-    \label{fig:fillauto}
+      \includegraphics[width=0.7\linewidth]{screenshots/hasse_diagram.jpg}
+    \caption{Диаграмма Хассе}
+    \label{fig:hasse}
 \end{figure}
 
-\subsection{Выполнение операций над множествами}
 
-После заполнения множеств A и B становится доступным меню операций. Рассмотрим примеры выполнения различных операций.
+Диаграмма показывает циклический порядок элементов алфавита. Каждый элемент связан со следующим по правилу "$+1$".
 
-\subsubsection{Теоретико-множественные операции}
 
-\textbf{1. Объединение $A \cup B$:}
+\subsection{Сценарий 3: Операции с большими числами}
 
-Как видно на рисунке~\ref{fig:union}, для каждого кода выбрана максимальная кратность из двух множеств (например, для кода 001: max(12, 18) = 18).
+\subsubsection{Сложение положительных чисел}
+
+Пользователь вводит выражение для сложения двух положительных чисел. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/union.jpg}
-    \caption{Объединение множеств}
-    \label{fig:union}
+      \includegraphics[ width=0.6\linewidth]{screenshots/add_positive.jpg}
+    \caption{Сложение положительных чисел}
+    \label{fig:add_positive}
 \end{figure}
 
-\textbf{2. Пересечение $A \cap B$:}
 
-Для каждого элемента выбрана минимальная кратность (например, для кода 001: min(12, 18) = 12), как показано на рисунке~\ref{fig:inter}.
+Результат вычисляется столбиком с учётом переносов между разрядами.
+
+
+\subsubsection{Сложение с переносами}
+
+Пример, демонстрирующий механизм переноса в старшие разряды. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/inter.jpg}
-    \caption{Пересечение множеств}
-    \label{fig:inter}
+      \includegraphics[ width=0.6\linewidth]{screenshots/add_carry.jpg}
+    \caption{Сложение с переносом}
+    \label{fig: add_carry}
 \end{figure}
 
-\textbf{3. Дополнение к A $(U \,\, \textbackslash \,\, A)$:}
 
-Результат операции дополнения представлен на рисунке~\ref{fig:cont}.
+При сложении \texttt{f + b} происходит переход через границу алфавита, что вызывает перенос в следующий разряд.
+
+\subsubsection{Сложение с отрицательными числами}
+
+Пример сложения чисел с разными знаками.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/cont.jpg}
-    \caption{Дополнение к множеству A}
-    \label{fig:cont}
+      \includegraphics[ width=0.6\linewidth]{screenshots/add_negative.jpg}
+    \caption{Сложение с отрицательными числами}
+    \label{fig:add_negative}
 \end{figure}
 
-\textbf{4. Разность $(A \,\, \textbackslash \,\, B)$:}
 
-Элементы, где кратность в B больше или равна кратности в A, имеют нулевую кратность в результате (см. рис.~\ref{fig:diff}).
+Программа правильно обрабатывает случаи: 
+\begin{itemize}
+    \item Сложение противоположных чисел (результат — нейтральный элемент)
+    \item Сложение чисел с разными знаками (вычитание модулей)
+\end{itemize}
+
+
+\subsubsection{Вычитание положительных чисел}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/diff.jpg}
-    \caption{Разность множеств}
-    \label{fig:diff}
+      \includegraphics[ width=0.6\linewidth]{screenshots/subtract_positive.jpg}
+    \caption{Вычитание положительных чисел}
+    \label{fig:subtract_positive}
 \end{figure}
 
-\textbf{5. Симметрическая разность $(A \Delta B)$:}
 
-Кратность каждого элемента равна |кратность в A - кратность в B|, как показано на рисунке~\ref{fig:simmdiff}.
+При вычитании меньшего из большего результат положительный, при вычитании большего из меньшего — отрицательный.
+
+\subsubsection{Вычитание с заимствованием}
+
+Пример, демонстрирующий механизм заимствования из старших разрядов.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/simmdiff.jpg}
-    \caption{Симметрическая разность множеств}
-    \label{fig:simmdiff}
+      \includegraphics[ width=0.6\linewidth]{screenshots/subtract_borrow.jpg}
+    \caption{Вычитание с заимствованием}
+    \label{fig:subtract_borrow}
 \end{figure}
 
-\subsubsection{Арифметические операции}
+При вычитании \texttt{a - b} происходит заимствование из старшего разряда.
 
-\textbf{1. Арифметическая сумма $(A + B)$:}
-
-Кратности складываются, но ограничиваются сверху кратностью в универсуме (например, для 111: min(2+7, 8) = 8), как показано на рисунке~\ref{fig:sum}.
+\subsubsection{Умножение положительных чисел}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/sum.jpg}
-    \caption{Арифметическая сумма множеств}
-    \label{fig:sum}
+      \includegraphics[ width=0.6\linewidth]{screenshots/multiply_positive.jpg}
+    \caption{Умножение положительных чисел}
+    \label{fig: multiply_positive}
 \end{figure}
 
-\textbf{2. Арифметическая разность $(A - B)$:}
+Умножение выполняется столбиком с промежуточным суммированием.
 
-Результат совпадает с теоретико-множественной разностью, так как обе операции используют формулу max(a - b, 0), что демонстрирует рисунок~\ref{fig:arfdiff}.
+
+\subsubsection{Умножение с отрицательными числами}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/arfdidd.jpg}
-    \caption{Арифметическая разность множеств}
-    \label{fig:arfdiff}
+      \includegraphics[ width=0.6\linewidth]{screenshots/multiply_negative.jpg}
+    \caption{Умножение с отрицательными числами}
+    \label{fig: multiply_negative}
 \end{figure}
 
-\textbf{3. Арифметическое произведение $(A * B)$:}
+Знак результата определяется правилом: 
+\begin{itemize}
+    \item $+ \times + = +$
+    \item $- \times - = +$
+    \item $+ \times - = -$
+    \item $- \times + = -$
+\end{itemize}
 
-Кратности перемножаются и ограничиваются сверху универсумом, как показано на рисунке~\ref{fig:mult}.
+\subsubsection{Деление положительных чисел}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/mult.jpg}
-    \caption{Арифметическое произведение множеств}
-    \label{fig:mult}
+      \includegraphics[ width=0.6\linewidth]{screenshots/divide_positive.jpg}
+    \caption{Деление положительных чисел}
+    \label{fig:divide_positive}
 \end{figure}
 
-\textbf{4. Арифметическое деление $(A / B)$:}
 
-Выполняется целочисленное деление кратностей (например, для 000: 8 / 5 = 1, для 110: 10 / 4 = 2), результат представлен на рисунке~\ref{fig:div}.
+Деление выполняется "уголком" с получением целой части.
+
+
+\subsubsection{Деление с отрицательными числами}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/del.jpg}
-    \caption{Арифметическое деление множеств}
-    \label{fig:div}
+      \includegraphics[ width=0.6\linewidth]{screenshots/divide_negative.jpg}
+    \caption{Деление с отрицательными числами}
+    \label{fig:divide_negative}
 \end{figure}
 
-\subsection{Обработка некорректного ввода}
 
-Программа включает механизмы обработки ошибок для обеспечения устойчивости к некорректному вводу.
+\subsection{Сценарий 4: Обработка ошибок}
 
-\textbf{Пример 1: Ввод отрицательной разрядности}
+\subsubsection{Некорректный формат числа}
 
-На рисунке~\ref{fig:error1} показана реакция программы на ввод отрицательного значения разрядности.
+При вводе числа, содержащего символы вне алфавита, программа выводит сообщение об ошибке. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/first.jpg}
-    \caption{Обработка ввода отрицательной разрядности}
-    \label{fig:error1}
+      \includegraphics[ width=0.6\linewidth]{screenshots/error_invalid_format.jpg}
+    \caption{Ошибка:  некорректный формат числа}
+    \label{fig:error_format}
 \end{figure}
 
-\textbf{Пример 2: Ввод нечислового значения}
+Символ \texttt{x} не принадлежит алфавиту системы. 
 
-Рисунок~\ref{fig:error2} демонстрирует обработку некорректного (нечислового) ввода при указании мощности множества.
+\subsubsection{Деление на ноль}
+
+При попытке деления на нейтральный элемент по сложению (аналог нуля) программа выводит ошибку.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/second.jpg}
-    \caption{Обработка ввода нечислового значения}
-    \label{fig:error2}
+      \includegraphics[ width=0.6\linewidth]{screenshots/error_divide_zero.jpg}
+    \caption{Ошибка: деление на ноль}
+    \label{fig: error_divide_zero}
 \end{figure}
 
-\textbf{Пример 3: Превышение максимальной кратности при ручном заполнении}
 
-На рисунке~\ref{fig:error3} показано, как программа обрабатывает попытку ввода кратности, превышающей максимально допустимое значение.
+
+\subsubsection{Переполнение разрядов}
+
+При превышении максимального количества разрядов (MAX\_DIGITS = 8) программа выводит ошибку переполнения.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/third.jpg}
-    \caption{Обработка превышения максимальной кратности}
-    \label{fig:error3}
+      \includegraphics[ width=0.6\linewidth]{screenshots/error_overflow.jpg}
+    \caption{Ошибка: переполнение}
+    \label{fig:error_overflow}
 \end{figure}
 
-\textbf{Пример 4: Попытка выполнить операции без генерации универсума}
 
-Рисунок~\ref{fig:error4} демонстрирует предупреждение программы при попытке работы с пустым универсумом.
+Результат операции превышает 8 разрядов, что не допускается системой.
+
+\subsubsection{Неизвестная команда}
+
+При вводе неизвестной команды программа выводит сообщение об ошибке.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/fourth.jpg}
-    \caption{Предупреждение о пустом универсуме}
-    \label{fig:error4}
+      \includegraphics[ width=0.6\linewidth]{screenshots/error_unknown_command.jpg}
+    \caption{Ошибка: неизвестная команда}
+    \label{fig:error_unknown}
 \end{figure}
 
-Эти примеры демонстрируют, что программа корректно обрабатывает различные виды некорректного ввода и позволяет пользователю исправить ошибку без завершения работы программы.
+\subsection{Выход из программы}
 
-\subsection{Проверка граничных случаев}
-
-\textbf{Генерация пустого универсума (n = 0):}
-
-На рисунке~\ref{fig:edge1} показана генерация универсума с нулевой разрядностью.
+При вводе команды \texttt{exit} или \texttt{quit} программа завершает работу с прощальным сообщением. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/fifth.jpg}
-    \caption{Генерация пустого универсума}
-    \label{fig:edge1}
+      \includegraphics[ width=0.6\linewidth]{screenshots/exit_programm.jpg}
+    \caption{Завершение работы программы}
+    \label{fig:exit}
 \end{figure}
 
-\textbf{Автоматическое заполнение с нулевой мощностью:}
-
-Рисунок~\ref{fig:edge2} демонстрирует создание пустого множества при указании нулевой мощности.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.50\linewidth]{myPhoto/sixth.jpg}
-    \caption{Создание множества с нулевой мощностью}
-    \label{fig:edge2}
-\end{figure}
-
-Программа корректно обрабатывает граничные случаи, создавая пустые множества при необходимости и позволяя продолжить работу.
+\newpage
