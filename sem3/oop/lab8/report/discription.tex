@@ -399,7 +399,7 @@ private:
 % TODO: вставить скриншот
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/main_window.png}
+    \includegraphics[width=1\linewidth]{myPhoto/main_window.png	}
     \caption{Главное окно приложения}
     \label{fig:main_window}
 \end{figure}
@@ -573,7 +573,7 @@ struct ContactAction {
 \hspace*{1em}вернуть false
 \end{quote}
 
-Если обнаружен дубликат, пользователю выводится п��едупреждение с вопросом о продолжении добавления.
+Если обнаружен дубликат, пользователю выводится предупреждение с вопросом о продолжении добавления.
 
 \subsection{Сортировка данных}
 
@@ -628,19 +628,9 @@ bool Contact::operator<(const Contact& other) const
 
 Пользователь заполняет все поля формы корректными данными:
 
-\begin{itemize}
-    \item \textbf{Фамилия:} Иванов
-    \item \textbf{Имя:} Иван
-    \item \textbf{Отчество:} Иванович
-    \item \textbf{Адрес:} г. Москва, ул. Ленина, д. 1, кв. 10
-    \item \textbf{Дата рождения:} 15.03.1990 (выбор через календарь)
-    \item \textbf{Email:} ivan.ivanov@example.com
-    \item \textbf{Телефоны:} +7 (999) 123-45-67, 8-800-555-35-35
-\end{itemize}
-
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/add_form_filled.png}
+    \includegraphics[width=1\linewidth]{myPhoto/add_form_filled.png}
     \caption{Заполненная форма для добавления контакта}
     \label{fig:add_form_filled}
 \end{figure}
@@ -659,7 +649,7 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\linewidth]{myPhoto/format_warning.png}
+    \includegraphics[width=0.4\linewidth]{myPhoto/format_warning.png}
     \caption{Предупреждение о нормализации данных}
     \label{fig:format_warning}
 \end{figure}
@@ -681,7 +671,7 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/contact_added.png}
+    \includegraphics[width=0.4\linewidth]{myPhoto/contact_added.png}
     \caption{Контакт успешно добавлен в таблицу}
     \label{fig:contact_added}
 \end{figure}
@@ -690,11 +680,11 @@ bool Contact::operator<(const Contact& other) const
 
 \subsubsection{Пример 1: Некорректное имя}
 
-Пользователь вводит имя, начинающееся с дефиса: "-Петр". Система выводит ошибку валидации (см. рисунок~\ref{fig:validation_error}).
+Пользователь вводит имя, начинающееся с дефиса: "-Иван". Система выводит ошибку валидации (см. рисунок~\ref{fig:validation_error}).
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\linewidth]{myPhoto/validation_error.png}
+    \includegraphics[width=0.4\linewidth]{myPhoto/validation_error.png}
     \caption{Ошибка валидации имени}
     \label{fig:validation_error}
 \end{figure}
@@ -703,19 +693,39 @@ bool Contact::operator<(const Contact& other) const
 
 \subsubsection{Пример 2: Некорректный телефон}
 
-Пользователь вводит телефон без знака "+": "79991234567". Класс \texttt{ContactValidator} автоматически добавляет "+" в начало, преобразуя номер в "+79991234567".
+Пользователь вводит телефон без знака "+": "79993332211". \\
+Класс \texttt{ContactValidator} автоматически добавляет "+" в начало, преобразуя номер в "+79993332211".
 
 Если длина телефона меньше 10 цифр, выводится ошибка: "Телефон должен содержать минимум 10 цифр".
 
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{myPhoto/number_plus.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{myPhoto/number_limit.png}
+    \end{minipage}
+    \caption{Некорректный ввод }
+	\label{fig:add_table}
+\end{figure}
+
 \subsubsection{Пример 3: Некорректный email}
 
-Пользователь вводит email без символа "@": "ivanovexample.com". Система выводит ошибку:
+Пользователь вводит email без символа "@": "ivanovexample.com"(см. рис \ref{fig:err_email}). Система выводит ошибку:
 
 \textbf{Сообщение об ошибке:} "Email должен содержать символ @"
 
-\subsubsection{Пример 4: Некорректная дата рождения}
 
-Пользователь не сможет выбрать дату которая больше текущей
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{myPhoto/err_email.png}
+    \caption{Некорректный email}
+    \label{fig:err_email}
+\end{figure}
 
 \subsection{Сценарий 3: Редактирование существующего контакта}
 
@@ -724,7 +734,6 @@ bool Contact::operator<(const Contact& other) const
 Пользователь кликает на строку в таблице. При этом:
 
 \begin{itemize}
-    \item Данные контакта автоматически загружаются в форму;
     \item Активируются кнопки "Редактировать" и "Удалить";
     \item Строка в таблице подсвечивается.
 \end{itemize}
@@ -744,7 +753,7 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/edit_mode.png}
+    \includegraphics[width=1\linewidth]{myPhoto/edit_mode.png}
     \caption{Режим редактирования контакта}
     \label{fig:edit_mode}
 \end{figure}
@@ -765,7 +774,7 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/contact_edited.png}
+    \includegraphics[width=0.4\linewidth]{myPhoto/contact_edited.png}
     \caption{Контакт успешно отредактирован}
     \label{fig:contact_edited}
 \end{figure}
@@ -785,7 +794,7 @@ bool Contact::operator<(const Contact& other) const
 
 \subsubsection{Шаг 1: Выбор контакта для удаления}
 
-Пользователь выбирает строку в таблице и нажимает кнопку "Уд��лить".
+Пользователь выбирает строку в таблице и нажимает кнопку "Удалить".
 
 \subsubsection{Шаг 2: Подтверждение удаления}
 
@@ -793,12 +802,10 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.7\linewidth]{myPhoto/delete_confirmation.png}
+    \includegraphics[width=0.4\linewidth]{myPhoto/delete_confirmation.png}
     \caption{Запрос подтверждения удаления контакта}
     \label{fig:delete_confirmation}
 \end{figure}
-
-\textbf{Сообщение:} "Вы уверены, что хотите удалить контакт 'Иванов Иван Иванович'?"
 
 \subsubsection{Шаг 3: Удаление и сохранение}
 
@@ -814,7 +821,7 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/contact_deleted.png}
+    \includegraphics[width=0.4\linewidth]{myPhoto/contact_deleted.png}
     \caption{Контакт удалён из таблицы}
     \label{fig:contact_deleted}
 \end{figure}
@@ -833,7 +840,7 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/search_result.png}
+    \includegraphics[width=1\linewidth]{myPhoto/search_result.png}
     \caption{Результат поиска по фамилии}
     \label{fig:search_result}
 \end{figure}
@@ -845,28 +852,46 @@ bool Contact::operator<(const Contact& other) const
 \begin{itemize}
     \item Поле текстового ввода скрывается;
     \item Отображается \texttt{QDateEdit} для выбора даты;
-    \item Отображается \texttt{QComboBox} с типами сравнения: "Точное совпадение", "До даты", "После даты".
+    \item Отображается \texttt{QComboBox} с типами сравнения: "Точная дата", "Год", "Месяц и год".
 \end{itemize}
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/date_search.png}
+    \includegraphics[width=1\linewidth]{myPhoto/date_search.png}
     \caption{Панель поиска по дате рождения}
     \label{fig:date_search}
 \end{figure}
 
 \textbf{Пример 1: Точное совпадение}
 
-Пользователь выбирает дату "15.03.1990" и тип "Точное совпадение". В таблице отображаются только контакты, родившиеся именно в этот день.
-
-\textbf{Пример 2: До даты}
-
-Пользователь выбирает дату "01.01.2000" и тип "До даты". В таблице отображаются все контакты, родившиеся до 1 января 2000 года включительно.
+Пользователь выбирает дату "08.01.2006" и тип "Точное совпадение". В таблице отображаются только контакты, родившиеся именно в этот день.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/date_search_result.png}
-    \caption{Результат поиска по дате (до 01.01.2000)}
+    \includegraphics[width=1\linewidth]{myPhoto/current_date.png}
+    \caption{Результат поиска по дате (08.01.2006)}
+    \label{fig:date_search_result}
+\end{figure}
+
+\textbf{Пример 2: Год}
+
+Пользователь выбирает дату "08.01.2006" и тип "Год. В таблице отображаются все контакты, родившиеся в 2006 году.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{myPhoto/date_year_search.png}
+    \caption{Результат поиска по году рождения (2006)}
+    \label{fig:date_search_result}
+\end{figure}
+
+\textbf{Пример 3: Месяц и год}
+
+Пользователь выбирает дату "08.12.2006" и тип "Месяц и год". В таблице отображаются все контакты, родившиеся в декабре 2006 года.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{myPhoto/date_year_month.png}
+    \caption{Результат поиска по месяцу и году (декабрь 2005)}
     \label{fig:date_search_result}
 \end{figure}
 
@@ -881,30 +906,6 @@ bool Contact::operator<(const Contact& other) const
 \end{itemize}
 
 Если результаты поиска пусты, выводится сообщение "Ничего не найдено".
-
-\subsection{Сценарий 6: Сортировка данных}
-
-Пользователь кликает на заголовок любого столбца таблицы. Происходит сортировка по этому столбцу:
-
-\begin{itemize}
-    \item Первый клик — сортировка по возрастанию;
-    \item Второй клик — сортировка по убыванию;
-    \item Третий клик — возврат к исходной сортировке.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/sorted_table.png}
-    \caption{Таблица, отсортированная по дате рождения}
-    \label{fig:sorted_table}
-\end{figure}
-
-Сортировка работает для всех столбцов:
-\begin{itemize}
-    \item \textbf{Текстовые поля} — лексикографическая сортировка;
-    \item \textbf{Дата рождения} — хронологическая сортировка;
-    \item \textbf{Телефоны} — сортировка как строки.
-\end{itemize}
 
 \subsection{Сценарий 7: Отмена последнего действия}
 
@@ -923,9 +924,15 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.7\linewidth]{myPhoto/undo_action.png}
+    \includegraphics[width=0.7\linewidth]{myPhoto/undo_action.png}
     \caption{Сообщение об отмене последнего действия}
     \label{fig:undo_action}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{myPhoto/undo_action_after.png}
+    \caption{Таблица после отмены дейсвия}
+    \label{fig:undo_action_after}
 \end{figure}
 
 \subsubsection{Отмена редактирования}
@@ -948,19 +955,10 @@ bool Contact::operator<(const Contact& other) const
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=0.8\linewidth]{myPhoto/duplicate_error.png}
+    \includegraphics[width=0.8\linewidth]{myPhoto/duplicate_error.png}
     \caption{Предупреждение о дубликате контакта}
     \label{fig:duplicate_error}
 \end{figure}
-
-\textbf{Сообщение:} "Контакт с такими данными уже существует. Продолжить добавление?"
-
-\subsubsection{Варианты действий}
-
-\begin{itemize}
-    \item \textbf{Пользователь нажимает "Да"} — контакт добавляется, несмотря на дублирование;
-    \item \textbf{Пользователь нажимает "Нет"} — операция отменяется, форма остаётся заполненной.
-\end{itemize}
 
 Проверка на дубликаты учитывает следующие поля:
 \begin{itemize}
