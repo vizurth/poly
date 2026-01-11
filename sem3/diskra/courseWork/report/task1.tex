@@ -6,11 +6,11 @@
 \begin{itemize}
     \item \texttt{SmallArithmetic.hpp} и \texttt{SmallArithmetic.cpp}: содержат реализацию малой конечной арифметики на основе диаграммы Хассе.  Класс выполняет операции над однозначными элементами алфавита.
     
-    \item \texttt{BigArithmeticCalc. hpp} и \texttt{BigArithmeticCalc.cpp}: содержат реализацию большой конечной арифметики. Класс выполняет операции столбиком над многозначными числами.
+    \item \texttt{BigArithmeticCalc.hpp} и \texttt{BigArithmeticCalc.cpp}: содержат реализацию большой конечной арифметики. Класс выполняет операции столбиком над многозначными числами.
     
     \item \texttt{UI.hpp} и \texttt{UI.cpp}:  реализуют пользовательский интерфейс, обработку команд и арифметических выражений. 
     
-    \item \texttt{config.hpp}: содержит конфигурацию системы — мощность алфавита, правило "$+1$" и сам алфавит.
+    \item \texttt{config.hpp}: содержит конфигурацию системы - мощность алфавита, правило "$+1$" и сам алфавит.
     
     \item \texttt{main.cpp}: точка входа в программу. 
     
@@ -31,7 +31,8 @@
     
     \item \texttt{map<string, string> inverseMap}: таблица обратных элементов для деления.
     
-    \item \texttt{map<tuple<... >, pair<...>> additionTableWithCarry}: таблица сложения с переносом для операций столбиком.
+    \item \texttt{map<tuple<string, string, string>, pair<string, string>>
+additionTableWithCarry}: таблица сложения с переносом для операций столбиком.
     
     \item \texttt{vector<vector<string>> addTable, mulTable, subTable, divTable}: таблицы операций малой арифметики.
     
@@ -165,7 +166,7 @@ string SmallArithmetic::nextSymbol(const string& current) const {
 
 \subsubsection{Метод compareSymbols(const string\& a, const string\& b)}
 
-\textbf{Назначение:} Сравнивает два элемента алфавита, определяя их относительный порядок в диаграмме Хассе.  Используется для операций сравнения и вычитания.
+\textbf{Назначение:} Сравнивает два элемента алфавита, определяя их относительный порядок в диаграмме Хассе.
 
 \textbf{Вход:}
 \begin{itemize}
@@ -254,6 +255,7 @@ string SmallArithmetic::addByHasse(const string& a, const string& b) const {
 
 \begin{lstlisting}[style=cstyle, caption={Реализация multiplyByHasse()}]
 string SmallArithmetic::multiplyByHasse(const string& a, const string& b) const {
+    // специальный случай: a * a = универсум
     if (a == additiveIdentity && b == additiveIdentity) {
         return universum;
     }
@@ -265,6 +267,7 @@ string SmallArithmetic::multiplyByHasse(const string& a, const string& b) const 
     string counter = additiveIdentity;
     string result = additiveIdentity;
 
+    // буквенный счетчик
     while (counter != b) {
         result = addByHasse(result, a);
         counter = nextSymbol(counter);
@@ -277,7 +280,7 @@ string SmallArithmetic::multiplyByHasse(const string& a, const string& b) const 
 Алгоритм: 
 \begin{enumerate}
     \item Обработка краевого случая:  произведение двух нейтральных элементов по сложению даёт универсум;
-    \item Если хотя бы один множитель — нейтральный элемент, результат — нейтральный элемент;
+    \item Если хотя бы один множитель - нейтральный элемент, результат - нейтральный элемент;
     \item Иначе выполняется повторное сложение множимого с самим собой $b$ раз. 
 \end{enumerate}
 
@@ -328,23 +331,18 @@ string SmallArithmetic::subtractByHasse(const string& a, const string& b) const 
 
 \begin{lstlisting}[style=cstyle, caption={Реализация buildAdditionTableWithCarry()}]
 void SmallArithmetic::buildAdditionTableWithCarry() {
-    additionTableWithCarry.clear();
-    
     for (const auto& c1 : alphabet) {
-        for (const auto& c2 :  alphabet) {
-            for (const auto& carry_in : alphabet) {
-                string temp = addByHasse(c1, c2);
-                string sum = addByHasse(temp, carry_in);
-                
-                string carry_out = additiveIdentity;
-                string result = sum;
-                
-                if (checkCarry(c1, c2)) {
-                    carry_out = nextSymbol(additiveIdentity);
-                }
-                
-                additionTableWithCarry[make_tuple(c1, c2, carry_in)] = 
-                    make_pair(result, carry_out);
+        for (const auto& c2 : alphabet) {
+            for (const auto& carry_in : {additiveIdentity, multiplicativeIdentity}) {
+                string sum1 = addByHasse(c1, c2); // сумма без переноса
+                string final_sum = addByHasse(sum1, carry_in); // финальная сумма с учетом переноса
+
+                bool carry1 = checkCarry(c1, c2); // проверяем перенос с1 + с2
+                bool carry2 = checkCarry(sum1, carry_in); // проверяем перенос sum1 + carry_in
+
+                string carry_out = (carry1 || carry2) ? multiplicativeIdentity : additiveIdentity; // выставляем перенос
+
+                additionTableWithCarry[make_tuple(c1, c2, carry_in)] = make_pair(final_sum, carry_out);
             }
         }
     }
@@ -353,10 +351,10 @@ void SmallArithmetic::buildAdditionTableWithCarry() {
 
 Таблица содержит тройки $(a, b, c_{in})$ и соответствующие им пары $(sum, c_{out})$, где: 
 \begin{itemize}
-    \item $a, b$ — слагаемые разрядов;
-    \item $c_{in}$ — входящий перенос из младшего разряда;
-    \item $sum$ — результат сложения в текущем разряде;
-    \item $c_{out}$ — исходящий перенос в старший разряд.
+    \item $a, b$ - слагаемые разрядов;
+    \item $c_{in}$ - входящий перенос из младшего разряда;
+    \item $sum$ - результат сложения в текущем разряде;
+    \item $c_{out}$ - исходящий перенос в старший разряд.
 \end{itemize}
 
 \newpage
@@ -365,7 +363,7 @@ void SmallArithmetic::buildAdditionTableWithCarry() {
 
 \subsubsection{Назначение и структура данных}
 
-Класс \texttt{BigArithmeticCalc} реализует большую конечную арифметику — операции над многозначными числами. Внутри использует класс \texttt{SmallArithmetic} для посимвольных операций.
+Класс \texttt{BigArithmeticCalc} реализует большую конечную арифметику - операции над многозначными числами. Внутри использует класс \texttt{SmallArithmetic} для посимвольных операций.
 
 
 
@@ -583,7 +581,7 @@ string BigArithmeticCalc::deleteTrashZeros(const string& num) const {
 \begin{enumerate}
     \item Удаляется знак (если есть);
     \item Подсчитывается количество ведущих нулей;
-    \item Если все символы — нули, возвращается нейтральный элемент;
+    \item Если все символы - нули, возвращается нейтральный элемент;
     \item Иначе возвращается подстрока без ведущих нулей со знаком (если необходимо).
 \end{enumerate}
 
@@ -603,15 +601,16 @@ string BigArithmeticCalc::deleteTrashZeros(const string& num) const {
 \end{itemize}
 
 \begin{lstlisting}[style=cstyle, caption={Реализация compareBigUnsigned()}]
-int BigArithmeticCalc:: compareBigUnsigned(const string& a, const string& b) const {
-    string normA = deleteTrashZeros(a);
-    string normB = deleteTrashZeros(b);
+int BigArithmeticCalc::compareBigUnsigned(const string& a, const string& b) const {
+    string na = deleteTrashZeros(a);
+    string nb = deleteTrashZeros(b);
     
-    if (normA.length() > normB.length()) return 1;
-    if (normA. length() < normB.length()) return -1;
+    if (na.length() != nb.length()) {
+        return na.length() > nb.length() ? 1 : -1;
+    }
     
-    for (size_t i = 0; i < normA.length(); ++i) {
-        int cmp = small.compareElems(string(1, normA[i]), string(1, normB[i]));
+    for (size_t i = 0; i < na.length(); ++i) {
+        int cmp = small.compareElems(string(1, na[i]), string(1, nb[i]));
         if (cmp != 0) return cmp;
     }
     
@@ -623,7 +622,7 @@ int BigArithmeticCalc:: compareBigUnsigned(const string& a, const string& b) con
 \begin{enumerate}
     \item Нормализация чисел (удаление ведущих нулей);
     \item Сравнение по количеству разрядов;
-    \item При равной длине — посимвольное сравнение слева направо. 
+    \item При равной длине - посимвольное сравнение слева направо. 
 \end{enumerate}
 
 \newpage
@@ -646,26 +645,49 @@ int BigArithmeticCalc:: compareBigUnsigned(const string& a, const string& b) con
 \end{itemize}
 
 \begin{lstlisting}[style=cstyle, caption={Реализация addBigUnsigned()}]
-string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const {
-    string result = "";
-    string carry = small.getAdditiveIdentity();
-    
-    int i = a.length() - 1;
-    int j = b.length() - 1;
-    
-    while (i >= 0 || j >= 0 || carry != small.getAdditiveIdentity()) {
-        string digit_a = (i >= 0) ? string(1, a[i]) : small.getAdditiveIdentity();
-        string digit_b = (j >= 0) ? string(1, b[j]) : small.getAdditiveIdentity();
-        
-        auto [sum, new_carry] = small.addWithCarry(digit_a, digit_b, carry);
-        
-        result = sum + result;
-        carry = new_carry;
-        
-        i--;
-        j--;
+string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const { 
+    if (!isValidNumber(a) || !isValidNumber(b)) {
+        return "ERR: invalid number";
     }
     
+    string num1 = a;
+    string num2 = b;
+
+    // добавляем нули
+    size_t max_len = max(num1.length(), num2.length());
+    while (num1.length() < max_len) {
+        num1 = small.getAdditiveIdentity() + num1;
+    }
+    while (num2.length() < max_len) {
+        num2 = small.getAdditiveIdentity() + num2;
+    }
+
+    string result;
+    string carry = small.getAdditiveIdentity();
+
+    for (int i = static_cast<int>(max_len) - 1; i >= 0; --i) {
+        string digit1(1, num1[i]);
+        string digit2(1, num2[i]);
+
+        auto res = small.addWithCarry(digit1, digit2, carry);
+        if (res.first == "ERR") {
+            return "ERR: invalid addition";
+        }
+        
+        string sum = res.first;
+        carry = res.second;
+        
+        result = sum + result;
+    }
+
+    if (carry != small.getAdditiveIdentity()) {
+        result = carry + result;
+    }
+
+    if (isOverflow(result)) {
+        return "ERR: overflow";
+    }
+
     return deleteTrashZeros(result);
 }
 \end{lstlisting}
@@ -689,44 +711,81 @@ string BigArithmeticCalc::addBigUnsigned(const string& a, const string& b) const
 
 \begin{lstlisting}[style=cstyle, caption={Реализация subtractBigUnsigned()}]
 string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) const {
-    if (compareBigUnsigned(a, b) < 0) {
-        throw runtime_error("subtraction:  a < b");
+    if (!isValidNumber(a) || !isValidNumber(b)) {
+        return "ERR: invalid number";
     }
     
-    string result = "";
-    string borrow = small.getAdditiveIdentity();
+    // сравниваем числа
+    int cmp = compareBigUnsigned(a, b);
+    if (cmp == 0) {
+        return small.getAdditiveIdentity();
+    }
     
-    int i = a.length() - 1;
-    int j = b.length() - 1;
-    
-    while (i >= 0) {
-        string digit_a = string(1, a[i]);
-        string digit_b = (j >= 0) ? string(1, b[j]) : small.getAdditiveIdentity();
+    // определяем большее и меньшее число
+    string larger = (cmp >= 0) ? a : b;
+    string smaller = (cmp >= 0) ? b : a;
+
+    // выравниваем длины
+    size_t max_len = max(larger.length(), smaller.length());
+    while (larger.length() < max_len) {
+        larger = small.getAdditiveIdentity() + larger;
+    }
+    while (smaller.length() < max_len) {
+        smaller = small.getAdditiveIdentity() + smaller;
+    }
+
+    string result;
+    bool borrow = false; // флаг заема
+
+    // вычитаем справа налево
+    for (int i = static_cast<int>(max_len) - 1; i >= 0; --i) {
+        string current(1, larger[i]);
+        string digit2(1, smaller[i]);
         
-        digit_a = small.smallSubtract(digit_a, borrow);
-        
-        string diff;
-        if (small.compareElems(digit_a, digit_b) >= 0) {
-            diff = small.smallSubtract(digit_a, digit_b);
-            borrow = small.getAdditiveIdentity();
-        } else {
-            string augmented = small.addByHasse(digit_a, small.getMaxSymbol());
-            diff = small.smallSubtract(augmented, digit_b);
-            borrow = small.nextElem(small.getAdditiveIdentity());
+        if (borrow) {
+			if (current == small.getAdditiveIdentity()) {
+                current = small.getAlphabet().back();
+            } else {
+                current = small.smallSubtract(current, small.getMultiplicativeIdentity());
+                borrow = false;
+            }
         }
         
-        result = diff + result;
-        i--;
-        j--;
+        int cmp_digits = small.compareElems(current, digit2);
+        
+        if (cmp_digits >= 0) {
+            string result_digit = small.smallSubtract(current, digit2);
+            result = result_digit + result;
+        } else {
+            string temp = current; // аналог 10 + a (если нужem заем)
+            for (int j = 0; j < small.getN(); j++) {
+                temp = small.nextElem(temp);
+            }
+
+            // теперь вычетаем
+            string result_digit = small.smallSubtract(temp, digit2);
+            result = result_digit + result;
+            borrow = true; // флаг
+        }
     }
-    
+    if (borrow) {
+        return "ERR: borrow after subtraction";
+    }
     return deleteTrashZeros(result);
 }
 \end{lstlisting}
 
-Алгоритм выполняет вычитание справа налево с учётом заимствования из старших разрядов. 
+Алгоритм:
+\begin{enumerate}
+	\item Сравниваем числа, чтобы определить, какое больше, и выравниваем их по длине добавлением ведущих нулей.
 
-\newpage
+\item Вычитаем цифры поразрядно, начиная с младших разрядов, учитывая заем при необходимости.
+
+\item Если текущая цифра меньше вычитаемой, берем заем у старшего разряда и корректируем результат.
+
+\item Формируем итоговую строку результата и убираем ведущие нули.
+\end{enumerate} 
+
 
 \subsubsection{Метод multiplyBigUnsigned(const string\& a, const string\& b)}
 
@@ -734,7 +793,7 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
 
 \textbf{Вход:}
 \begin{itemize}
-    \item \texttt{const string\& a}: Множимое.
+    \item \texttt{const string\& a}: Множитель.
     \item \texttt{const string\& b}: Множитель.
 \end{itemize}
 
@@ -745,22 +804,38 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
 
 \begin{lstlisting}[style=cstyle, caption={Реализация multiplyBigUnsigned()}]
 string BigArithmeticCalc::multiplyBigUnsigned(const string& a, const string& b) const {
+    if (!isValidNumber(a) || !isValidNumber(b)) {
+        return "ERR: invalid number";
+    }
+    
+    if (a == small.getAdditiveIdentity() || b == small.getAdditiveIdentity()) {
+        return "[" + getMinNumber() + ";" + getMaxNumber() + "]";
+    }
+    
     string result = small.getAdditiveIdentity();
     
+    // умножение столбиком: проходим по каждой цифре множителя справа налево
     for (int i = b.length() - 1; i >= 0; --i) {
-        string digit = string(1, b[i]);
-        string partial = multiplyByDigit(a, digit);
+        string multiplier_digit(1, b[i]);
         
-        int shift = b.length() - 1 - i;
-        for (int k = 0; k < shift; ++k) {
-            partial += small.getAdditiveIdentity();
+        if (multiplier_digit != small.getAdditiveIdentity()) {
+            string partial_product = multiplyByDigit(a, multiplier_digit);
+            if (partial_product.substr(0, 4) == "ERR:") return partial_product;
+            
+            // сдвиг влево (добавляем нули справа)
+            int shift_count = b.length() - 1 - i;
+            for (int j = 0; j < shift_count; j++) {
+                partial_product += small.getAdditiveIdentity();
+            }
+            
+            result = addBigUnsigned(result, partial_product);
+            if (result.substr(0, 4) == "ERR:") return result;
         }
-        
-        result = addBigUnsigned(result, partial);
     }
     
     return deleteTrashZeros(result);
 }
+
 \end{lstlisting}
 
 Алгоритм: 
@@ -786,31 +861,18 @@ string BigArithmeticCalc::multiplyBigUnsigned(const string& a, const string& b) 
 \end{itemize}
 
 \begin{lstlisting}[style=cstyle, caption={Реализация multiplyByDigit()}]
-string BigArithmeticCalc::multiplyByDigit(const string& num, 
-                                          const string& digit) const {
-    if (digit == small.getAdditiveIdentity()) {
-        return small.getAdditiveIdentity();
-    }
+string BigArithmeticCalc::multiplyByDigit(const string& num, const string& digit) const {
+    if (digit == small.getAdditiveIdentity()) return small.getAdditiveIdentity();
+    if (digit == small.getMultiplicativeIdentity()) return num;
     
-    string result = "";
-    string carry = small.getAdditiveIdentity();
+    string result = small.getAdditiveIdentity();
+    string counter = small.getAdditiveIdentity();
     
-    for (int i = num.length() - 1; i >= 0; --i) {
-        string current_digit = string(1, num[i]);
-        string product = small.multiplyByHasse(current_digit, digit);
-        product = small.addByHasse(product, carry);
-        
-        if (product.length() > 1) {
-            carry = string(1, product[0]);
-            result = string(1, product[1]) + result;
-        } else {
-            result = product + result;
-            carry = small.getAdditiveIdentity();
-        }
-    }
-    
-    if (carry != small.getAdditiveIdentity()) {
-        result = carry + result;
+    // умножаем через многократное сложение с буквенным счетчиком
+    while (counter != digit) {
+        result = addBigUnsigned(result, num);
+        if (result.substr(0, 4) == "ERR:") return result;
+        counter = small.nextElem(counter);
     }
     
     return result;
@@ -837,33 +899,74 @@ string BigArithmeticCalc::multiplyByDigit(const string& num,
 \end{itemize}
 
 \begin{lstlisting}[style=cstyle, caption={Реализация divideBigUnsigned()}]
-pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a const string& b) const {
+pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a, const string& b) const {
+    if (!isValidNumber(a) || !isValidNumber(b)) {
+        return {"ERR", "ERR"};
+    }
+    
+    // деление на ноль
     if (b == small.getAdditiveIdentity()) {
-        throw runtime_error("division by zero");
+        // 0/0 = [min;max]
+        if (a == small.getAdditiveIdentity()) {
+            return {small.getUniversum(), small.getUniversum()};
+        }
+        return {small.getEmptySet(), small.getEmptySet()};
     }
     
-    if (compareBigUnsigned(a, b) < 0) {
-        return {small.getAdditiveIdentity(), a};
+    // если делимое равно нулю
+    if (a == small.getAdditiveIdentity()) {
+        return {small.getAdditiveIdentity(), small.getAdditiveIdentity()};
     }
     
-    string quotient = "";
-    string remainder = "";
+    string dividend = a;
+    string divisor = b;
     
-    for (size_t i = 0; i < a.length(); ++i) {
-        remainder += a[i];
-        remainder = deleteTrashZeros(remainder);
+    // если делимое меньше делителя
+    if (compareBigUnsigned(dividend, divisor) < 0) {
+        return {small.getAdditiveIdentity(), dividend};
+    }
+    
+    // деление в столбик
+    string q_str;
+    string curr_r = small.getAdditiveIdentity();
+    
+    // проходим по каждой цифре делимого слева направо
+    for (size_t i = 0; i < dividend.length(); i++) {
+        // добавляем следующую цифру к остатку
+        curr_r = curr_r + string(1, dividend[i]);
+        curr_r = deleteTrashZeros(curr_r);
         
-        string count = small.getAdditiveIdentity();
-        while (compareBigUnsigned(remainder, b) >= 0) {
-            remainder = subtractBigUnsigned(remainder, b);
-            count = small.nextElem(count);
+        // ищем максимальную цифру частного
+        string q_digit = small.getAdditiveIdentity();
+        
+        // пробуем все возможные цифры от 1 до максимальной
+        string test_digit = small.getMultiplicativeIdentity();
+        while (test_digit != small.getAdditiveIdentity()) {
+            string test_product = multiplyByDigit(divisor, test_digit);
+            
+            if (compareBigUnsigned(test_product, curr_r) > 0) {
+                break;
+            }
+            
+            q_digit = test_digit;
+            test_digit = small.nextElem(test_digit);
         }
         
-        quotient += count;
+        q_str += q_digit;
+        
+        // вычитаем произведение из остатка
+        if (q_digit != small.getAdditiveIdentity()) {
+            string product = multiplyByDigit(divisor, q_digit);
+            curr_r = subtractBigUnsigned(curr_r, product);
+        }
     }
     
-    return {deleteTrashZeros(quotient), deleteTrashZeros(remainder)};
+    string q = deleteTrashZeros(q_str);
+    string r = deleteTrashZeros(curr_r);
+    
+    return {q, r};
 }
+
 \end{lstlisting}
 
 Алгоритм выполняет деление "уголком", последовательно вычитая делитель из текущего остатка.
@@ -887,49 +990,62 @@ pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a const 
 
 \begin{lstlisting}[style=cstyle, caption={Реализация add()}]
 string BigArithmeticCalc::add(const string& a, const string& b) const {
-    if (! isValidNumber(a) || !isValidNumber(b)) {
-        throw runtime_error("invalid number format");
-    }
-    
     bool neg_a = isNegative(a);
     bool neg_b = isNegative(b);
     
-    string abs_a = removeSign(a);
-    string abs_b = removeSign(b);
+    string unsign_a = removeSign(a);
+    string unsign_b = removeSign(b);
     
-    string result;
-    bool result_negative;
+    // a + b (оба положительные)
+    if (!neg_a && !neg_b) {
+        return addBigUnsigned(unsign_a, unsign_b);
+    }
     
-    if (neg_a == neg_b) {
-        result = addBigUnsigned(abs_a, abs_b);
-        result_negative = neg_a;
-    } else {
-        int cmp = compareBigUnsigned(abs_a, abs_b);
+    // -a + (-b) = -(a + b)
+    if (neg_a && neg_b) {
+        string sum = addBigUnsigned(unsign_a, unsign_b);
+        if (sum.substr(0, 4) == "ERR:") return sum;
+        return addSign(sum, true);
+    }
+    
+    // a + (-b) = a - b
+    if (!neg_a && neg_b) {
+        int cmp = compareBigUnsigned(unsign_a, unsign_b);
         if (cmp >= 0) {
-            result = subtractBigUnsigned(abs_a, abs_b);
-            result_negative = neg_a;
+            return subtractBigUnsigned(unsign_a, unsign_b);
         } else {
-            result = subtractBigUnsigned(abs_b, abs_a);
-            result_negative = neg_b;
+            string diff = subtractBigUnsigned(unsign_b, unsign_a);
+			cout << "Debug:" << diff << endl;
+            return addSign(diff, true);
         }
     }
     
-    if (isOverflow(result)) {
-        throw runtime_error("overflow:  result exceeds MAX_DIGITS");
+    // -a + b = b - a
+    if (neg_a && !neg_b) {
+        int cmp = compareBigUnsigned(unsign_b, unsign_a);
+        if (cmp >= 0) {
+            return subtractBigUnsigned(unsign_b, unsign_a);
+        } else {
+            string diff = subtractBigUnsigned(unsign_a, unsign_b);
+            return addSign(diff, true);
+        }
     }
     
-    return addSign(result, result_negative);
+    return "ERR: unknown case";
 }
 \end{lstlisting}
 
 Алгоритм: 
 \begin{enumerate}
-    \item Проверка валидности чисел;
-    \item Извлечение знаков и модулей;
-    \item Если знаки одинаковые — складываются модули;
-    \item Если знаки разные — вычитается меньший модуль из большего;
-    \item Проверка переполнения;
-    \item Добавление знака к результату. 
+    \item Определяем знаки чисел и отделяем их абсолютные значения.
+
+\item Если оба числа положительные, складываем их напрямую.
+
+\item Если оба числа отрицательные, складываем их абсолютные значения и присваиваем результату знак минус.
+
+\item Если одно число отрицательное, а другое положительное, выполняем вычитание меньшего числа из большего и присваиваем результату знак числа с большим абсолютным значением.
+
+\item Возвращаем ошибку в случае некорректного входа или непредвиденной ситуации. 
 \end{enumerate}
 
 
@@ -972,32 +1088,26 @@ string BigArithmeticCalc::subtract(const string& a, const string& b) const {
 
 \begin{lstlisting}[style=cstyle, caption={Реализация multiply()}]
 string BigArithmeticCalc::multiply(const string& a, const string& b) const {
-    if (!isValidNumber(a) || !isValidNumber(b)) {
-        throw runtime_error("invalid number format");
-    }
-    
     bool neg_a = isNegative(a);
     bool neg_b = isNegative(b);
     
-    string abs_a = removeSign(a);
-    string abs_b = removeSign(b);
+    string unsign_a = removeSign(a);
+    string unsign_b = removeSign(b);
     
-    string result = multiplyBigUnsigned(abs_a, abs_b);
+    string product = multiplyBigUnsigned(unsign_a, unsign_b);
+    if (product.substr(0, 4) == "ERR:") return product;
     
-    if (isOverflow(result)) {
-        throw runtime_error("overflow: result exceeds MAX_DIGITS");
-    }
-    
+    // результат отрицательный, если знаки разные
     bool result_negative = (neg_a != neg_b);
     
-    return addSign(result, result_negative);
+    return addSign(product, result_negative);
 }
 \end{lstlisting}
 
 
 \subsubsection{Метод divide(const string\& a, const string\& b)}
 
-\textbf{Назначение: } Выполняет деление двух чисел с учётом знаков. Возвращает только частное (остаток не выводится). Знак результата определяется правилом умножения. 
+\textbf{Назначение: } Выполняет деление двух чисел с учётом знаков. Возвращает частное и остаток.
 
 \textbf{Вход:}
 \begin{itemize}
@@ -1007,31 +1117,60 @@ string BigArithmeticCalc::multiply(const string& a, const string& b) const {
 
 \textbf{Выход:}
 \begin{itemize}
-    \item \texttt{string}: Частное $a / b$ со знаком.
+    \item \texttt{string}: Частное $a / b$ со знаком и остаток.
 \end{itemize}
 
 \begin{lstlisting}[style=cstyle, caption={Реализация divide()}]
-string BigArithmeticCalc:: divide(const string& a, const string& b) const {
-    if (!isValidNumber(a) || !isValidNumber(b)) {
-        throw runtime_error("invalid number format");
-    }
-    
-    if (removeSign(b) == small.getAdditiveIdentity()) {
-        throw runtime_error("division by zero");
-    }
-    
+string BigArithmeticCalc::divide(const string& a, const string& b) const {
     bool neg_a = isNegative(a);
     bool neg_b = isNegative(b);
+
+    string unsign_a = removeSign(a);
+    string unsign_b = removeSign(b);
     
-    string abs_a = removeSign(a);
-    string abs_b = removeSign(b);
+    auto [q, r] = divideBigUnsigned(unsign_a, unsign_b);
     
-    auto [quotient, remainder] = divideBigUnsigned(abs_a, abs_b);
+    // обработка специальных случаев
+    if (q == small.getEmptySet() || q == small.getUniversum()) {
+        return "Q: " + q + " | R: " + r;
+    }
     
-    bool result_negative = (neg_a != neg_b);
+    if (q.substr(0, 3) == "ERR") {
+        return q;
+    }
     
-    return addSign(quotient, result_negative);
+    // если делимое отрицательное, а делитель положительный
+    // то -a / b = -(a/b + 1), остаток = b - r
+    if (neg_a && !neg_b && r != small.getAdditiveIdentity()) {
+        // добавляем единицу к частному
+        q = addBigUnsigned(q, small.getMultiplicativeIdentity());
+        // вычисляем новый остаток: b - r
+        r = subtractBigUnsigned(unsign_b, r);
+        q = addSign(q, true);
+    }
+    // если делимое положитmельное, а делитель отрицательный
+    // то a / (-b) = -(a/b), остаток остается r
+    else if (!neg_a && neg_b) {
+        q = addSign(q, true);
+    } else if (neg_a && !neg_b) { // -a / b = -(a/b) без остатка
+        q = addSign(q, true);
+    }
+    // если оба отрицательные: -a / (-b) = a/b
+    else if (neg_a && neg_b) {}
+    
+    return "Q: " + q + " | R: " + r;
 }
 \end{lstlisting}
+
+Алгоритм:
+\begin{enumerate}
+	\item Вычисляем частное и остаток для абсолютных значений чисел.
+
+
+\item	Корректируем знак частного и остатка в зависимости от знаков делимого и делителя.
+
+
+\item Возвращаем результат в формате "Q: <частное> | R: <остаток>".
+\end{enumerate}
 
 \newpage
