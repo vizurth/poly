@@ -56,7 +56,7 @@ private:
 		cout << "1. показать текущую функцию" << endl;
 		cout << "2. построить СДНФ и СКНФ" << endl;
 		cout << "3. работа с BDD (Binary Decision Diagram)" << endl;
-		cout << "4. построить полином Жигалкина" << endl;
+		cout << "4. построить полином Жегалкина" << endl;
 		cout << "0. выход" << endl;
         
         int choice;
@@ -173,7 +173,7 @@ private:
     
     void buildZhegalkinPolynomial() {
         clearScreen();
-        cout << "====== ПОСТРОЕНИЕ ПОЛИНОМА ЖИГАЛКИНА(метод треугольника) ======" << endl;
+        cout << "====== ПОСТРОЕНИЕ ПОЛИНОМА Жегалкина(метод треугольника) ======" << endl;
         
         int numVars = vars.size();
         ZhegalkinPolynomial zp(numVars);

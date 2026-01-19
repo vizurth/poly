@@ -8,7 +8,7 @@
 
 using namespace std;
 
-// класс для построения полинома Жигалкина
+// класс для построения полинома Жегалкина
 class ZhegalkinPolynomial {
 private:
     int numVars; // кол-во переменных
@@ -85,7 +85,7 @@ public:
             cout << endl;
         }
         
-        cout << "\nЛевая колонка треугольника - коэффициенты полинома Жигалкина!" << endl;
+        cout << "\nЛевая колонка треугольника - коэффициенты полинома Жегалкина!" << endl;
     }
     
     // генерация имени терма по индексу
@@ -102,7 +102,7 @@ public:
         return term;
     }
     
-    // построение полинома жигалкина
+    // построение полинома Жегалкина
     string buildPolynomial() {
         int size = pow(2, numVars);
         string polynomial = "";
@@ -135,7 +135,7 @@ public:
     void printResult() {
         string poly = buildPolynomial();
         
-        cout << "\n=== Полином Жигалкина ===" << endl;
+        cout << "\n=== Полином Жегалкина ===" << endl;
         cout << "f(";
         for (int i = 0; i < numVars; i++) {
             cout << "x" << (i + 1);
