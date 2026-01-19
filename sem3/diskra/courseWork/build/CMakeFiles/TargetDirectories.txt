@@ -1,0 +1,3 @@
+/Users/timuradiatullin/narnia/spbpu/sem3/diskra/courseWork/build/CMakeFiles/diskra.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/diskra/courseWork/build/CMakeFiles/edit_cache.dir
+/Users/timuradiatullin/narnia/spbpu/sem3/diskra/courseWork/build/CMakeFiles/rebuild_cache.dir

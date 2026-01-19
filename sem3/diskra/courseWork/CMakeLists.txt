@@ -14,6 +14,7 @@ include_directories(include)
 # Источники
 set(SOURCES
     src/main.cpp
+    src/SmallArithmetic.cpp
     src/BigArithmeticCalc.cpp
     src/UI.cpp
 )

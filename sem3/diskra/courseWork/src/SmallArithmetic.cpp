@@ -190,7 +190,6 @@ void SmallArithmetic::buildNegationMap() {
 void SmallArithmetic::buildAdditionTableWithCarry() {
     for (const auto& c1 : alphabet) {
         for (const auto& c2 : alphabet) {
-            //FIXME: возможно тут надо итерироваться по всем символам алфавита
             for (const auto& carry_in : {additiveIdentity, multiplicativeIdentity}) {
                 string sum1 = addByHasse(c1, c2); // сумма без переноса
                 string final_sum = addByHasse(sum1, carry_in); // финальная сумма с учетом переноса
