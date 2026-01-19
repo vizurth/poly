@@ -1,0 +1,57 @@
+int Mas[10];
+unsigned long i;
+int main() {
+00141750  push          ebp               ; сохраняет старый базовый указатель (ebp) на стеке
+00141751  mov           ebp,esp           ; устанавливает текущий указатель стека (esp) как новый базовый указатель
+00141753  sub           esp,0C0h          ; выделяет 192 байта (0xC0) места на стеке для локальных нужд
+00141759  push          ebx               ; сохраняет регистр ebx
+0014175A  push          esi               ; сохраняет регистр esi
+0014175B  push          edi               ; сохраняет регистр edi
+0014175C  mov           edi,ebp           ; копирует базовый указатель в edi
+0014175E  xor           ecx,ecx           ; обнуляет ecx (счетчик)
+00141760  mov           eax,0CCCCCCCCh    ; загружает "мусорное" значение (0xCCCC) в eax
+00141765  rep stos      dword ptr es:[edi] ; заполняет выделенный стек "мусорным" значением (0xCC) для отладки
+00141767  mov           ecx,offset _3FBF40B4_ConsoleApplication1@cpp (014C000h) ; загружает адрес некоторой отладочной информации в ecx
+0014176C  call          @__CheckForDebuggerJustMyCode@4 (0141307h) ; вызов функции проверки отладчика
+00141771  nop                             ; пустая операция
+
+    for (i = 0; i < 9; i++) {
+00141772  mov           dword ptr [i (014A1E8h)],0 ; записывает 0 в глобальную переменную i (абсолютный адрес 0x014A1E8)
+0014177C  jmp           __$EncStackInitStart+2Fh (014178Bh) ; переход к проверке условия цикла
+0014177E  mov           eax,dword ptr [i (014A1E8h)] ; загружает текущее значение i в eax
+00141783  add           eax,1             ; увеличивает eax на 1 (i++)
+00141786  mov           dword ptr [i (014A1E8h)],eax ; сохраняет новое значение i обратно в память
+0014178B  cmp           dword ptr [i (014A1E8h)],9 ; сравнивает i с 9
+00141792  jae           __$EncStackInitStart+73h (01417CFh) ; если i >= 9, переход к return 0 (выход из цикла)
+
+        if (i != 6)
+00141794  cmp           dword ptr [i (014A1E8h)],6 ; сравнивает i с 6
+0014179B  je            __$EncStackInitStart+5Ah (01417B6h) ; если i == 6, переход к блоку else
+            Mas[i] = (17 * i) & 0x0E;
+0014179D  imul          eax,dword ptr [i (014A1E8h)],11h ; eax = i * 17 (0x11 = 17)
+001417A4  and           eax,0Eh           ; eax = eax & 14 (0x0E = 14)
+001417A7  mov           ecx,dword ptr [i (014A1E8h)] ; загружает i в ecx (как индекс)
+001417AD  mov           dword ptr Mas (014A1C0h)[ecx*4],eax ; Mas[i] = eax (запись по абсолютному адресу 0x014A1C0 + i*4)
+001417B4  jmp           __$EncStackInitStart+71h (01417CDh) ; переход к концу тела цикла
+
+        else
+            Mas[i] = 0x1A * i / 4;
+001417B6  imul          eax,dword ptr [i (014A1E8h)],1Ah ; eax = i * 26 (0x1A = 26)
+001417BD  shr           eax,2             ; eax = eax / 4 (сдвиг вправо на 2 бита)
+001417C0  mov           ecx,dword ptr [i (014A1E8h)] ; загружает i в ecx (как индекс)
+001417C6  mov           dword ptr Mas (014A1C0h)[ecx*4],eax ; Mas[i] = eax (запись по адресу 0x014A1C0 + i*4)
+    }
+001417CD  jmp           __$EncStackInitStart+22h (014177Eh) ; переход к шагу инкремента i
+    return 0;
+001417CF  xor           eax,eax           ; eax = 0 (устанавливает возвращаемое значение)
+}
+001417D1  pop           edi               ; восстанавливает регистр edi
+001417D2  pop           esi               ; восстанавливает регистр esi
+001417D3  pop           ebx               ; восстанавливает регистр ebx
+001417D4  add           esp,0C0h          ; освобождает место на стеке, выделенное ранее
+001417DA  cmp           ebp,esp           ; проверка целостности стека
+001417DC  call          __RTC_CheckEsp (014132Fh) ; вызов отладочной функции проверки стека
+001417E1  mov           esp,ebp           ; восстанавливает указатель стека
+001417E3  pop           ebp               ; восстанавливает старый базовый указатель
+001417E4  ret                             ; возвращается из функции
+

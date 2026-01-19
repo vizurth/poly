@@ -1,0 +1,83 @@
+00000000 <_main>:
+; int main() {
+        0: 55                      push    ebp               ; сохранение базового указателя
+        1: 89 e5                   mov     ebp, esp          ; установка нового базового указателя
+        3: 50                      push    eax               ; выделение места на стеке
+        4: c7 45 fc 00 00 00 00    mov     dword ptr [ebp - 0x4], 0x0 ; инициализация локальной переменной
+;    for (i = 0; i < 9; i++) {
+        b: c7 05 00 00 00 00 00 00 00 00  mov     dword ptr [0x0], 0x0 ; i = 0 (i находится по абсолютному адресу 0x0)
+        ; -- Проверка условия цикла --
+       15: 83 3d 00 00 00 00 09    cmp     dword ptr [0x0], 0x9 ; сравнить i с 9
+       1c: 73 48                   jae     0x66 <_main+0x66>  ; если i >= 9, перейти к return 0
+;    if (i != 6)
+       1e: 83 3d 00 00 00 00 06    cmp     dword ptr [0x0], 0x6 ; сравнить i с 6
+       25: 74 18                   je      0x3f <_main+0x3f>  ; если i == 6, перейти к блоку else
+;            Mas[i] = (17*i) & 0x0E;
+       27: 6b 0d 00 00 00 00 11    imul    ecx, dword ptr [0x0], 0x11 ; ecx = i * 17
+       2e: 83 e1 0e                and     ecx, 0xe           ; ecx = ecx & 14
+       31: a1 00 00 00 00          mov     eax, dword ptr [0x0] ; загрузить i в eax (как индекс)
+       36: 89 0c 85 00 00 00 00    mov     dword ptr [4*eax], ecx ; Mas[i] = ecx (адресация Mas + i*4)
+       3d: eb 16                   jmp     0x55 <_main+0x55>  ; переход к инкременту i (пропуск else)
+;            Mas[i] = 0x1A * i/4; (Блок ELSE)
+       3f: 6b 0d 00 00 00 00 1a    imul    ecx, dword ptr [0x0], 0x1a ; ecx = i * 26
+       46: c1 e9 02                shr     ecx, 0x2           ; ecx = ecx / 4 (сдвиг вправо)
+       49: a1 00 00 00 00          mov     eax, dword ptr [0x0] ; загрузить i в eax (как индекс)
+       4e: 89 0c 85 00 00 00 00    mov     dword ptr [4*eax], ecx ; Mas[i] = ecx (адресация Mas + i*4)
+;    } (Конец тела цикла)
+       55: eb 00                   jmp     0x57 <_main+0x57>  ; переход к следующей инструкции
+;    for (i = 0; i < 9; i++) { (Инкремент)
+       57: a1 00 00 00 00          mov     eax, dword ptr [0x0] ; загрузить i в eax
+       5c: 83 c0 01                add     eax, 0x1           ; eax = i + 1
+       5f: a3 00 00 00 00          mov     dword ptr [0x0], eax ; сохранить новое i
+       64: eb af                   jmp     0x15 <_main+0x15>  ; переход к проверке условия
+;    return 0;
+       66: 31 c0                   xor     eax, eax           ; eax = 0 (возвращаемое значение)
+       68: 83 c4 04                add     esp, 0x4           ; очистка стека
+       6b: 5d                      pop     ebp                ; восстановление ebp
+       6c: c3                      ret                        ; возврат из функции
+
+
+
+
+00.o:	file format mach-o 32-bit i386
+
+Disassembly of section __TEXT,__text:
+
+00000000 <_main>:
+; int main() {
+       0: 55                           	push	ebp
+       1: 89 e5                        	mov	ebp, esp
+       3: 50                           	push	eax
+       4: c7 45 fc 00 00 00 00         	mov	dword ptr [ebp - 0x4], 0x0
+; 	for (i = 0; i < 9; i++) {
+       b: c7 05 00 00 00 00 00 00 00 00	mov	dword ptr [0x0], 0x0
+      15: 83 3d 00 00 00 00 09         	cmp	dword ptr [0x0], 0x9
+      1c: 73 4c                        	jae	0x6a <_main+0x6a>
+; 		if (i != 6)
+      1e: 83 3d 00 00 00 00 06         	cmp	dword ptr [0x0], 0x6
+      25: 74 1a                        	je	0x41 <_main+0x41>
+; 			*(pMas + i) = (17*i) & 0x0E;
+      27: 6b 15 00 00 00 00 11         	imul	edx, dword ptr [0x0], 0x11
+      2e: 83 e2 0e                     	and	edx, 0xe
+      31: a1 74 00 00 00               	mov	eax, dword ptr [0x74]
+      36: 8b 0d 00 00 00 00            	mov	ecx, dword ptr [0x0]
+      3c: 89 14 88                     	mov	dword ptr [eax + 4*ecx], edx
+      3f: eb 18                        	jmp	0x59 <_main+0x59>
+;  			*(pMas + i) = 0x1A * i/4;
+      41: 6b 15 00 00 00 00 1a         	imul	edx, dword ptr [0x0], 0x1a
+      48: c1 ea 02                     	shr	edx, 0x2
+      4b: a1 74 00 00 00               	mov	eax, dword ptr [0x74]
+      50: 8b 0d 00 00 00 00            	mov	ecx, dword ptr [0x0]
+      56: 89 14 88                     	mov	dword ptr [eax + 4*ecx], edx
+; 	}
+      59: eb 00                        	jmp	0x5b <_main+0x5b>
+; 	for (i = 0; i < 9; i++) {
+      5b: a1 00 00 00 00               	mov	eax, dword ptr [0x0]
+      60: 83 c0 01                     	add	eax, 0x1
+      63: a3 00 00 00 00               	mov	dword ptr [0x0], eax
+      68: eb ab                        	jmp	0x15 <_main+0x15>
+;  	return 0;
+      6a: 31 c0                        	xor	eax, eax
+      6c: 83 c4 04                     	add	esp, 0x4
+      6f: 5d                           	pop	ebp
+      70: c3                           	ret
