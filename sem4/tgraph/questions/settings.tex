@@ -1,0 +1,57 @@
+\documentclass[17pt]{extarticle} % extarticle вместо extsizes
+\usepackage{fontspec}            % Поддержка Unicode и шрифтов
+\usepackage[russian]{babel}      % Русский язык
+
+% Установка основного шрифта с поддержкой кириллицы
+\setmainfont{Times New Roman}    % Можно заменить на любой другой, например, "Linux Libertine"
+
+% Геометрия страницы
+\usepackage[left=20mm, top=10mm, right=20mm, bottom=10mm, footskip=10mm]{geometry}
+
+% Остальные пакеты
+\usepackage{ragged2e}
+\usepackage{indentfirst}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{pdfpages}
+\usepackage{fancyvrb}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{tocloft}
+\usepackage{amsmath}
+\usepackage{pgffor}
+\usepackage{tikz-cd}
+
+
+% Цвет ссылок
+\definecolor{link_color}{HTML}{0080FF}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=link_color,
+    urlcolor=link_color,
+    citecolor=link_color
+}
+
+% Стиль страницы
+\pagestyle{empty}
+
+% Настройки listings
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\small,
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    tabsize=4,
+    breaklines=true,
+    breakatwhitespace=true,
+    captionpos=b
+}

@@ -1,0 +1,23 @@
+\documentclass[a4paper, final]{article}
+\input{settings}
+
+\begin{document}
+% \fontsize{13pt}{14pt}\selectfont
+\begin{center}
+    \Huge{Билеты Теория Графов - 4}
+\end{center}
+\pagestyle{empty}
+\begin{center}
+    \large{Тимур Адиатуллин | \href{https://t.me/timurghub}{telegram}, \href{https://github.com/vizurth}{github}} \\
+\end{center}
+\renewcommand{\cfttoctitlefont}{\bfseries} % Заголовок "Оглавление"
+\renewcommand{\cftsecfont}{\normalsize\bfseries} % Размер шрифта для секций
+\renewcommand{\cftsubsecfont}{\small} % Размер шрифта для подразделов
+\renewcommand{\baselinestretch}{0.9}
+\setlength{\cftbeforesecskip}{2pt}
+\tableofcontents
+\newpage
+
+\foreach \n in {1,...,35}{\include{quest/\n}}
+    
+\end{document}
