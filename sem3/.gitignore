@@ -1,28 +1,18 @@
+# build / out
+**/build/
+**/out/
+**/dist/
+**/cmake-build-*/
+
+# temp files
+**/*.log
+**/*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
 # IDE
 .idea/
-*.iml
-*.iws
-*.ipr
 .vscode/
-
-# Build
-/build/
-
-# Temporary files
-*.swp
-*.SWO
-*.bak
-*.tmp
-
-# macOS system files
-.DS_Store
-.AppleDouble
-.LS0verride
-._*
-.Spotlight-V100
-.Trashes
-.fseventsd
-
-# Git itself
-.git
-
+**/*.swp
