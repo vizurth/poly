@@ -1,5 +1,6 @@
 \usepackage{fontspec}
 \setmainfont{Times New Roman}
+\setmonofont{Courier New} % или Consolas, DejaVu Sans Mono
 \usepackage[14pt]{extsizes}
 
 \usepackage{polyglossia}
@@ -18,6 +19,7 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{soul}
+
 
 
 \definecolor{codegray}{gray}{0.95}
@@ -67,12 +69,26 @@
     citecolor=link_color
 }
 
+% \lstdefinestyle{cstyle}{
+%     style=common,
+%     language=C++,
+%     inputencoding=utf8,
+%     extendedchars=true,
+%     keywordstyle=\color{blue}\bfseries,
+%     commentstyle=\color{gray}\itshape,
+%     stringstyle=\color{orange},
+%     showstringspaces=false,
+%     breaklines=true
+% }
+
 \lstdefinestyle{cstyle}{
     style=common,
     language=C++,
     inputencoding=utf8,
     extendedchars=true,
-    literate={а}{{\selectfont\char224}}1
+    keepspaces=true,
+    columns=fullflexible,
+	    literate={а}{{\selectfont\char224}}1
              {б}{{\selectfont\char225}}1
              {в}{{\selectfont\char226}}1
              {г}{{\selectfont\char227}}1
@@ -138,9 +154,4 @@
              {Э}{{\selectfont\char221}}1
              {Ю}{{\selectfont\char222}}1
              {Я}{{\selectfont\char223}}1,
-    keywordstyle=\color{blue}\bfseries,
-    commentstyle=\color{gray}\itshape,
-    stringstyle=\color{orange},
-    showstringspaces=false,
-    breaklines=true
 }

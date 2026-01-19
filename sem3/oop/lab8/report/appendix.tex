@@ -1,448 +1,1357 @@
 \section*{Полный исходный код}
 
-\subsection*{power.h}
-\begin{lstlisting}
-#pragma once
-#include <stdio.h>
-  
-unsigned long long power_iterative(int base, int exp);
-unsigned long long power_recursive(int base, int exp);
-\end{lstlisting}
-
-\subsection*{power.c}
-\begin{lstlisting}
-#include "headers/power.h"
-#include <stdio.h>
-  
-unsigned long long power_iterative(int base, int exp) {
-    unsigned long long result = 1;
-    unsigned long long b = base;
-    while (exp > 0) {
-        if (exp % 2 == 1) {
-            result *= b;
-        }
-        b *= b;
-        exp /= 2;
-    }
-    return result;
-}
-  
-unsigned long long power_recursive(int base, int exp) {
-    if (exp == 0) return 1;
-    if (exp == 1) return base;
-    unsigned long long half = power_recursive(base, exp / 2);
-    if (exp % 2 == 0)
-        return half * half;
-    else
-        return half * half * base;
-}
-\end{lstlisting}
-
-\subsection*{main.c}
-\begin{lstlisting}
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-  
-#define REPEATS 100000
-  
-#include "src/headers/power.h"
-  
-int main(int argc, char **argv) {
-    if (argc < 3) {
-        printf("Usage: %s <base> <exponent>\n", argv[0]);
-        return 1;
-    }
-  
-    int base = atoi(argv[1]);
-    int exp = atoi(argv[2]);
-  
-    clock_t start, end;
-    unsigned long long result_iter = 0, result_rec = 0;
-    double iter_total = 0.0, rec_total = 0.0;
-  
-    start = clock();
-    for (int i = 0; i < REPEATS; ++i)
-        result_rec = power_recursive(base, exp);
-    end = clock();
-    rec_total = (double)(end - start) / CLOCKS_PER_SEC;
-  
-    start = clock();
-    for (int i = 0; i < REPEATS; ++i)
-        result_iter = power_iterative(base, exp);
-    end = clock();
-    iter_total = (double)(end - start) / CLOCKS_PER_SEC;
-  
-    printf("Тест на %d повторов:\n", REPEATS);
-    printf("Результат: %llu. Итеративно: %.6f сек (в среднем %.9f сек)\n",
-           result_iter, iter_total, iter_total / REPEATS);
-    printf("Результат: %llu. Рекурсивно: %.6f сек (в среднем %.9f сек)\n",
-           result_rec, rec_total, rec_total / REPEATS);
-  
-    return 0;
-}
-\end{lstlisting}
-
-\subsection*{CMakeLists.txt}
-\begin{lstlisting}
-cmake_minimum_required(VERSION 3.10)
-project(power_prac C)
-  
-set(CMAKE_C_STANDARD 11)
-include_directories(headers)
-  
-add_library(power_static STATIC src/power.c)
-set_target_properties(power_static PROPERTIES OUTPUT_NAME "power")
-  
-add_library(power_shared SHARED src/power.c)
-set_target_properties(power_shared PROPERTIES OUTPUT_NAME "power")
-  
-add_executable(main_static main.c)
-target_link_libraries(main_static power_static)
-  
-add_executable(main_shared main.c)
-target_link_libraries(main_shared power_shared)
-  
-add_executable(main_dl main_dl.c)
-target_link_libraries(main_dl dl)
-  
-add_executable(znak_ncurses_app znak_ncurses_app.c src/znak.c)
-  
-target_include_directories(znak_ncurses_app PRIVATE src/headers)
-  
-target_link_libraries(znak_ncurses_app ncurses z)
-  
-  
-add_custom_target(db
-  COMMAND $(PROJECT_SOURCE_DIR)/build/znak_ncurses_app
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMENT "running db"
-)
-\end{lstlisting}
-
-\subsection*{main\_dl.c}
-\begin{lstlisting}
-#include <stdio.h>
-#include <stdlib.h>
-#include <dlfcn.h>
-#include <time.h>
-  
-#define REPEATS 100000
-  
-typedef unsigned long long (*power_iter_t)(int, int);
-typedef unsigned long long (*power_rec_t)(int, int);
-  
-int main(int argc, char **argv) {
-    if (argc < 3) {
-        printf("Usage: %s <base> <exponent>\n", argv[0]);
-        return 1;
-    }
-  
-    int base = atoi(argv[1]);
-    int exp = atoi(argv[2]);
-  
-    void *handle = dlopen("./libpower.so", RTLD_LAZY);
-    if (!handle) {
-        fprintf(stderr, "Ошибка dlopen: %s\n", dlerror());
-        return 1;
-    }
-  
-    power_iter_t power_iterative = (power_iter_t)dlsym(handle, "power_iterative");
-    power_rec_t power_recursive = (power_rec_t)dlsym(handle, "power_recursive");
-  
-    char *error;
-    if ((error = dlerror()) != NULL) {
-        fprintf(stderr, "Ошибка dlsym: %s\n", error);
-        dlclose(handle);
-        return 1;
-    }
-  
-    clock_t start, end;
-    unsigned long long result_iter = 0, result_rec = 0;
-    double iter_total = 0.0, rec_total = 0.0;
-  
-    start = clock();
-    for (int i = 0; i < REPEATS; ++i)
-        result_rec = power_recursive(base, exp);
-    end = clock();
-    rec_total = (double)(end - start) / CLOCKS_PER_SEC;
-  
-    start = clock();
-    for (int i = 0; i < REPEATS; ++i)
-        result_iter = power_iterative(base, exp);
-    end = clock();
-    iter_total = (double)(end - start) / CLOCKS_PER_SEC;
-  
-    printf("Тест на %d повторов:\n", REPEATS);
-    printf("Результат: %llu. Итеративно (dlopen): %.6f сек (в среднем %.9f сек)\n",
-           result_iter, iter_total, iter_total / REPEATS);
-    printf("Результат: %llu. Рекурсивно (dlopen): %.6f сек (в среднем %.9f сек)\n",
-           result_rec, rec_total, rec_total / REPEATS);
-  
-    dlclose(handle);
-    return 0;
-}
-\end{lstlisting}
-
-\subsection*{znak.h}
-\begin{lstlisting}
+\subsection*{contact.h}
+\begin{lstlisting}[style=cstyle]
 #pragma once
 
-#include <stdint.h>
-#include <stddef.h>
-  
-typedef enum {
-    ARIES, TAURUS, GEMINI, CANCER,
-    LEO, VIRGO, LIBRA, SCORPIO,
-    SAGITTARIUS, CAPRICORN, AQUARIUS, PISCES
-} ZODIAC;
-  
-typedef struct {
-    uint8_t day   : 5;  // 0–31
-    uint8_t month : 4;  // 0–12
-    uint16_t year : 12; // 0–4095
-} BIRTHDAYDATE;
-  
-  
-typedef struct {
-    char surname[32];
-    char name[32];
-    ZODIAC zodiac;
-    BIRTHDAYDATE birth;
-} ZNAK;
-  
-  
-typedef struct {
-    char signature[4];
-    uint32_t transaction_id;
-    uint32_t record_count;
-    uint32_t crc32;
-} DB_HEADER;
-  
-  
-uint32_t calculate_crc32(ZNAK *records, size_t count);
+#include <QString>
+#include <QDate>
+#include <QStringList>
+#include <QJsonObject>
+
+class Contact
+{
+public:
+    Contact();
+    Contact(const QString& firstName, const QString& lastName, const QString& middleName,
+            const QString& address, const QDate& birthDate, const QString& email,
+            const QStringList& phoneNumbers);
+
+    QString firstName() const { return m_firstName; }
+    QString lastName() const { return m_lastName; }
+    QString middleName() const { return m_middleName; }
+    QString address() const { return m_address; }
+    QDate birthDate() const { return m_birthDate; }
+    QString email() const { return m_email; }
+    QStringList phoneNumbers() const { return m_phoneNumbers; }
+
+    void setFirstName(const QString& firstName) { m_firstName = firstName; }
+    void setLastName(const QString& lastName) { m_lastName = lastName; }
+    void setMiddleName(const QString& middleName) { m_middleName = middleName; }
+    void setAddress(const QString& address) { m_address = address; }
+    void setBirthDate(const QDate& birthDate) { m_birthDate = birthDate; }
+    void setEmail(const QString& email) { m_email = email; }
+    void setPhoneNumbers(const QStringList& phoneNumbers) { m_phoneNumbers = phoneNumbers; }
+
+    QJsonObject toJson() const;
+    static Contact fromJson(const QJsonObject& json);
+
+    bool operator<(const Contact& other) const;
+    bool operator==(const Contact& other) const;
+
+private:
+    QString m_firstName;
+    QString m_lastName;
+    QString m_middleName;
+    QString m_address;
+    QDate m_birthDate;
+    QString m_email;
+    QStringList m_phoneNumbers;
+};
+
 \end{lstlisting}
 
-\subsection*{znak.c}
-\begin{lstlisting}
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <zlib.h>
-#include "headers/znak.h"
-  
-uint32_t calculate_crc32(ZNAK *records, size_t count) {
-    return crc32(0L, (const unsigned char *)records, count * sizeof(ZNAK));
+\subsection*{contactstorage.h}
+\begin{lstlisting}[style=cstyle]
+#ifndef CONTACTSTORAGE_H
+#define CONTACTSTORAGE_H
+
+#include "contact.h"
+#include <QList>
+#include <QString>
+
+class ContactStorage
+{
+public:
+    ContactStorage(const QString& filename = "phonebook.json");
+    
+    bool load();
+    bool save();
+    
+    QList<Contact>& contacts() { return m_contacts; }
+    const QList<Contact>& contacts() const { return m_contacts; }
+    
+    void addContact(const Contact& contact);
+    void removeContact(int index);
+    void updateContact(int index, const Contact& contact);
+    
+    QString filename() const { return m_filename; }
+    void setFilename(const QString& filename) { m_filename = filename; }
+
+private:
+    QList<Contact> m_contacts;
+    QString m_filename;
+};
+
+#endif // CONTACTSTORAGE_H
+
+
+\end{lstlisting}
+
+\subsection*{contactvalidator.h}
+\begin{lstlisting}[style=cstyle]
+#ifndef CONTACTVALIDATOR_H
+#define CONTACTVALIDATOR_H
+
+#include <QString>
+#include <QDate>
+#include <QStringList>
+
+class ContactValidator
+{
+public:
+    static bool validateName(const QString& name, QString& errorMessage);
+    static bool validatePhone(const QString& phone, QString& errorMessage);
+    static bool validateBirthDate(const QDate& date, QString& errorMessage);
+    static bool validateEmail(const QString& email, QString& errorMessage);
+
+    // Normalize functions
+    static QString normalizeName(const QString& name);
+    static QString normalizePhone(const QString& phone);
+    static QString normalizeEmail(const QString& email);
+
+private:
+    static QString extractPhoneDigits(const QString& phone);
+};
+
+#endif // CONTACTVALIDATOR_H
+\end{lstlisting}
+
+\subsection*{mainwindow.h}
+\begin{lstlisting}[style=cstyle]
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QTableWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QDateEdit>
+#include <QTextEdit>
+#include <QComboBox>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGroupBox>
+#include <QMessageBox>
+#include <QHeaderView>
+#include <QStack>
+#include "contactstorage.h"
+#include "contact.h"
+
+// Структура для хранения действия
+struct ContactAction {
+    enum Type { Add, Edit, Delete };
+    Type type;
+    Contact contact;
+    int index; // для Edit и Delete
+};
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private slots:
+    void addContact();
+    void editContact();
+    void deleteContact();
+    void searchContacts();
+    void clearSearch();
+    void onTableSelectionChanged();
+    void onTableSortChanged(int column);
+    void loadContacts();
+    void saveContacts();
+    void undoLastAction();
+
+private:
+    void setupUI();
+    void setupTable();
+    void setupForm();
+    void setupSearch();
+    void populateTable();
+    void clearForm();
+    void fillForm(const Contact& contact);
+    Contact getContactFromForm() const;
+    bool validateForm(QString& errorMessage);
+    void showError(const QString& message);
+    void showInfo(const QString& message);
+    int getSelectedRow() const;
+    bool checkForDuplicates(const Contact& contact, int excludeIndex = -1);
+    void pushAction(ContactAction::Type type, const Contact& contact, int index = -1);
+    QString getFormattingWarnings(const QString& firstName, const QString& lastName, 
+                                   const QString& middleName, const QString& phone);
+
+    // UI Components
+    QWidget* m_centralWidget;
+    QVBoxLayout* m_mainLayout;
+    
+    // Table
+    QTableWidget* m_table;
+    
+    // Form
+    QGroupBox* m_formGroup;
+    QLineEdit* m_firstNameEdit;
+    QLineEdit* m_lastNameEdit;
+    QLineEdit* m_middleNameEdit;
+    QTextEdit* m_addressEdit;
+    QDateEdit* m_birthDateEdit;
+    QLineEdit* m_emailEdit;
+    QTextEdit* m_phoneNumbersEdit;
+    
+    // Buttons
+    QPushButton* m_addButton;
+    QPushButton* m_editButton;
+    QPushButton* m_deleteButton;
+    QPushButton* m_saveButton;
+    QPushButton* m_cancelButton;
+    QPushButton* m_undoButton;
+    
+    // Search
+    QGroupBox* m_searchGroup;
+    QLineEdit* m_searchEdit;
+    QComboBox* m_searchFieldCombo;
+    QPushButton* m_searchButton;
+    QPushButton* m_clearSearchButton;
+    QDateEdit* m_searchDateEdit;
+	QComboBox* m_dateSearchTypeCombo;
+    
+    // Data
+    ContactStorage* m_storage;
+    int m_editingIndex;
+    bool m_isEditing;
+    QStack<ContactAction> m_undoStack;
+};
+
+#endif // MAINWINDOW_H
+\end{lstlisting}
+
+
+\subsection*{contact.cpp}
+\begin{lstlisting}[style=cstyle]
+#include "contact.h"
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
+
+Contact::Contact()
+    : m_birthDate(QDate::currentDate())
+{
+}
+
+Contact::Contact(const QString& firstName, const QString& lastName, const QString& middleName,
+                 const QString& address, const QDate& birthDate, const QString& email,
+                 const QStringList& phoneNumbers)
+    : m_firstName(firstName)
+    , m_lastName(lastName)
+    , m_middleName(middleName)
+    , m_address(address)
+    , m_birthDate(birthDate)
+    , m_email(email)
+    , m_phoneNumbers(phoneNumbers)
+{
+}
+
+QJsonObject Contact::toJson() const
+{
+    QJsonObject json;
+    json["firstName"] = m_firstName;
+    json["lastName"] = m_lastName;
+    json["middleName"] = m_middleName;
+    json["address"] = m_address;
+    json["birthDate"] = m_birthDate.toString(Qt::ISODate);
+    json["email"] = m_email;
+    
+    QJsonArray phoneArray;
+    for (const QString& phone : m_phoneNumbers) {
+        phoneArray.append(phone);
+    }
+    json["phoneNumbers"] = phoneArray;
+    
+    return json;
+}
+
+Contact Contact::fromJson(const QJsonObject& json)
+{
+    Contact contact;
+    contact.m_firstName = json["firstName"].toString();
+    contact.m_lastName = json["lastName"].toString();
+    contact.m_middleName = json["middleName"].toString();
+    contact.m_address = json["address"].toString();
+    contact.m_birthDate = QDate::fromString(json["birthDate"].toString(), Qt::ISODate);
+    contact.m_email = json["email"].toString();
+    
+    QJsonArray phoneArray = json["phoneNumbers"].toArray();
+    for (const QJsonValue& value : phoneArray) {
+        contact.m_phoneNumbers.append(value.toString());
+    }
+    
+    return contact;
+}
+
+bool Contact::operator<(const Contact& other) const
+{
+    if (m_lastName != other.m_lastName) {
+        return m_lastName < other.m_lastName;
+    }
+    if (m_firstName != other.m_firstName) {
+        return m_firstName < other.m_firstName;
+    }
+    return m_middleName < other.m_middleName;
+}
+
+bool Contact::operator==(const Contact& other) const
+{
+    return m_firstName == other.m_firstName &&
+           m_lastName == other.m_lastName &&
+           m_middleName == other.m_middleName &&
+           m_address == other.m_address &&
+           m_birthDate == other.m_birthDate &&
+           m_email == other.m_email &&
+           m_phoneNumbers == other.m_phoneNumbers;
 }
 \end{lstlisting}
 
-\subsection*{znak\_ncurses\_app.c}
-\begin{lstlisting}
-#include <ncurses.h>
-#include <stdlib.h>
-#include <string.h>
-#include <locale.h>
-#include <zlib.h>
-#include "src/headers/znak.h"
-  
-#define MAX_RECORDS 100
-#define DB_PATH "znak.db"
-  
-ZNAK records[MAX_RECORDS];
-DB_HEADER header;
-int record_count = 0;
-uint32_t current_tx_id = 1; // по умолчанию
-  
-void input_record() {
-    ZNAK z;
-    char tmp[50];
-    int zodiac_choice;
-  
-    clear();
-    mvprintw(1, 2, "Add new record (ZNAK)");
-  
-    mvprintw(3, 4, "Surname: ");
-    echo();
-    getstr(z.surname);
-  
-    mvprintw(4, 4, "Name: ");
-    getstr(z.name);
-  
-    // День
-    mvprintw(5, 4, "Day (1-31): ");
-    getstr(tmp);
-    int day = atoi(tmp);
-  
-    if (day < 1 || day > 31) {
-        z.birth.day = 0;
-        mvprintw(6, 10, "Invalid day, set to 0");
-    } else {
-        z.birth.day = day;
-    }
-  
-    // Месяц
-    mvprintw(7, 4, "Month (1-12): ");
-    getstr(tmp);
-    int month = atoi(tmp);
-    if (month < 1 || month > 12) {
-        z.birth.month = 0;
-        mvprintw(8, 10, "Invalid month, set to 0");
-    } else {
-        z.birth.month = month;
-    }
-  
-    mvprintw(9, 4, "Year (1900-2100): ");
-    getstr(tmp);
-    int year = atoi(tmp);
-    if (year < 1900 || year > 2100) {
-        z.birth.year = 0;
-        mvprintw(10, 10, "Invalid year, set to 0");
-    } else {
-        z.birth.year = year;
-    }
-  
-    mvprintw(12, 4, "Choose zodiac (0-11):");
-    mvprintw(13, 6, "0: Aries, 1: Taurus, 2: Gemini, 3: Cancer");
-    mvprintw(14, 6, "4: Leo, 5: Virgo, 6: Libra, 7: Scorpio");
-    mvprintw(15, 6, "8: Sagittarius, 9: Capricorn, 10: Aquarius, 11: Pisces");
-    getstr(tmp);
-    zodiac_choice = atoi(tmp);
-    if (zodiac_choice < 0 || zodiac_choice > 11) {
-        zodiac_choice = 0;
-        mvprintw(16, 10, "Invalid zodiac, set to 0");
-    }
-    z.zodiac = (ZODIAC)zodiac_choice;
-  
-    noecho();
-    records[record_count++] = z;
-  
-    mvprintw(18, 2, "Record added. Press any key...");
-    getch();
-    header.transaction_id = current_tx_id++;
+
+\subsection*{contactstorage.cpp}
+\begin{lstlisting}[style=cstyle]
+#include "contact.h"
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QJsonValue>
+
+Contact::Contact()
+    : m_birthDate(QDate::currentDate())
+{
 }
-  
-void show_records() {
-    clear();
-    mvprintw(1, 2, "List of ZNAK records:");
-    mvprintw(2, 2, "  # | Surname      | Name        | Birthdate   | Zodiac");
-  
-    for (int i = 0; i < record_count; ++i) {
-        mvprintw(4 + i, 2, " %2d | %-11s | %-10s | %02d.%02d.%04d | %d",
-                 i + 1,
-                 records[i].surname,
-                 records[i].name,
-                 records[i].birth.day,
-                 records[i].birth.month,
-                 records[i].birth.year,
-                 records[i].zodiac);
-    }
-  
-    mvprintw(6 + record_count, 2, "Press any key to return...");
-    getch();
+
+Contact::Contact(const QString& firstName, const QString& lastName, const QString& middleName,
+                 const QString& address, const QDate& birthDate, const QString& email,
+                 const QStringList& phoneNumbers)
+    : m_firstName(firstName)
+    , m_lastName(lastName)
+    , m_middleName(middleName)
+    , m_address(address)
+    , m_birthDate(birthDate)
+    , m_email(email)
+    , m_phoneNumbers(phoneNumbers)
+{
 }
-  
-void find_by_surname() {
-    char tmp[32];
-    clear();
-    mvprintw(1, 2, "Enter surname to search: ");
-    echo();
-    getstr(tmp);
-    noecho();
-  
-    int found = 0;
-    mvprintw(3, 2, "Results for surname '%s':", tmp);
-  
-    for (int i = 0; i < record_count; ++i) {
-        if (strcmp(records[i].surname, tmp) == 0) {
-            mvprintw(5 + found, 4, "%s %s, %02d.%02d.%04d, Zodiac=%d",
-                     records[i].surname,
-                     records[i].name,
-                     records[i].birth.day,
-                     records[i].birth.month,
-                     records[i].birth.year,
-                     records[i].zodiac);
-            found++;
+
+QJsonObject Contact::toJson() const
+{
+    QJsonObject json;
+    json["firstName"] = m_firstName;
+    json["lastName"] = m_lastName;
+    json["middleName"] = m_middleName;
+    json["address"] = m_address;
+    json["birthDate"] = m_birthDate.toString(Qt::ISODate);
+    json["email"] = m_email;
+    
+    QJsonArray phoneArray;
+    for (const QString& phone : m_phoneNumbers) {
+        phoneArray.append(phone);
+    }
+    json["phoneNumbers"] = phoneArray;
+    
+    return json;
+}
+
+Contact Contact::fromJson(const QJsonObject& json)
+{
+    Contact contact;
+    contact.m_firstName = json["firstName"].toString();
+    contact.m_lastName = json["lastName"].toString();
+    contact.m_middleName = json["middleName"].toString();
+    contact.m_address = json["address"].toString();
+    contact.m_birthDate = QDate::fromString(json["birthDate"].toString(), Qt::ISODate);
+    contact.m_email = json["email"].toString();
+    
+    QJsonArray phoneArray = json["phoneNumbers"].toArray();
+    for (const QJsonValue& value : phoneArray) {
+        contact.m_phoneNumbers.append(value.toString());
+    }
+    
+    return contact;
+}
+
+bool Contact::operator<(const Contact& other) const
+{
+    if (m_lastName != other.m_lastName) {
+        return m_lastName < other.m_lastName;
+    }
+    if (m_firstName != other.m_firstName) {
+        return m_firstName < other.m_firstName;
+    }
+    return m_middleName < other.m_middleName;
+}
+
+bool Contact::operator==(const Contact& other) const
+{
+    return m_firstName == other.m_firstName &&
+           m_lastName == other.m_lastName &&
+           m_middleName == other.m_middleName &&
+           m_address == other.m_address &&
+           m_birthDate == other.m_birthDate &&
+           m_email == other.m_email &&
+           m_phoneNumbers == other.m_phoneNumbers;
+}
+\end{lstlisting}
+
+
+\subsection*{contactvalidator.cpp}
+\begin{lstlisting}[style=cstyle]
+#include "contactvalidator.h"
+#include <QRegularExpression>
+#include <QDate>
+
+// проверка имени
+bool ContactValidator::validateName(const QString& name, QString& errorMessage)
+{
+    // нормализуем
+    QString normalized = normalizeName(name);
+    
+    if (normalized.isEmpty()) {
+        errorMessage = "Имя не может быть пустым";
+        return false;
+    }
+    
+    // работаем с исходным вводом (обрезаем пробелы)
+    QString trimmed = name.trimmed();
+    
+    // не должно начинаться или заканчиваться на дефис
+    if (trimmed.startsWith('-') || trimmed.endsWith('-')) {
+        errorMessage = "Имя не может начинаться или заканчиваться на дефис";
+        return false;
+    }
+    
+    // разрешенные символы: буквы, цифры, дефис, пробел
+    QRegularExpression regex(R"(^[A-Za-zА-Яа-яЁё0-9][A-Za-zА-Яа-яЁё0-9\- ]*[A-Za-zА-Яа-яЁё0-9]$)");
+    if (!regex.match(trimmed).hasMatch()) {
+        errorMessage = "Имя может содержать только буквы, цифры, дефис и пробел";
+        return false;
+    }
+    
+    // запрет двойных дефисов и множественных пробелов
+    if (trimmed.contains("--") || trimmed.contains(QRegularExpression(R"(\s{2,})"))) {
+        errorMessage = "Имя не должно содержать двойные дефисы или множественные пробелы";
+        return false;
+    }
+    
+    return true;
+}
+
+// проверка телефона
+bool ContactValidator::validatePhone(const QString& phone, QString& errorMessage)
+{
+    QString normalized = normalizePhone(phone);
+    
+    if (normalized.isEmpty()) {
+        errorMessage = "Телефон не может быть пустым";
+        return false;
+    }
+    
+    // оставляем только цифры для проверки длины
+    QString digits = extractPhoneDigits(normalized);
+    
+    if (digits.length() < 10) {
+        errorMessage = "Телефон должен содержать минимум 10 цифр";
+        return false;
+    }
+    if (digits.length() > 15) {
+        errorMessage = "Телефон должен содержать максимум 15 цифр";
+        return false;
+    }
+    
+    // формат: должен быть + и цифры
+    QRegularExpression formatRegex(R"(^\+\d+$)");
+    if (!formatRegex.match(normalized).hasMatch()) {
+        errorMessage = "Телефон должен быть в международном формате (+...)";
+        return false;
+    }
+    
+    return true;
+}
+
+// проверка даты рождения
+bool ContactValidator::validateBirthDate(const QDate& date, QString& errorMessage)
+{
+    if (!date.isValid()) {
+        errorMessage = "Неверная дата";
+        return false;
+    }
+    
+    QDate currentDate = QDate::currentDate();
+    
+    // дата должна быть в прошлом
+    if (date >= currentDate) {
+        errorMessage = "Дата рождения должна быть меньше текущей даты";
+        return false;
+    }
+    
+    // не старше 150 лет
+    QDate minDate = currentDate.addYears(-150);
+    if (date < minDate) {
+        errorMessage = "Дата рождения слишком давняя";
+        return false;
+    }
+    
+    // тут можно было бы проверять дни/високосные года, но qt уже валидирует дату
+    return true;
+}
+
+// проверка email
+bool ContactValidator::validateEmail(const QString& email, QString& errorMessage)
+{
+    QString normalized = normalizeEmail(email);
+    
+    if (normalized.isEmpty()) {
+        errorMessage = "Email не может быть пустым";
+        return false;
+    }
+    
+    // должно содержать @ ровно один
+    if (!normalized.contains('@')) {
+        errorMessage = "Email должен содержать символ @";
+        return false;
+    }
+    
+    QStringList parts = normalized.split('@');
+    if (parts.size() != 2) {
+        errorMessage = "Email должен содержать ровно один символ @";
+        return false;
+    }
+    
+    QString username = parts[0];
+    QString domain = parts[1];
+    
+    if (username.isEmpty()) {
+        errorMessage = "Имя пользователя не может быть пустым";
+        return false;
+    }
+    if (domain.isEmpty()) {
+        errorMessage = "Домен не может быть пустым";
+        return false;
+    }
+    
+    // имя пользователя: латиница, цифры, точки, подчеркивания
+    if (username.startsWith('.') || username.endsWith('.')) {
+        errorMessage = "Имя пользователя не может начинаться или заканчиваться на точку";
+        return false;
+    }
+    QRegularExpression usernameRegex(R"(^[A-Za-z0-9._%+\-]+$)");
+    if (!usernameRegex.match(username).hasMatch()) {
+        errorMessage = "Имя пользователя должно состоять из латинских букв, цифр, точек и подчеркиваний";
+        return false;
+    }
+    
+    // домен должен содержать точку
+    if (!domain.contains('.')) {
+        errorMessage = "Домен должен содержать минимум одну точку (например, example.com)";
+        return false;
+    }
+    
+    // проверка формата домена
+    QRegularExpression domainRegex(R"(^[A-Za-z0-9][A-Za-z0-9\-]*(\.[A-Za-z0-9][A-Za-z0-9\-]*)*\.[A-Za-z]{2,}$)");
+    if (!domainRegex.match(domain).hasMatch()) {
+        errorMessage = "Неверный формат домена";
+        return false;
+    }
+    
+    return true;
+}
+
+// нормализация имени
+QString ContactValidator::normalizeName(const QString& name)
+{
+    QString normalized = name.trimmed();
+    
+    if (normalized.isEmpty()) {
+        return normalized;
+    }
+    
+    // убираем лишние пробелы
+    normalized.replace(QRegularExpression(R"(\s{2,})"), " ");
+    // убираем повторные дефисы
+    normalized.replace(QRegularExpression(R"(-{2,})"), "-");
+    
+    // первая буква заглавная
+    normalized[0] = normalized[0].toUpper();
+    
+    // делаем буквы после пробела/дефиса заглавными, остальные строчными
+    for (int i = 1; i < normalized.length(); ++i) {
+        QChar current = normalized[i];
+        QChar previous = normalized[i-1];
+        if ((previous == ' ' || previous == '-') && current.isLetter()) {
+            normalized[i] = current.toUpper();
+        } else if (current.isLetter() && previous != ' ' && previous != '-') {
+            normalized[i] = current.toLower();
         }
     }
-  
-    if (!found) {
-        mvprintw(5, 2, "No people found with surname '%s'.", tmp);
-    }
-  
-    getch();
-    header.transaction_id = current_tx_id++;
+    
+    return normalized;
 }
-  
-void save_to_file() {
-    FILE *f = fopen(DB_PATH, "wb");
-    if (!f) {
-        mvprintw(10, 2, "Could not open file for writing.");
+
+// нормализация телефона
+QString ContactValidator::normalizePhone(const QString& phone)
+{
+    QString normalized = phone.trimmed();
+    
+    // удаляем пробелы, скобки, дефисы
+    normalized.remove(QRegularExpression(R"([\s\(\)\-])"));
+    
+    // русский 8->+7
+    if (normalized.startsWith("8")) {
+        QString digits = extractPhoneDigits(normalized);
+        if (digits.length() == 11) {
+            normalized = "+7" + digits.mid(1);
+        }
+    }
+    // если начинается на 7 без +, добавляем +
+    else if (normalized.startsWith("7") && !normalized.startsWith("+")) {
+        normalized = "+" + normalized;
+    }
+    // если нет +, добавляем
+    else if (!normalized.startsWith("+")) {
+        normalized = "+" + normalized;
+    }
+    
+    return normalized;
+}
+
+// нормализация email
+QString ContactValidator::normalizeEmail(const QString& email)
+{
+    QString normalized = email.trimmed().toLower();
+    
+    // убираем пробелы вокруг @ и все пробелы
+    normalized.replace(QRegularExpression(R"(\s*@\s*)"), "@");
+    normalized.remove(' ');
+    
+    return normalized;
+}
+
+// извлекаем только цифры
+QString ContactValidator::extractPhoneDigits(const QString& phone)
+{
+    QString digits;
+    for (const QChar& ch : phone) {
+        if (ch.isDigit()) {
+            digits.append(ch);
+        }
+    }
+    return digits;
+}
+
+\end{lstlisting}
+
+\subsection*{main.cpp}
+\begin{lstlisting}[style=cstyle]
+#include "mainwindow.h"
+#include <QApplication>
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    
+    MainWindow window;
+    window.show();
+    
+    return app.exec();
+}
+
+ 
+\end{lstlisting}
+
+\subsection*{mainwindow.cpp}
+\begin{lstlisting}[style=cstyle]
+#include "mainwindow.h"
+#include "contactvalidator.h"
+#include <QApplication>
+
+// запускается при создании программы
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), m_editingIndex(-1), m_isEditing(false)
+{
+    m_storage = new ContactStorage("phonebook.json");
+    m_storage->load();
+    setupUI();      // делаем интерфейс
+    populateTable(); // заполняем таблицу
+    connect(qApp, &QApplication::aboutToQuit, this, &MainWindow::saveContacts); // сохраняем перед выходом
+}
+
+// деструктор
+MainWindow::~MainWindow(){
+    saveContacts(); // сохраняем
+    delete m_storage; // чистим память
+}
+
+// собираем ui
+void MainWindow::setupUI(){
+    m_centralWidget = new QWidget(this);
+    setCentralWidget(m_centralWidget);
+    m_mainLayout = new QVBoxLayout(m_centralWidget);
+    
+    setupTable(); // таблица
+    setupForm();  // форма ввода
+    setupSearch(); // поиск
+    
+    setWindowTitle("Телефонный справочник");
+    resize(1000, 700);
+}
+
+// создаем таблицу
+void MainWindow::setupTable(){
+    m_table = new QTableWidget(this);
+    m_table->setColumnCount(7);
+    m_table->setHorizontalHeaderLabels({"Фамилия", "Имя", "Отчество", "Адрес", "Дата рождения", "Email", "Телефоны"});
+    m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_table->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_table->setSortingEnabled(true); // включаем сортировку
+    m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_table->horizontalHeader()->setStretchLastSection(true);
+    m_table->setAlternatingRowColors(true);
+    
+    // сигналы выбора и сортировки
+    connect(m_table, &QTableWidget::itemSelectionChanged, this, &MainWindow::onTableSelectionChanged);
+    connect(m_table->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &MainWindow::onTableSortChanged);
+    m_mainLayout->addWidget(m_table);
+}
+
+// создаем форму ввода
+void MainWindow::setupForm(){
+    m_formGroup = new QGroupBox("Данные контакта", this);
+    QVBoxLayout* formLayout = new QVBoxLayout(m_formGroup);
+    
+    // фио
+    QHBoxLayout* nameLayout = new QHBoxLayout();
+    m_lastNameEdit = new QLineEdit(this);
+    m_firstNameEdit = new QLineEdit(this);
+    m_middleNameEdit = new QLineEdit(this);
+    nameLayout->addWidget(new QLabel("Фамилия:", this));
+    nameLayout->addWidget(m_lastNameEdit);
+    nameLayout->addWidget(new QLabel("Имя:", this));
+    nameLayout->addWidget(m_firstNameEdit);
+    nameLayout->addWidget(new QLabel("Отчество:", this));
+    nameLayout->addWidget(m_middleNameEdit);
+    formLayout->addLayout(nameLayout);
+    
+    // адрес
+    QHBoxLayout* addressLayout = new QHBoxLayout();
+    m_addressEdit = new QTextEdit(this);
+    m_addressEdit->setMaximumHeight(60);
+    addressLayout->addWidget(new QLabel("Адрес:", this));
+    addressLayout->addWidget(m_addressEdit);
+    formLayout->addLayout(addressLayout);
+    
+    // дата рождения
+    QHBoxLayout* dateLayout = new QHBoxLayout();
+    m_birthDateEdit = new QDateEdit(this);
+    m_birthDateEdit->setCalendarPopup(true);
+    m_birthDateEdit->setDate(QDate::currentDate().addYears(-20));
+    m_birthDateEdit->setMaximumDate(QDate::currentDate().addDays(-1));
+    dateLayout->addWidget(new QLabel("Дата рождения:", this));
+    dateLayout->addWidget(m_birthDateEdit);
+    formLayout->addLayout(dateLayout);
+    
+    // email
+    QHBoxLayout* emailLayout = new QHBoxLayout();
+    m_emailEdit = new QLineEdit(this);
+    emailLayout->addWidget(new QLabel("Email:", this));
+    emailLayout->addWidget(m_emailEdit);
+    formLayout->addLayout(emailLayout);
+    
+    // телефоны
+    QHBoxLayout* phoneLayout = new QHBoxLayout();
+    m_phoneNumbersEdit = new QTextEdit(this);
+    m_phoneNumbersEdit->setMaximumHeight(60);
+    phoneLayout->addWidget(new QLabel("Телефоны:", this));
+    phoneLayout->addWidget(m_phoneNumbersEdit);
+    formLayout->addLayout(phoneLayout);
+    
+    // кнопки
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    m_addButton = new QPushButton("Добавить", this);
+    m_editButton = new QPushButton("Редактировать", this);
+    m_deleteButton = new QPushButton("Удалить", this);
+    m_saveButton = new QPushButton("Сохранить", this);
+    m_cancelButton = new QPushButton("Отмена", this);
+    m_undoButton = new QPushButton("Отменить последнее действие", this);
+    
+    // изначальные состояния кнопок
+    m_editButton->setEnabled(false);
+    m_deleteButton->setEnabled(false);
+    m_saveButton->setEnabled(false);
+    m_cancelButton->setEnabled(false);
+    m_undoButton->setEnabled(false);
+    
+    buttonLayout->addWidget(m_addButton);
+    buttonLayout->addWidget(m_editButton);
+    buttonLayout->addWidget(m_deleteButton);
+    buttonLayout->addWidget(m_saveButton);
+    buttonLayout->addWidget(m_cancelButton);
+    buttonLayout->addWidget(m_undoButton);
+    buttonLayout->addStretch();
+    
+    formLayout->addLayout(buttonLayout);
+    m_mainLayout->addWidget(m_formGroup);
+    
+    // подключаем кнопки
+    connect(m_addButton, &QPushButton::clicked, this, &MainWindow::addContact);
+    connect(m_editButton, &QPushButton::clicked, this, &MainWindow::editContact);
+    connect(m_deleteButton, &QPushButton::clicked, this, &MainWindow::deleteContact);
+    connect(m_saveButton, &QPushButton::clicked, this, &MainWindow::addContact);
+    connect(m_undoButton, &QPushButton::clicked, this, &MainWindow::undoLastAction);
+    connect(m_cancelButton, &QPushButton::clicked, this, [this]() {
+        clearForm();
+        m_isEditing = false;
+        m_editingIndex = -1;
+        m_saveButton->setEnabled(false);
+        m_cancelButton->setEnabled(false);
+        m_addButton->setEnabled(true);
+    });
+}
+
+// создаем поиск
+void MainWindow::setupSearch(){
+    m_searchGroup = new QGroupBox("Поиск", this);
+    QHBoxLayout* searchLayout = new QHBoxLayout(m_searchGroup);
+    
+    m_searchEdit = new QLineEdit(this);
+    m_searchFieldCombo = new QComboBox(this);
+    m_searchFieldCombo->addItems({"Все поля", "Фамилия", "Имя", "Отчество", "Адрес", "Email", "Телефон", "Дата рождения"});
+    m_searchButton = new QPushButton("Найти", this);
+    m_clearSearchButton = new QPushButton("Очистить", this);
+    
+    // Поле для поиска по дате
+	m_searchDateEdit = new QDateEdit(this);
+	m_searchDateEdit->setCalendarPopup(true);
+	m_searchDateEdit->setDate(QDate::currentDate());
+	m_searchDateEdit->setVisible(false);
+
+	// Тип поиска по дате
+	m_dateSearchTypeCombo = new QComboBox(this);
+	m_dateSearchTypeCombo->addItems({"Точная дата", "Год", "Месяц и год"});
+	m_dateSearchTypeCombo->setVisible(false);
+
+	searchLayout->addWidget(new QLabel("Поиск:", this));
+	searchLayout->addWidget(m_searchEdit);
+	searchLayout->addWidget(m_searchDateEdit);
+	searchLayout->addWidget(m_dateSearchTypeCombo);
+	searchLayout->addWidget(new QLabel("Поле:", this));
+	searchLayout->addWidget(m_searchFieldCombo);
+	searchLayout->addWidget(m_searchButton);
+	searchLayout->addWidget(m_clearSearchButton);
+	m_mainLayout->addWidget(m_searchGroup);
+
+	// Переключение между текстовым полем и датой
+	connect(m_searchFieldCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
+		bool isDateSearch = (index == 7); // "Дата рождения"
+		m_searchEdit->setVisible(!isDateSearch);
+		m_searchDateEdit->setVisible(isDateSearch);
+		m_dateSearchTypeCombo->setVisible(isDateSearch);
+	});
+    
+    // подключаем поиск
+    connect(m_searchButton, &QPushButton::clicked, this, &MainWindow::searchContacts);
+    connect(m_clearSearchButton, &QPushButton::clicked, this, &MainWindow::clearSearch);
+    connect(m_searchEdit, &QLineEdit::returnPressed, this, &MainWindow::searchContacts);
+}
+
+// проверка на дубликаты
+bool MainWindow::checkForDuplicates(const Contact& contact, int excludeIndex) {
+    const QList<Contact>& contacts = m_storage->contacts();
+    for (int i = 0; i < contacts.size(); ++i) {
+        if (i == excludeIndex) continue; // пропускаем сам контакт при редактировании
+        
+        const Contact& existing = contacts[i];
+        if (existing.firstName() == contact.firstName() &&
+            existing.lastName() == contact.lastName() &&
+            existing.middleName() == contact.middleName() &&
+			existing.phoneNumbers() == contact.phoneNumbers() &&
+            existing.email() == contact.email()) {
+            return true; // дубликат найден
+        }
+    }
+    return false;
+}
+
+// проверка предупреждений о форматировании
+QString MainWindow::getFormattingWarnings(const QString& firstName, const QString& lastName, 
+                                           const QString& middleName, const QString& phone) {
+    QStringList warnings;
+    
+    // Проверка имён на множественные заглавные буквы
+    auto checkMultipleUppercase = [](const QString& name, const QString& fieldName) -> QString {
+        if (name.isEmpty()) return "";
+        int uppercaseCount = 0;
+        for (const QChar& ch : name) {
+            if (ch.isUpper()) uppercaseCount++;
+        }
+        if (uppercaseCount > 1) {
+            return fieldName + ": обнаружено несколько заглавных букв, произведем изменение на (первая заглавная, остальные маленькие)";
+        }
+        return "";
+    };
+    
+    QString firstWarning = checkMultipleUppercase(firstName, "Имя");
+    QString lastWarning = checkMultipleUppercase(lastName, "Фамилия");
+    QString middleWarning = checkMultipleUppercase(middleName, "Отчество");
+    
+    if (!firstWarning.isEmpty()) warnings.append(firstWarning);
+    if (!lastWarning.isEmpty()) warnings.append(lastWarning);
+    if (!middleWarning.isEmpty()) warnings.append(middleWarning);
+    
+    // Проверка телефона на неправильный формат
+    QString phoneText = m_phoneNumbersEdit->toPlainText();
+    QStringList phoneLines = phoneText.split('\n', Qt::SkipEmptyParts);
+    for (const QString& phoneLine : phoneLines) {
+        QString trimmed = phoneLine.trimmed();
+        QString normalized = ContactValidator::normalizePhone(trimmed);
+        if (trimmed != normalized && !trimmed.isEmpty()) {
+            warnings.append("Телефон будет преобразован: " + trimmed + " => " + normalized);
+        }
+    }
+    
+    return warnings.join("\n\n");
+}
+
+// сохранение действия для отмены
+void MainWindow::pushAction(ContactAction::Type type, const Contact& contact, int index) {
+    ContactAction action;
+    action.type = type;
+    action.contact = contact;
+    action.index = index;
+    m_undoStack.push(action);
+    m_undoButton->setEnabled(true);
+}
+
+// отмена последнего действия
+void MainWindow::undoLastAction() {
+	ContactAction action = m_undoStack.pop();
+
+    switch (action.type) { // проверяем события
+    case ContactAction::Add:
+        if (!m_storage->contacts().isEmpty()) {
+            m_storage->removeContact(m_storage->contacts().size() - 1);
+            showInfo("Добавление контакта отменено");
+        }
+        break;
+        
+    case ContactAction::Edit:
+        if (action.index >= 0 && action.index < m_storage->contacts().size()) {
+            m_storage->updateContact(action.index, action.contact);
+            showInfo("Редактирование контакта отменено");
+        }
+        break;
+        
+    case ContactAction::Delete:
+        if (action.index >= 0) {
+			m_storage->contacts().insert(action.index, action.contact);
+            showInfo("Удаление контакта отменено");
+        }
+        break;
+    }
+    populateTable();
+    saveContacts();
+    
+    if (m_undoStack.isEmpty()) {
+        m_undoButton->setEnabled(false);
+    }
+}
+
+// заполняем таблицу контактами
+void MainWindow::populateTable(){
+    m_table->setSortingEnabled(false);
+    m_table->setRowCount(0);
+    
+    const QList<Contact>& contacts = m_storage->contacts();
+    for (int i = 0; i < contacts.size(); ++i) {
+        const Contact& contact = contacts[i];
+        int row = m_table->rowCount();
+        m_table->insertRow(row);
+        
+        m_table->setItem(row, 0, new QTableWidgetItem(contact.lastName()));
+        m_table->setItem(row, 1, new QTableWidgetItem(contact.firstName()));
+        m_table->setItem(row, 2, new QTableWidgetItem(contact.middleName()));
+        m_table->setItem(row, 3, new QTableWidgetItem(contact.address()));
+        m_table->setItem(row, 4, new QTableWidgetItem(contact.birthDate().toString("dd.MM.yyyy")));
+        m_table->setItem(row, 5, new QTableWidgetItem(contact.email()));
+        m_table->setItem(row, 6, new QTableWidgetItem(contact.phoneNumbers().join(", ")));
+    }
+    
+    m_table->setSortingEnabled(true);
+    m_table->resizeColumnsToContents();
+}
+
+// очищаем форму
+void MainWindow::clearForm(){
+    m_firstNameEdit->clear();
+    m_lastNameEdit->clear();
+    m_middleNameEdit->clear();
+    m_addressEdit->clear();
+    m_birthDateEdit->setDate(QDate::currentDate().addYears(-20));
+    m_emailEdit->clear();
+    m_phoneNumbersEdit->clear();
+}
+
+// заполняем форму данными контакта
+void MainWindow::fillForm(const Contact& contact){
+    m_firstNameEdit->setText(contact.firstName());
+    m_lastNameEdit->setText(contact.lastName());
+    m_middleNameEdit->setText(contact.middleName());
+    m_addressEdit->setPlainText(contact.address());
+    m_birthDateEdit->setDate(contact.birthDate());
+    m_emailEdit->setText(contact.email());
+    m_phoneNumbersEdit->setPlainText(contact.phoneNumbers().join("\n"));
+}
+
+// собираем контакт из формы
+Contact MainWindow::getContactFromForm() const{
+    QString firstName = ContactValidator::normalizeName(m_firstNameEdit->text());
+    QString lastName = ContactValidator::normalizeName(m_lastNameEdit->text());
+    QString middleName = ContactValidator::normalizeName(m_middleNameEdit->text());
+    QString address = m_addressEdit->toPlainText().trimmed();
+    QDate birthDate = m_birthDateEdit->date();
+    QString email = ContactValidator::normalizeEmail(m_emailEdit->text());
+    
+    QStringList phoneNumbers;
+    QString phoneText = m_phoneNumbersEdit->toPlainText();
+    QStringList phoneLines = phoneText.split('\n', Qt::SkipEmptyParts);
+    for (const QString& phone : phoneLines) {
+        QString normalized = ContactValidator::normalizePhone(phone.trimmed());
+        if (!normalized.isEmpty()) phoneNumbers.append(normalized);
+    }
+    
+    return Contact(firstName, lastName, middleName, address, birthDate, email, phoneNumbers);
+}
+
+// проверяем форму
+bool MainWindow::validateForm(QString& errorMessage){
+    QString firstName = ContactValidator::normalizeName(m_firstNameEdit->text());
+    QString lastName = ContactValidator::normalizeName(m_lastNameEdit->text());
+    QString middleName = ContactValidator::normalizeName(m_middleNameEdit->text());
+    QString email = ContactValidator::normalizeEmail(m_emailEdit->text());
+    QDate birthDate = m_birthDateEdit->date();
+    QString msg;
+    
+    if (!firstName.isEmpty() && !ContactValidator::validateName(firstName, msg)) {
+        errorMessage = "Имя: " + msg;
+        return false;
+    }
+    if (!lastName.isEmpty() && !ContactValidator::validateName(lastName, msg)) {
+        errorMessage = "Фамилия: " + msg;
+        return false;
+    }
+    if (!middleName.isEmpty() && !ContactValidator::validateName(middleName, msg)) {
+        errorMessage = "Отчество: " + msg;
+        return false;
+    }
+    if (!ContactValidator::validateBirthDate(birthDate, msg)) {
+        errorMessage = "Дата рождения: " + msg;
+        return false;
+    }
+    if (!ContactValidator::validateEmail(email, msg)) {
+        errorMessage = "Email: " + msg;
+        return false;
+    }
+    
+    QString phoneText = m_phoneNumbersEdit->toPlainText();
+    QStringList phoneLines = phoneText.split('\n', Qt::SkipEmptyParts);
+    if (phoneLines.isEmpty()) {
+        errorMessage = "Необходимо указать хотя бы один телефон";
+        return false;
+    }
+    
+    for (const QString& phone : phoneLines) {
+        QString normalizedPhone = ContactValidator::normalizePhone(phone.trimmed());
+        if (!ContactValidator::validatePhone(normalizedPhone, msg)) {
+            errorMessage = "Телефон: " + msg;
+            return false;
+        }
+    }
+    return true;
+}
+
+// окно с ошибкой
+void MainWindow::showError(const QString& message){
+    QMessageBox::critical(this, "Ошибка", message);
+}
+
+// окно с инфой
+void MainWindow::showInfo(const QString& message){
+    QMessageBox::information(this, "Информация", message);
+}
+
+// получить выбранную строку
+int MainWindow::getSelectedRow() const{
+    QList<QTableWidgetItem*> selected = m_table->selectedItems();
+    return selected.isEmpty() ? -1 : selected.first()->row();
+}
+
+// добавляем или обновляем контакт
+void MainWindow::addContact(){
+    QString errorMessage;
+    if (!validateForm(errorMessage)) {
+        showError(errorMessage);
         return;
     }
-  
-    memcpy(header.signature, "adia", 4);
-    header.transaction_id = ++current_tx_id;
-    header.record_count = record_count;
-    header.crc32 = calculate_crc32(records, record_count);
-  
-    fwrite(&header, sizeof(DB_HEADER), 1, f);
-    fwrite(records, sizeof(ZNAK), record_count, f);
-    fclose(f);
-  
-    mvprintw(10, 2, "File saved successfully.");
-}
-  
-void load_from_file() {
-    FILE *f = fopen(DB_PATH, "rb");
-    if (!f) {
-        mvprintw(10, 2, "File not found. Please enter new data.");
+    
+    // Проверяем предупреждения о форматировании
+    QString warnings = getFormattingWarnings(m_firstNameEdit->text(), m_lastNameEdit->text(), m_middleNameEdit->text(), m_phoneNumbersEdit->toPlainText());
+    
+    if (!warnings.isEmpty()) {
+        QMessageBox::StandardButton reply = QMessageBox::question(
+            this, "Предупреждение о форматировании",
+            warnings + "\n\nПродолжить?",
+            QMessageBox::Yes | QMessageBox::No
+        );
+        
+        if (reply != QMessageBox::Yes) {
+            return;
+        }
+    }
+    
+    Contact contact = getContactFromForm();
+    
+    // Проверка на дубликаты
+    if (checkForDuplicates(contact, m_isEditing ? m_editingIndex : -1)) {
+        showError("Контакт с такими данными (ФИО и Email) уже существует!");
         return;
     }
-  
-    fread(&header, sizeof(DB_HEADER), 1, f);
-    fread(records, sizeof(ZNAK), header.record_count, f);
-    record_count = header.record_count;
-    current_tx_id = header.transaction_id + 1;
-    fclose(f);
-  
-    mvprintw(10, 2, "Loaded %d records from file.", record_count);
+    
+    if (m_isEditing && m_editingIndex >= 0) {
+        // Сохраняем старый контакт для отмены
+        Contact oldContact = m_storage->contacts()[m_editingIndex];
+        pushAction(ContactAction::Edit, oldContact, m_editingIndex);
+        
+        m_storage->updateContact(m_editingIndex, contact);
+        showInfo("Контакт обновлен");
+    } else {
+        m_storage->addContact(contact);
+        pushAction(ContactAction::Add, contact, m_storage->contacts().size() - 1);
+        showInfo("Контакт добавлен");
+    }
+    
+    clearForm();
+    populateTable();
+    saveContacts();
+    
+    m_isEditing = false;
+    m_editingIndex = -1;
+    m_saveButton->setEnabled(false);
+    m_cancelButton->setEnabled(false);
+    m_addButton->setEnabled(true);
 }
-  
-void run_ui() {
-    initscr();
-    cbreak();
-    noecho();
-  
-    int choice;
-    while (true) {
-        clear();
-        mvprintw(1, 2, "ZNAK Menu:");
-        mvprintw(3, 4, "1. Add new record");
-        mvprintw(4, 4, "2. Show all records");
-        mvprintw(5, 4, "3. Find by surname");
-        mvprintw(6, 4, "4. Save to file");
-        mvprintw(7, 4, "5. Load from file");
-        mvprintw(8, 4, "6. Exit");
-  
-        mvprintw(10, 2, "Your choice: ");
-        echo();
-        scanw("%d", &choice);
-        noecho();
-  
-        switch (choice) {
-            case 1: input_record(); break;
-            case 2: show_records(); break;
-            case 3: find_by_surname(); break;
-            case 4: save_to_file(); getch(); break;
-            case 5: load_from_file(); getch(); break;
-            case 6: endwin(); return;
-            default: break;
+
+// переходим в режим редактирования
+void MainWчindow::editContact(){
+    int row = getSelectedRow();
+    if (row < 0) {
+        showError("Выберите контакт для редактирования");
+        return;
+    }
+    
+    QString lastName = m_table->item(row, 0)->text();
+    QString firstName = m_table->item(row, 1)->text();
+    QString email = m_table->item(row, 5)->text();
+    
+    int index = -1;
+    const QList<Contact>& contacts = m_storage->contacts();
+    for (int i = 0; i < contacts.size(); ++i) {
+        if (contacts[i].lastName() == lastName && 
+            contacts[i].firstName() == firstName && 
+            contacts[i].email() == email) {
+            index = i;
+            break;
+        }
+    }
+    
+    if (index < 0) {
+        showError("Контакт не найден");
+        return;
+    }
+    
+    m_editingIndex = index;
+    m_isEditing = true;
+    fillForm(contacts[index]);
+    
+    m_addButton->setEnabled(false);
+    m_editButton->setEnabled(false);
+    m_deleteButton->setEnabled(false);
+    m_saveButton->setEnabled(true);
+    m_cancelButton->setEnabled(true);
+}
+
+// удаляем контакт
+void MainWindow::deleteContact(){
+    int row = getSelectedRow();
+    if (row < 0) {
+        showError("Выберите контакт для удаления");
+        return;
+    }
+    
+    QMessageBox::StandardButton reply = QMessageBox::question(
+        this, "Подтверждение", "Вы уверены, что хотите удалить этот контакт?",
+        QMessageBox::Yes | QMessageBox::No
+    );
+    
+    if (reply == QMessageBox::Yes) {
+        QString lastName = m_table->item(row, 0)->text();
+        QString firstName = m_table->item(row, 1)->text();
+        QString email = m_table->item(row, 5)->text();
+        
+        int index = -1;
+        const QList<Contact>& contacts = m_storage->contacts();
+        for (int i = 0; i < contacts.size(); ++i) {
+            if (contacts[i].lastName() == lastName && 
+                contacts[i].firstName() == firstName && 
+                contacts[i].email() == email) {
+                index = i;
+                break;
+            }
+        }
+        
+        if (index >= 0) {
+            // Сохраняем контакт для отмены
+            Contact deletedContact = contacts[index];
+            pushAction(ContactAction::Delete, deletedContact, index);
+            
+            m_storage->removeContact(index);
+            populateTable();
+            saveContacts();
+            showInfo("Контакт удален");
         }
     }
 }
-  
-int main() {
-    run_ui();
-    return 0;
+
+// поиск контактов
+void MainWindow::searchContacts(){
+    int fieldIndex = m_searchFieldCombo->currentIndex();
+    
+    // Поиск по дате рождения
+	if (fieldIndex == 7) {
+		QDate searchDate = m_searchDateEdit->date();
+		int dateSearchType = m_dateSearchTypeCombo->currentIndex();
+		
+		m_table->setSortingEnabled(false);
+		m_table->setRowCount(0);
+		
+		const QList<Contact>& contacts = m_storage->contacts();
+		for (int i = 0; i < contacts.size(); ++i) {
+			const Contact& contact = contacts[i];
+			bool matches = false;
+			
+			switch (dateSearchType) {
+			case 0: // Точная дата
+				matches = (contact.birthDate() == searchDate);
+				break;
+			case 1: // Только год
+				matches = (contact.birthDate().year() == searchDate.year());
+				break;
+			case 2: // Месяц и год
+				matches = (contact.birthDate().year() == searchDate.year() &&
+						contact.birthDate().month() == searchDate.month());
+				break;
+			}
+			
+			if (matches) {
+				int row = m_table->rowCount();
+				m_table->insertRow(row);
+				m_table->setItem(row, 0, new QTableWidgetItem(contact.lastName()));
+				m_table->setItem(row, 1, new QTableWidgetItem(contact.firstName()));
+				m_table->setItem(row, 2, new QTableWidgetItem(contact.middleName()));
+				m_table->setItem(row, 3, new QTableWidgetItem(contact.address()));
+				m_table->setItem(row, 4, new QTableWidgetItem(contact.birthDate().toString("dd.MM.yyyy")));
+				m_table->setItem(row, 5, new QTableWidgetItem(contact.email()));
+				m_table->setItem(row, 6, new QTableWidgetItem(contact.phoneNumbers().join(", ")));
+			}
+		}
+		
+		m_table->setSortingEnabled(true);
+		m_table->resizeColumnsToContents();
+		return;
+	}
+    
+    // Обычный текстовый поиск
+    QString searchText = m_searchEdit->text().trimmed();
+    if (searchText.isEmpty()) {
+        populateTable();
+        return;
+    }
+    
+    QString searchLower = searchText.toLower();
+    
+    m_table->setSortingEnabled(false);
+    m_table->setRowCount(0);
+    
+    const QList<Contact>& contacts = m_storage->contacts();
+    for (int i = 0; i < contacts.size(); ++i) {
+        const Contact& contact = contacts[i];
+        bool matches = false;
+        
+        switch (fieldIndex) {
+        case 0: // все поля
+            matches = contact.lastName().toLower().contains(searchLower) ||
+                      contact.firstName().toLower().contains(searchLower) ||
+                      contact.middleName().toLower().contains(searchLower) ||
+                      contact.address().toLower().contains(searchLower) ||
+                      contact.email().toLower().contains(searchLower) ||
+                      contact.phoneNumbers().join(" ").toLower().contains(searchLower);
+            break;
+        case 1: matches = contact.lastName().toLower().contains(searchLower); break;
+        case 2: matches = contact.firstName().toLower().contains(searchLower); break;
+        case 3: matches = contact.middleName().toLower().contains(searchLower); break;
+        case 4: matches = contact.address().toLower().contains(searchLower); break;
+        case 5: matches = contact.email().toLower().contains(searchLower); break;
+        case 6: matches = contact.phoneNumbers().join(" ").toLower().contains(searchLower); break;
+        }
+        
+        if (matches) {
+            int row = m_table->rowCount();
+            m_table->insertRow(row);
+            m_table->setItem(row, 0, new QTableWidgetItem(contact.lastName()));
+            m_table->setItem(row, 1, new QTableWidgetItem(contact.firstName()));
+            m_table->setItem(row, 2, new QTableWidgetItem(contact.middleName()));
+            m_table->setItem(row, 3, new QTableWidgetItem(contact.address()));
+            m_table->setItem(row, 4, new QTableWidgetItem(contact.birthDate().toString("dd.MM.yyyy")));
+            m_table->setItem(row, 5, new QTableWidgetItem(contact.email()));
+            m_table->setItem(row, 6, new QTableWidgetItem(contact.phoneNumbers().join(", ")));
+        }
+    }
+    
+    m_table->setSortingEnabled(true);
+    m_table->resizeColumnsToContents();
+}
+
+// сброс поиска
+void MainWindow::clearSearch(){
+    m_searchEdit->clear();
+    populateTable();
+}
+
+// реакция на выбор в таблице
+void MainWindow::onTableSelectionChanged(){
+    bool hasSelection = !m_table->selectedItems().isEmpty();
+    m_editButton->setEnabled(hasSelection && !m_isEditing);
+    m_deleteButton->setEnabled(hasSelection && !m_isEditing);
+}
+
+void MainWindow::onTableSortChanged(int column){
+    Q_UNUSED(column);
+}
+
+// загрузка из файла
+void MainWindow::loadContacts(){
+    m_storage->load();
+    populateTable();
+}
+
+// сохранение в файл
+void MainWindow::saveContacts(){
+    m_storage->save();
 }
 \end{lstlisting}

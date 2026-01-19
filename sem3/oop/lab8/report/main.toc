@@ -1,0 +1,70 @@
+\xpg@aux {}{russian}
+\contentsline {section}{\numberline {1}Введение}{4}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Используемые технологии}{4}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Описание фреймворка Qt}{4}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Механизм сигналов и слотов}{4}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}Виджеты и компоненты интерфейса}{4}{subsubsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}Работа с данными}{5}{subsubsection.1.2.3}%
+\contentsline {subsection}{\numberline {1.3}Предметная область - телефонный справочник}{5}{subsection.1.3}%
+\contentsline {section}{\numberline {2}Постановка задачи}{6}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Формализованное задание}{6}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Требования к функциональности}{6}{subsubsection.2.1.1}%
+\contentsline {paragraph}{Управление контактами:}{6}{section*.2}%
+\contentsline {subsection}{\numberline {2.2}Технические требования}{7}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Формат хранения данных}{7}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Регулярные выражения для валидации}{7}{subsubsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3}Дополнительные требования}{9}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Функции для обязательной реализации}{9}{subsubsection.2.3.1}%
+\contentsline {paragraph}{Чтение и запись файла:}{9}{section*.6}%
+\contentsline {paragraph}{Обработка пользовательского ввода:}{9}{section*.7}%
+\contentsline {paragraph}{Сортировка данных:}{9}{section*.8}%
+\contentsline {paragraph}{Поиск и фильтрация:}{9}{section*.9}%
+\contentsline {subsection}{\numberline {2.4}Ожидаемые результаты}{10}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Реализация}{11}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Архитектура приложения}{11}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Описание классов}{12}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Структура Contact}{12}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Класс ContactValidator}{13}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Класс ContactStorage}{15}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Класс MainWindow}{17}{subsubsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.3}Ключевые алгоритмы}{20}{subsection.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.1}Алгоритм добавления контакта}{20}{subsubsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.2}Алгоритм поиска контактов}{23}{subsubsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3}Механизм отмены действий}{25}{subsubsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.4}Проверка на дубликаты}{26}{subsubsection.3.3.4}%
+\contentsline {subsection}{\numberline {3.4}Сортировка данных}{26}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Тестирование приложения}{28}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Начальное состояние приложения}{28}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Сценарий 1: Добавление нового контакта}{29}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Шаг 1: Заполнение формы}{29}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Шаг 2: Нормализация данных}{29}{subsubsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.3}Шаг 3: Успешное добавление}{30}{subsubsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.3}Сценарий 2: Валидация некорректных данных}{31}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Пример 1: Некорректное имя}{31}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Пример 2: Некорректный телефон}{31}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}Пример 3: Некорректный email}{32}{subsubsection.4.3.3}%
+\contentsline {subsection}{\numberline {4.4}Сценарий 3: Редактирование существующего контакта}{32}{subsection.4.4}%
+\contentsline {subsubsection}{\numberline {4.4.1}Шаг 1: Выбор контакта}{32}{subsubsection.4.4.1}%
+\contentsline {subsubsection}{\numberline {4.4.2}Шаг 2: Переход в режим редактирования}{32}{subsubsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.3}Шаг 3: Изменение данных и сохранение}{33}{subsubsection.4.4.3}%
+\contentsline {subsubsection}{\numberline {4.4.4}Шаг 4: Отмена редактирования}{34}{subsubsection.4.4.4}%
+\contentsline {subsection}{\numberline {4.5}Сценарий 4: Удаление контакта}{34}{subsection.4.5}%
+\contentsline {subsubsection}{\numberline {4.5.1}Шаг 1: Выбор контакта для удаления}{34}{subsubsection.4.5.1}%
+\contentsline {subsubsection}{\numberline {4.5.2}Шаг 2: Подтверждение удаления}{34}{subsubsection.4.5.2}%
+\contentsline {subsubsection}{\numberline {4.5.3}Шаг 3: Удаление и сохранение}{35}{subsubsection.4.5.3}%
+\contentsline {subsection}{\numberline {4.6}Сценарий 5: Поиск контактов}{35}{subsection.4.6}%
+\contentsline {subsubsection}{\numberline {4.6.1}Поиск по текстовым полям}{35}{subsubsection.4.6.1}%
+\contentsline {subsubsection}{\numberline {4.6.2}Поиск по дате рождения}{36}{subsubsection.4.6.2}%
+\contentsline {subsubsection}{\numberline {4.6.3}Сброс поиска}{39}{subsubsection.4.6.3}%
+\contentsline {subsection}{\numberline {4.7}Сценарий 6: Отмена последнего действия}{39}{subsection.4.7}%
+\contentsline {subsubsection}{\numberline {4.7.1}Отмена добавления}{39}{subsubsection.4.7.1}%
+\contentsline {subsubsection}{\numberline {4.7.2}Отмена редактирования}{40}{subsubsection.4.7.2}%
+\contentsline {subsubsection}{\numberline {4.7.3}Отмена удаления}{40}{subsubsection.4.7.3}%
+\contentsline {subsubsection}{\numberline {4.7.4}Попытка отмены при пустом стеке}{40}{subsubsection.4.7.4}%
+\contentsline {subsection}{\numberline {4.8}Сценарий 7: Проверка на дубликаты}{41}{subsection.4.8}%
+\contentsline {subsubsection}{\numberline {4.8.1}Обнаружение дубликата}{41}{subsubsection.4.8.1}%
+\contentsline {subsection}{\numberline {4.9}Сценарий 8: Сохранение и загрузка данных}{41}{subsection.4.9}%
+\contentsline {subsubsection}{\numberline {4.9.1}Автоматическое сохранение}{41}{subsubsection.4.9.1}%
+\contentsline {subsubsection}{\numberline {4.9.2}Загрузка при запуске}{42}{subsubsection.4.9.2}%
+\contentsline {subsubsection}{\numberline {4.9.3}Ручное сохранение и загрузка}{42}{subsubsection.4.9.3}%
+\contentsline {subsection}{\numberline {4.10}Итоги тестирования}{42}{subsection.4.10}%

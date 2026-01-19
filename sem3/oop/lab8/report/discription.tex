@@ -6,28 +6,28 @@
 
 Основные компоненты приложения:
 \begin{itemize}
-    \item \textbf{Contact} — структура данных для хранения информации о контакте;
-    \item \textbf{ContactValidator} — класс для валидации и нормализации пользовательского ввода;
-    \item \textbf{ContactStorage} — класс для работы с файловым хранилищем (JSON);
-    \item \textbf{MainWindow} — класс главного окна, реализующий графический интерфейс и логику взаимодействия с пользователем.
+    \item \textbf{Contact} - структура данных для хранения информации о контакте;
+    \item \textbf{ContactValidator} - класс для валидации и нормализации пользовательского ввода;
+    \item \textbf{ContactStorage} - класс для работы с файловым хранилищем (JSON);
+    \item \textbf{MainWindow} - класс главного окна, реализующий графический интерфейс и логику взаимодействия с пользователем.
 \end{itemize}
 
 Структура директорий проекта:
 
 \begin{lstlisting}[style=cstyle, style=cstyle, caption={Структура проекта}]
-lab8/
-├── CMakeLists.txt
-├── src/
-│   ├── main.cpp
-│   ├── contact.cpp
-│   ├── contactstorage.cpp
-│   ├── contactvalidator.cpp
-│   └── mainwindow.cpp
-└── headers/
-    ├── contact.h
-    ├── contactstorage.h
-    ├── contactvalidator.h
-    └── mainwindow.h
+lab8
+	CMakeLists.txt
+	src
+		main.cpp
+		contact.cpp
+		contactstorage.cpp
+		contactvalidator.cpp
+		mainwindow.cpp
+	headers/
+		contact.h
+		contactstorage.h
+		contactvalidator.h
+		mainwindow.h
 \end{lstlisting}
 
 Взаимодействие компонентов представлено на диаграмме (см. рисунок~\ref{fig:architecture}).
@@ -139,7 +139,6 @@ public:
     static bool validateEmail(const QString& email, 
                              QString& errorMessage);
 
-    // Методы нормализации
     static QString normalizeName(const QString& name);
     static QString normalizePhone(const QString& phone);
     static QString normalizeEmail(const QString& email);
@@ -165,7 +164,7 @@ private:
     \begin{itemize}
         \item Международный формат (начинается с +);
         \item Длина от 10 до 15 цифр;
-        \item Автоматическое преобразование формата 8(XXX)XXX-XX-XX в +7XXXXXXXXXX.
+        \item Автоматическое преобразование формата 8(XXX)XXX-XX-XX в \\ +7XXXXXXXXXX.
     \end{itemize}
     
     \item \textbf{Email:} \texttt{\^{}[A-Za-z0-9.\_\%+-]+@[A-Za-z0-9.-]+\textbackslash.[A-Za-z]\{2,\}\$}
@@ -178,41 +177,33 @@ private:
     \item \textbf{Дата рождения:}
     \begin{itemize}
         \item Должна быть меньше текущей даты;
-        \item Не может быть более 150 лет назад;
         \item Валидация високосных годов выполняется классом QDate.
     \end{itemize}
 \end{itemize}
 
-\textbf{Псевдокод метода validateName:}
+\subsubsection*{Метод validateName():} \\
+Выполняет проверку корректности имени контакта.
 
-\begin{quote}
-\textbf{Функция validateName(name, errorMessage):} \\
-\hspace*{1em}normalized = normalizeName(name) \\
-\hspace*{1em}если normalized пусто: \\
-\hspace*{2em}errorMessage = "Имя не может быть пустым" \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}trimmed = name.trimmed() \\
-\hspace*{1em}если trimmed начинается или заканчивается на '-': \\
-\hspace*{2em}errorMessage = "Имя не может начинаться/заканчиваться на дефис" \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}regex = \^{}[A-Za-zА-Яа-яЁё0-9][A-Za-zА-Яа-яЁё0-9\textbackslash- ]*[A-Za-zА-Яа-яЁё0-9]\$ \\
-\hspace*{1em}если не соответствует regex: \\
-\hspace*{2em}errorMessage = "Имя может содержать только буквы, цифры, дефис и пробел" \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}если содержит "--" или множественные пробелы: \\
-\hspace*{2em}errorMessage = "Имя не должно содержать двойные дефисы или множественные пробелы" \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}вернуть true
-\end{quote}
+Основные этапы работы метода:
+\begin{itemize}
+    \item нормализация входной строки имени и проверка её на пустое значение;
+    \item удаление начальных и конечных пробелов у исходного ввода;
+    \item проверка того, что имя не начинается и не заканчивается дефисом;
+    \item проверка допустимого набора символов (буквы латинского и кириллического алфавита, цифры, пробел и дефис);
+    \item проверка отсутствия двойных дефисов и последовательностей из нескольких пробелов.
+\end{itemize}
+
+В случае обнаружения ошибки метод возвращает значение \texttt{false} и записывает описание причины ошибки в параметр \texttt{errorMessage}.  
+При успешном прохождении всех проверок метод возвращает значение \texttt{true}.
 
 \textbf{Методы нормализации:}
 
 Нормализация обеспечивает приведение данных к единому формату перед сохранением:
 
 \begin{itemize}
-    \item \texttt{normalizeName} — удаляет лишние пробелы, приводит первую букву каждого слова к заглавной, остальные к строчным;
-    \item \texttt{normalizePhone} — удаляет пробелы, скобки, дефисы, преобразует российский формат 8(...) в +7(...);
-    \item \texttt{normalizeEmail} — приводит к нижнему регистру, удаляет пробелы.
+    \item \texttt{normalizeName} - удаляет лишние пробелы, приводит первую букву каждого слова к заглавной, остальные к строчным;
+    \item \texttt{normalizePhone} - удаляет пробелы, скобки, дефисы, преобразует российский формат 8(...) в +7(...);
+    \item \texttt{normalizeEmail} - приводит к нижнему регистру, удаляет пробелы.
 \end{itemize}
 
 \subsubsection{Класс ContactStorage}
@@ -253,52 +244,37 @@ private:
 #endif // CONTACTSTORAGE_H
 \end{lstlisting}
 
-\textbf{Псевдокод метода load:}
+\subsubsection*{Метод load():} \\
+Метод \texttt{load} выполняет загрузку списка контактов из файла в формате JSON.
 
-\begin{quote}
-\textbf{Функция load():} \\
-\hspace*{1em}file = открыть m\_filename для чтения \\
-\hspace*{1em}если файл не существует: \\
-\hspace*{2em}m\_contacts.clear() \\
-\hspace*{2em}вернуть true \\
-\hspace*{1em}если не удалось открыть файл: \\
-\hspace*{2em}вывести ошибку \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}data = прочитать весь файл \\
-\hspace*{1em}закрыть файл \\
-\hspace*{1em}doc = разобрать data как JSON \\
-\hspace*{1em}если ошибка парсинга: \\
-\hspace*{2em}вывести ошибку \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}если doc не является массивом: \\
-\hspace*{2em}вывести ошибку \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}array = doc.array() \\
-\hspace*{1em}m\_contacts.clear() \\
-\hspace*{1em}для каждого value в array: \\
-\hspace*{2em}если value является объектом: \\
-\hspace*{3em}contact = Contact::fromJson(value) \\
-\hspace*{3em}m\_contacts.append(contact) \\
-\hspace*{1em}вернуть true
-\end{quote}
+Основные этапы работы метода:
+\begin{itemize}
+    \item проверка существования файла с данными контактов; при отсутствии файла список контактов очищается и метод завершается успешно;
+    \item открытие файла в режиме чтения и загрузка его содержимого в память;
+    \item разбор JSON-данных и обработка возможных ошибок парсинга;
+    \item проверка того, что корневой элемент JSON-документа является массивом;
+    \item очистка текущего списка контактов;
+    \item последовательное преобразование элементов JSON-массива в объекты класса \texttt{Contact} и добавление их в коллекцию контактов.
+\end{itemize}
 
-\textbf{Псевдокод метода save:}
+В случае возникновения ошибок при открытии файла или разборе JSON метод возвращает значение \texttt{false}.  
+При успешной загрузке данных метод возвращает значение \texttt{true}.
 
-\begin{quote}
-\textbf{Функция save():} \\
-\hspace*{1em}file = открыть m\_filename для записи \\
-\hspace*{1em}если не удалось открыть файл: \\
-\hspace*{2em}вывести ошибку \\
-\hspace*{2em}вернуть false \\
-\hspace*{1em}array = пустой JSON-массив \\
-\hspace*{1em}для каждого contact в m\_contacts: \\
-\hspace*{2em}jsonObject = contact.toJson() \\
-\hspace*{2em}array.append(jsonObject) \\
-\hspace*{1em}doc = QJsonDocument(array) \\
-\hspace*{1em}записать doc.toJson() в файл \\
-\hspace*{1em}закрыть файл \\
-\hspace*{1em}вернуть true
-\end{quote}
+\subsubsection*{Метод save():}
+
+Метод \texttt{save} выполняет сохранение списка контактов в файл в формате JSON.
+
+Основные этапы работы метода:
+\begin{itemize}
+    \item открытие файла для записи по указанному имени;
+    \item формирование JSON-массива на основе текущего списка контактов;
+    \item преобразование объектов класса \texttt{Contact} в формат JSON и добавление их в массив;
+    \item создание JSON-документа и запись его в файл;
+    \item закрытие файла после завершения записи данных.
+\end{itemize}
+
+В случае невозможности открыть файл для записи метод возвращает значение \texttt{false}.  
+При успешном сохранении данных метод возвращает значение \texttt{true}.
 
 
 \subsubsection{Класс MainWindow}
@@ -388,11 +364,11 @@ private:
 \textbf{Ключевые компоненты графического интерфейса:}
 
 \begin{itemize}
-    \item \textbf{QTableWidget} — таблица для отображения контактов с возможностью сортировки по столбцам;
-    \item \textbf{QLineEdit, QTextEdit, QDateEdit} — поля ввода данных контакта;
-    \item \textbf{QComboBox} — выпадающие списки для выбора поля поиска и типа сравнения даты;
-    \item \textbf{QPushButton} — кнопки управления (Добавить, Редактировать, Удалить, Отмена, Поиск);
-    \item \textbf{QGroupBox} — группировка элементов формы и поиска.
+    \item \textbf{QTableWidget} - таблица для отображения контактов с возможностью сортировки по столбцам;
+    \item \textbf{QLineEdit, QTextEdit, QDateEdit} - поля ввода данных контакта;
+    \item \textbf{QComboBox} - выпадающие списки для выбора поля поиска и типа сравнения даты;
+    \item \textbf{QPushButton} - кнопки управления (Добавить, Редактировать, Удалить, Отмена, Поиск);
+    \item \textbf{QGroupBox} - группировка элементов формы и поиска.
 \end{itemize}
 
 Внешний вид главного окна представлен на рисунке~\ref{fig:main_window}.
@@ -438,80 +414,108 @@ connect(m_storage, &ContactStorage::dataChanged,
 
 \subsubsection{Алгоритм добавления контакта}
 
-Процесс добавления нового контакта включает несколько этапов проверки и обработки данных. Псевдокод представлен ниже.
+Процесс добавления нового или обновления существующего контакта включает несколько этапов проверки и обработки данных. Блок-схема представлена на рис. \ref{fig:addContact}.
 
-\textbf{Псевдокод метода addContact:}
+Основные этапы работы метода \texttt{addContact}:
+\begin{itemize}
+    \item проверка корректности заполнения формы методом \texttt{validateForm}; при обнаружении ошибок пользователю выводится сообщение, выполнение метода прекращается;
+    \item проверка предупреждений о форматировании данных (например, нестандартное оформление ФИО или номеров телефонов) с возможностью подтверждения продолжения пользователем; при отказе выполнение метода прекращается;
+    \item создание объекта \texttt{Contact} на основе данных формы;
+    \item проверка на наличие дубликатов по ключевым полям (ФИО и Email); при обнаружении дубликата пользователю выводится сообщение об ошибке, выполнение метода прекращается;
+    \item если выполняется редактирование существующего контакта:
+    \begin{itemize}
+        \item сохранение старого состояния контакта для возможности отмены изменений;
+        \item обновление контакта в хранилище;
+        \item вывод пользователю сообщения об успешном обновлении.
+    \end{itemize}
+    \item если добавляется новый контакт:
+    \begin{itemize}
+        \item добавление контакта в хранилище;
+        \item фиксация действия для истории изменений;
+        \item вывод пользователю сообщения об успешном добавлении.
+    \end{itemize}
+    \item завершение обработки:
+    \begin{itemize}
+        \item очистка формы ввода;
+        \item обновление таблицы контактов;
+        \item сохранение данных в файл;
+        \item сброс флагов редактирования и управление состоянием кнопок интерфейса.
+    \end{itemize}
+\end{itemize}
 
-\begin{quote}
-\textbf{Функция addContact():} \\
-\hspace*{1em}errorMessage = "" \\
-\hspace*{1em}если не validateForm(errorMessage): \\
-\hspace*{2em}показать диалог с ошибкой errorMessage \\
-\hspace*{2em}вернуться \\
-\hspace*{1em}contact = получить данные из формы \\
-\hspace*{1em}если m\_isEditing == true: \\
-\hspace*{2em}oldContact = m\_storage.contacts()[m\_editingIndex] \\
-\hspace*{2em}если checkForDuplicates(contact, m\_editingIndex): \\
-\hspace*{3em}показать диалог "Такой контакт уже существует" \\
-\hspace*{3em}вернуться \\
-\hspace*{2em}m\_storage.updateContact(m\_editingIndex, contact) \\
-\hspace*{2em}pushAction(Edit, oldContact, m\_editingIndex) \\
-\hspace*{2em}показать сообщение "Контакт обновлен" \\
-\hspace*{2em}m\_isEditing = false \\
-\hspace*{2em}m\_addButton.setText("Добавить") \\
-\hspace*{1em}иначе: \\
-\hspace*{2em}если checkForDuplicates(contact): \\
-\hspace*{3em}показать предупреждение о дубликате \\
-\hspace*{3em}если пользователь отменил: \\
-\hspace*{4em}вернуться \\
-\hspace*{2em}m\_storage.addContact(contact) \\
-\hspace*{2em}pushAction(Add, contact, m\_storage.contactCount() - 1) \\
-\hspace*{2em}показать сообщение "Контакт добавлен" \\
-\hspace*{1em}m\_storage.save() \\
-\hspace*{1em}populateTable() \\
-\hspace*{1em}clearForm()
-\end{quote}
+\subsubsection*{Метод addContact():}
+
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{myPhoto/addContext.png}
+    \caption{Блок-схема метода addContact()}
+    \label{fig:addContact}
+\end{figure}
+
+
+\subsubsection*{Метода editContact():}
+
+Процесс редактирования существующего контакта включает несколько этапов проверки и подготовки данных. Блок-схема представлена на рис. \ref{fig:editContact}.
+
+Основные этапы работы метода \texttt{editContact}:
+\begin{itemize}
+    \item получение выбранной строки из таблицы контактов;
+    \item проверка, что контакт выбран; при отсутствии выбора выводится сообщение об ошибке, выполнение метода прекращается;
+    \item извлечение данных выбранного контакта (Фамилия, Имя, Email) из таблицы;
+    \item поиск контакта в хранилище по ключевым полям (Фамилия, Имя, Email); если контакт не найден, выводится сообщение об ошибке и метод завершает работу;
+    \item установка индекса редактируемого контакта и флага редактирования;
+    \item заполнение формы данными выбранного контакта для последующего редактирования;
+    \item изменение состояния элементов интерфейса: блокировка кнопок добавления, редактирования и удаления, активация кнопок сохранения и отмены.
+\end{itemize}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{myPhoto/EditContact.png}
+    \caption{Блок-схема метода editContact()}
+    \label{fig:editContact}
+\end{figure}
+
+
 
 \subsubsection{Алгоритм поиска контактов}
 
 Приложение поддерживает два типа поиска:
 \begin{itemize}
-    \item \textbf{Поиск по текстовым полям} (имя, фамилия, отчество, email, телефон, адрес) — поиск подстроки без учета регистра;
-    \item \textbf{Поиск по дате рождения} — точное совпадение, диапазон "до даты", "после даты".
+    \item \textbf{Поиск по текстовым полям} (имя, фамилия, отчество, email, телефон, адрес) - поиск подстроки без учета регистра;
+    \item \textbf{Поиск по дате рождения} - точное совпадение, диапазон "до даты", "после даты".
 \end{itemize}
 
-\textbf{Псевдокод метода searchContacts:}
+\subsubsection*{Метод searchContacts():}
+Процесс поиска контактов в таблице включает фильтрацию и отображение результатов. Блок-схема представлена на рис. \ref{fig:searchContacts}.
 
-\begin{quote}
-\textbf{Функция searchContacts():} \\
-\hspace*{1em}searchField = m\_searchFieldCombo.currentText() \\
-\hspace*{1em}m\_table.clearContents() \\
-\hspace*{1em}m\_table.setRowCount(0) \\
-\hspace*{1em}row = 0 \\
-\hspace*{1em}если searchField == "Дата рождения": \\
-\hspace*{2em}searchDate = m\_searchDateEdit.date() \\
-\hspace*{2em}searchType = m\_dateSearchTypeCombo.currentText() \\
-\hspace*{2em}для каждого contact в m\_storage.contacts(): \\
-\hspace*{3em}match = false \\
-\hspace*{3em}если searchType == "Точное совпадение" и contact.birthDate() == searchDate: \\
-\hspace*{4em}match = true \\
-\hspace*{3em}если searchType == "До даты" и contact.birthDate() <= searchDate: \\
-\hspace*{4em}match = true \\
-\hspace*{3em}если searchType == "После даты" и contact.birthDate() >= searchDate: \\
-\hspace*{4em}match = true \\
-\hspace*{3em}если match: \\
-\hspace*{4em}добавить contact в таблицу, строка row \\
-\hspace*{4em}row = row + 1 \\
-\hspace*{1em}иначе: \\
-\hspace*{2em}searchText = m\_searchEdit.text().toLower() \\
-\hspace*{2em}для каждого contact в m\_storage.contacts(): \\
-\hspace*{3em}value = получить значение поля searchField из contact \\
-\hspace*{3em}если value содержит searchText (без учета регистра): \\
-\hspace*{4em}добавить contact в таблицу, строка row \\
-\hspace*{4em}row = row + 1 \\
-\hspace*{1em}если row == 0: \\
-\hspace*{2em}показать сообщение "Ничего не найдено"
-\end{quote}
+Основные этапы работы метода \texttt{searchContacts}:
+\begin{itemize}
+    \item определение выбранного поля поиска;
+    \item если выбран поиск по дате рождения:
+    \begin{itemize}
+        \item получение даты и типа поиска (точная дата, год или месяц и год);
+        \item фильтрация контактов по дате;
+        \item обновление таблицы с найденными контактами.
+    \end{itemize}
+    \item если выбран текстовый поиск:
+    \begin{itemize}
+        \item получение текста поиска;
+        \item при пустом поисковом запросе таблица заполняется всеми контактами;
+        \item фильтрация контактов по выбранному полю или по всем полям;
+        \item обновление таблицы с найденными контактами.
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{myPhoto/searchContacts.png}
+    \caption{Блок-схема метода searchContacts()}
+    \label{fig:searchContacts}
+\end{figure}
+\newpage
 
 \subsubsection{Механизм отмены действий}
 
@@ -527,27 +531,15 @@ struct ContactAction {
 };
 \end{lstlisting}
 
-\textbf{Псевдокод метода undoLastAction:}
+\subsubsection*{Метод undoLastAction:}
 
-\begin{quote}
-\textbf{Функция undoLastAction():} \\
-\hspace*{1em}если m\_undoStack пуст: \\
-\hspace*{2em}показать сообщение "Нечего отменять" \\
-\hspace*{2em}вернуться \\
-\hspace*{1em}action = m\_undoStack.pop() \\
-\hspace*{1em}если action.type == Add: \\
-\hspace*{2em}m\_storage.removeContact(action.index) \\
-\hspace*{2em}показать сообщение "Добавление отменено" \\
-\hspace*{1em}если action.type == Edit: \\
-\hspace*{2em}m\_storage.updateContact(action.index, action.contact) \\
-\hspace*{2em}показать сообщение "Редактирование отменено" \\
-\hspace*{1em}если action.type == Delete: \\
-\hspace*{2em}m\_storage.contacts().insert(action.index, action.contact) \\
-\hspace*{2em}показать сообщение "Удаление отменено" \\
-\hspace*{1em}m\_storage.save() \\
-\hspace*{1em}populateTable() \\
-\hspace*{1em}clearForm()
-\end{quote}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.15\linewidth]{myPhoto/undoLastAction.png}
+    \caption{Блок-схема метода undoLastAction()}
+    % \label{fig:contact_added}
+\end{figure}
+\newpage
 
 При каждом изменении данных (добавление, редактирование, удаление) информация о действии сохраняется в стек методом \texttt{pushAction}. Это позволяет откатить последнюю операцию одним нажатием кнопки "Отменить".
 
@@ -604,29 +596,29 @@ bool Contact::operator<(const Contact& other) const
 
 \subsection{Начальное состояние приложения}
 
-При первом запуске приложения отображается главное окно с пустой таблицей контактов и формой ввода данных. Если файл \texttt{phonebook.json} не существует, он будет автоматически создан при сохранении первого контакта.
+При первом запуске приложения отображается главное окно с пустой таблицей контактов и формой ввода данных (см. рисунок~\ref{fig:first_start}). Если файл \texttt{phonebook.json} не существует, он будет автоматически создан при сохранении первого контакта.
 
 \begin{figure}[H]
     \centering
-    % \includegraphics[width=1\linewidth]{myPhoto/first_start.png}
+    \includegraphics[width=1\linewidth]{myPhoto/first_start.png}
     \caption{Начальное состояние приложения при первом запуске}
     \label{fig:first_start}
 \end{figure}
 
 Элементы интерфейса:
 \begin{itemize}
-    \item \textbf{Форма ввода данных} — содержит поля для всех атрибутов контакта;
-    \item \textbf{Кнопки управления} — "Добавить", "Редактировать", "Удалить", "Отменить";
-    \item \textbf{Панель поиска} — поле ввода, выбор поля для поиска, фильтры по дате;
-    \item \textbf{Таблица контактов} — отображает список всех записей с возможностью сортировки;
-    \item \textbf{Кнопки файловых операций} — "Сохранить" и "Загрузить".
+    \item \textbf{Форма ввода данных} - содержит поля для всех атрибутов контакта;
+    \item \textbf{Кнопки управления} - "Добавить", "Редактировать", "Удалить", "Отменить";
+    \item \textbf{Панель поиска} - поле ввода, выбор поля для поиска, фильтры по дате;
+    \item \textbf{Таблица контактов} - отображает список всех записей с возможностью сортировки;
+    \item \textbf{Кнопки файловых операций} - "Сохранить" и "Загрузить".
 \end{itemize}
 
 \subsection{Сценарий 1: Добавление нового контакта}
 
 \subsubsection{Шаг 1: Заполнение формы}
 
-Пользователь заполняет все поля формы корректными данными:
+Пользователь заполняет все поля формы корректными данными (см. рисунок~\ref{fig:add_form_filled}):
 
 \begin{figure}[H]
     \centering
@@ -666,7 +658,7 @@ bool Contact::operator<(const Contact& other) const
     \item Отображение контакта в таблице;
     \item Сохранение действия в стек отмены;
     \item Очистка полей формы;
-    \item Показ информационного сообщения об успешном добавлении.
+    \item Показ информационного сообщения об успешном добавлении (см. рисунок~\ref{fig:contact_added}).
 \end{enumerate}
 
 \begin{figure}[H]
@@ -696,7 +688,7 @@ bool Contact::operator<(const Contact& other) const
 Пользователь вводит телефон без знака "+": "79993332211". \\
 Класс \texttt{ContactValidator} автоматически добавляет "+" в начало, преобразуя номер в "+79993332211".
 
-Если длина телефона меньше 10 цифр, выводится ошибка: "Телефон должен содержать минимум 10 цифр".
+Если длина телефона меньше 10 цифр, выводится ошибка: "Телефон должен содержать минимум 10 цифр" (см. рисунок~\ref{fig:add_table}).
 
 \begin{figure}[h]
     \centering
@@ -740,7 +732,7 @@ bool Contact::operator<(const Contact& other) const
 
 \subsubsection{Шаг 2: Переход в режим редактирования}
 
-После нажатия кнопки "Редактировать":
+После нажатия кнопки "Редактировать" (см. рисунок~\ref{fig:edit_mode}):
 
 \begin{itemize}
     \item Приложение переходит в режим редактирования (\texttt{m\_isEditing = true});
@@ -769,7 +761,7 @@ bool Contact::operator<(const Contact& other) const
     \item Сохранение старой версии контакта в стек отмены;
     \item Автоматическое сохранение в файл;
     \item Возврат в режим просмотра;
-    \item Показ сообщения об успешном редактировании.
+    \item Показ сообщения об успешном редактировании(см. рисунок~\ref{fig:contact_edited}).
 \end{enumerate}
 
 \begin{figure}[H]
@@ -816,7 +808,7 @@ bool Contact::operator<(const Contact& other) const
     \item Контакт удаляется из \texttt{ContactStorage};
     \item Автоматическое сохранение в файл;
     \item Обновление таблицы;
-    \item Показ сообщения "Контакт удалён".
+    \item Показ сообщения "Контакт удалён" (см. рисунок~\ref{fig:contact_deleted}).
 \end{enumerate}
 
 \begin{figure}[H]
@@ -847,7 +839,7 @@ bool Contact::operator<(const Contact& other) const
 
 \subsubsection{Поиск по дате рождения}
 
-При выборе поля "Дата рождения":
+При выборе поля "Дата рождения" (см. рисунок~\ref{fig:date_search}):
 
 \begin{itemize}
     \item Поле текстового ввода скрывается;
@@ -864,35 +856,35 @@ bool Contact::operator<(const Contact& other) const
 
 \textbf{Пример 1: Точное совпадение}
 
-Пользователь выбирает дату "08.01.2006" и тип "Точное совпадение". В таблице отображаются только контакты, родившиеся именно в этот день.
+Пользователь выбирает дату "08.01.2006" и тип "Точное совпадение". В таблице отображаются только контакты, родившиеся именно в этот день (см. рисунок~\ref{fig:date_search_result_1}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{myPhoto/current_date.png}
     \caption{Результат поиска по дате (08.01.2006)}
-    \label{fig:date_search_result}
+    \label{fig:date_search_result_1}
 \end{figure}
 
 \textbf{Пример 2: Год}
 
-Пользователь выбирает дату "08.01.2006" и тип "Год. В таблице отображаются все контакты, родившиеся в 2006 году.
+Пользователь выбирает дату "08.01.2006" и тип "Год. В таблице отображаются все контакты, родившиеся в 2006 году (см. рисунок~\ref{fig:date_search_result_2}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{myPhoto/date_year_search.png}
     \caption{Результат поиска по году рождения (2006)}
-    \label{fig:date_search_result}
+    \label{fig:date_search_result_2}
 \end{figure}
 
 \textbf{Пример 3: Месяц и год}
 
-Пользователь выбирает дату "08.12.2006" и тип "Месяц и год". В таблице отображаются все контакты, родившиеся в декабре 2006 года.
+Пользователь выбирает дату "08.12.2006" и тип "Месяц и год". В таблице отображаются все контакты, родившиеся в декабре 2006 года (см. рисунок~\ref{fig:date_search_result_3}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{myPhoto/date_year_month.png}
     \caption{Результат поиска по месяцу и году (декабрь 2005)}
-    \label{fig:date_search_result}
+    \label{fig:date_search_result_3}
 \end{figure}
 
 \subsubsection{Сброс поиска}
@@ -907,11 +899,11 @@ bool Contact::operator<(const Contact& other) const
 
 Если результаты поиска пусты, выводится сообщение "Ничего не найдено".
 
-\subsection{Сценарий 7: Отмена последнего действия}
+\subsection{Сценарий 6: Отмена последнего действия}
 
 \subsubsection{Отмена добавления}
 
-Пользователь добавил контакт, но сразу нажал кнопку "Отменить". Происходит:
+Пользователь добавил контакт, но сразу нажал кнопку "Отменить". Происходит (см. рисунок~\ref{fig:undo_action} и ~\ref{fig:undo_action_after}):
 
 \begin{enumerate}
     \item Извлечение последнего действия из стека (\texttt{m\_undoStack.pop()});
@@ -947,7 +939,7 @@ bool Contact::operator<(const Contact& other) const
 
 Если стек отмены пуст, при нажатии кнопки "Отменить" выводится сообщение: "Нечего отменять".
 
-\subsection{Сценарий 8: Проверка на дубликаты}
+\subsection{Сценарий 7: Проверка на дубликаты}
 
 \subsubsection{Обнаружение дубликата}
 
@@ -970,7 +962,7 @@ bool Contact::operator<(const Contact& other) const
 
 Телефоны не учитываются при проверке, поскольку у одного человека может быть несколько номеров.
 
-\subsection{Сценарий 9: Сохранение и загрузка данных}
+\subsection{Сценарий 8: Сохранение и загрузка данных}
 
 \subsubsection{Автоматическое сохранение}
 

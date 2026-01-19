@@ -262,9 +262,7 @@ void MainWindow::pushAction(ContactAction::Type type, const Contact& contact, in
 // отмена последнего действия
 void MainWindow::undoLastAction() {
 	ContactAction action = m_undoStack.pop();
-    func is Palindrome(s string, left, ight int ) bool {
-		
-	}
+
     switch (action.type) { // проверяем события
     case ContactAction::Add:
         if (!m_storage->contacts().isEmpty()) {
@@ -433,8 +431,7 @@ void MainWindow::addContact(){
     }
     
     // Проверяем предупреждения о форматировании
-    QString warnings = getFormattingWarnings(m_firstNameEdit->text(), m_lastNameEdit->text(), 
-                                             m_middleNameEdit->text(), m_phoneNumbersEdit->toPlainText());
+    QString warnings = getFormattingWarnings(m_firstNameEdit->text(), m_lastNameEdit->text(), m_middleNameEdit->text(), m_phoneNumbersEdit->toPlainText());
     
     if (!warnings.isEmpty()) {
         QMessageBox::StandardButton reply = QMessageBox::question(
@@ -481,7 +478,7 @@ void MainWindow::addContact(){
 }
 
 // переходим в режим редактирования
-void MainWindow::editContact(){
+void MainWчindow::editContact(){
     int row = getSelectedRow();
     if (row < 0) {
         showError("Выберите контакт для редактирования");

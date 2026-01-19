@@ -27,9 +27,9 @@ bool Pred1_1(const Point& point){
 	return (point.getX() >=-1 * n && point.getX()<=m) && (point.getY() >= -1 * n && point.getY()<=m); 
 }
 
-void to_lower_case(std::string& s) {
-    std::transform(s.begin(), s.end(), s.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+string to_lower_case(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),::tolower);
+	return s;
 }
 
 int main()
@@ -262,7 +262,6 @@ int main()
 	//в) проверьте "упорядоченность" значений (с помощью pop() ) - если они оказываются не упорядоченными, подумайте:
 	//		что сравнивается при вставке?
 
-
 		const char* lits[] = {"ccc", "aaa", "bbb"};
 		// неверно т.к const char* (в случае с int || double было бы все ок)
 		// в случае строк < сравнивает адреса в памяти а не строки
@@ -274,7 +273,7 @@ int main()
 			return strcmp(a, b) < 0; // true : if(a < b)
 		};
 
-		priority_queue<const char*, vector<const char*>, decltype(cmp)> pq2(
+		priority_queue<const char*, vector<const char*>,decltype(cmp)> pq2(
 			lits, lits + 3, cmp
 		);
 		cout << "!!!!" << endl;
@@ -286,7 +285,7 @@ int main()
 	////////////////////////////////////////////////////////////////////////////////////
 
 {	
-	//set
+	//set red-black-tree
 	/*
 	LOOK:
 	template<
@@ -339,7 +338,7 @@ int main()
 			class Key,
 			class Compare = std::less<Key>,
 			class Allocator = std::allocator<Key>
-		> class multiset;
+		> class multiset; // есть дубликаты и упорядоченный
 		Вставка, удаление, поиска O(log N)
 		*/
 	
@@ -361,7 +360,7 @@ int main()
 		class T,
 		class Compare = std::less<Key>,
 		class Allocator = std::allocator<std::pair<const Key, T>>
-	> class map;
+	> class map; поиск, вставка, удаление, по ключу O(log N) unordered_map O(1)
 	*/
 	//а) создайте map, который хранит пары "фамилия, зарплата" - pair<const char*, int>,
 	//	при этом строки задаются строковыми литералами
@@ -418,12 +417,12 @@ int main()
 
 		for (const auto& pair : dictionary) cout << pair.first << " -> " << pair.second << endl;
 
-		string key = "strange";
+		string key = "test";
     	auto range = dictionary.equal_range(key); // pair<it, it>  замена lower ^ upper_bound
 
 		cout << "\nПеревод для strange:\n";
 		for (auto it = range.first; it != range.second; ++it) {
-			cout << "  -> " << it->second << endl;
+			cout << it->second << endl;
 		}
 		
 	}
@@ -518,7 +517,7 @@ int main()
 
 	//С помощью алгоритма find() найдите в любой последовательности элементов Point
 	//все итераторы на элемент Point с указанным значением.
-
+	vector<vector<Point>::iterator> vec;
 	Point target_point = {6, 12};
 
 	auto it = points.begin();
@@ -527,6 +526,7 @@ int main()
 	while (true) {
 		it = find(it, points.end(), target_point);
 		if (it != points.end()) {
+			vec.push_back(it);
 			cout << distance(points.begin(), it) << endl;
 			++it; 
 			count++;
@@ -625,11 +625,8 @@ int main()
 		// inserter из-за пустого set'a, сам tranform не знает что это за контейнер
 		transform(words.begin(), words.end(),
 					inserter(lower, lower.begin()),
-					[](const string& s) {
-						string temp = s;
-						to_lower_case(temp); 
-						return temp;
-					});
+					to_lower_case
+					);
 		
 		for (const auto& word : lower) 
         	cout << word << " ";
