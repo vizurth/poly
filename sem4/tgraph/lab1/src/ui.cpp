@@ -47,11 +47,11 @@ void UI::task1_generateDAG() {
     std::cout << "стандартное отклонение (σ) = " << STDDEV << "\n";
     
     // генерируем граф
-    DAGGenerator generator(&normalDist);
+    DAGGenerator<double> generator(&normalDist);
     if (currentGraph != nullptr) {
         delete currentGraph;
     }
-    currentGraph = new Graph(generator.generateDAG(numVertices));
+    currentGraph = new Graph<double>(generator.generateDAG(numVertices));
     
     std::cout << "\nграф успешно сгенерирован!\n";
     currentGraph->printAdjMatrix();
@@ -77,17 +77,17 @@ void UI::task2_shimbel() {
         return;
     }
     
-    Shimbel shimbel(*currentGraph);
+    Shimbel<double> shimbel(*currentGraph);
     
     // находим минимальные пути длины k
     std::cout << "\nвычисление минимальных путей длины " << k << " рёбер...\n";
     auto minPaths = shimbel.findMinPaths(k);
-    Shimbel::printPathMatrix(minPaths, "минимальные пути длины " + std::to_string(k));
+    Shimbel<double>::printPathMatrix(minPaths, "минимальные пути длины " + std::to_string(k));
     
     // находим максимальные пути длины k
     std::cout << "\nвычисление максимальных путей длины " << k << " рёбер...\n";
     auto maxPaths = shimbel.findMaxPaths(k);
-    Shimbel::printPathMatrix(maxPaths, "максимальные пути длины " + std::to_string(k));
+    Shimbel<double>::printPathMatrix(maxPaths, "максимальные пути длины " + std::to_string(k));
 }
 
 // задание 3: подсчёт маршрутов методом backtracking
@@ -125,7 +125,7 @@ void UI::task3_backtracking() {
         return;
     }
     
-    RouteCounter counter(*currentGraph);
+    RouteCounter<double> counter(*currentGraph);
     
     // подсчитываем количество маршрутов
     std::cout << "\nподсчёт маршрутов из вершины " << start << " в вершину " << target << "...\n";
@@ -134,6 +134,9 @@ void UI::task3_backtracking() {
     if (routeCount > 0) {
         std::cout << "существует маршрут: ДА\n";
         std::cout << "количество различных маршрутов: " << routeCount << "\n";
+        
+        // вывести все найденные маршруты
+        counter.printAllRoutes();
     } else {
         std::cout << "существует маршрут: НЕТ\n";
         std::cout << "количество различных маршрутов: 0\n";

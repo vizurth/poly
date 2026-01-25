@@ -6,7 +6,7 @@
 // класс для управления пользовательским интерфейсом lab1
 class UI {
 private:
-    Graph* currentGraph;  // текущий сгенерированный граф
+    Graph<double>* currentGraph;  // текущий сгенерированный граф
     
     // очистить буфер ввода
     void clearInput();
