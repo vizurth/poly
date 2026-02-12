@@ -14,7 +14,7 @@ BigArithmeticCalc::BigArithmeticCalc(int n,
 {
 }
 
-// ============ работа со знаками минус ============
+// работа со знаками минус
 
 bool BigArithmeticCalc::isNegative(const string& num) const {
     return !num.empty() && num[0] == '-';
@@ -32,7 +32,7 @@ string BigArithmeticCalc::addSign(const string& num, bool negative) const {
     return negative ? "-" + num : num;
 }
 
-// ============ большая арифметика  ============
+// большая арифметика 
 
 // проверка не вылезает ли строка за пределы алфавита
 bool BigArithmeticCalc::isValidNumber(const string& num) const {
@@ -305,7 +305,6 @@ pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a, const
     
     // деление на ноль
     if (b == small.getAdditiveIdentity()) {
-        // 0/0 = [min;max]
         if (a == small.getAdditiveIdentity()) {
             return {small.getUniversum(), small.getUniversum()};
         }
@@ -366,7 +365,7 @@ pair<string, string> BigArithmeticCalc::divideBigUnsigned(const string& a, const
     return {q, r};
 }
 
-// ============ операции с учетом знаков ============
+// операции с учетом знаков
 
 /*
 	LOOK: add(a, b)
@@ -431,7 +430,7 @@ string BigArithmeticCalc::subtract(const string& a, const string& b) const {
     string ua = removeSign(a);
     string ub = removeSign(b);
 
-    //  a - b  (оба ≥ 0)
+    //  a - b  (оба >= 0)
     if (!neg_a && !neg_b) {
         int cmp = compareBigUnsigned(ua, ub);
         if (cmp >= 0) return subtractBigUnsigned(ua, ub);
@@ -533,21 +532,33 @@ string BigArithmeticCalc::divide(const string& a, const string& b) const {
     return "Q: " + q + " | R: " + r;
 }
 
-// ============ геттеры ============
+// геттеры
 
 const vector<string>& BigArithmeticCalc::getAlphabet() const {
     return small.getAlphabet();
 }
 
+int BigArithmeticCalc::getMaxDigits() const {
+    return MAX_DIGITS;
+}
+
 string BigArithmeticCalc::getMinNumber() const {
-    return small.getMinNumber();
+    string result = "-";
+    for (int i = 0; i < MAX_DIGITS; i++) {
+        result += getAlphabet().back();
+    }
+    return result;
 }
 
 string BigArithmeticCalc::getMaxNumber() const {
-    return small.getMaxNumber();
+    string result;
+    for (int i = 0; i < MAX_DIGITS; i++) {
+        result += getAlphabet().back();
+    }
+    return result;
 }
 
-// ============ вывод менюшек ============
+// вывод менюшек
 
 void BigArithmeticCalc::printAddTable() const {
     small.printAddTable();
@@ -561,9 +572,9 @@ void BigArithmeticCalc::printSubTable() const {
     small.printSubTable();
 }
 
-void BigArithmeticCalc::printDivTable() const {
-    small.printDivTable();
-}
+// void BigArithmeticCalc::printDivTable() const {
+//     small.printDivTable();
+// }
 
 void BigArithmeticCalc::printAllTables() const {
     small.printAllTables();

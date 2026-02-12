@@ -7,14 +7,11 @@
 
 using namespace std;
 
-// Калькулятор БОЛЬШОЙ конечной арифметики.
-// Внутри использует класс SmallArithmetic для посимвольной (малой) арифметики.
 class BigArithmeticCalc {
 private:
-    // Малая арифметика и все таблицы лежат здесь
     SmallArithmetic small;
 
-    // ============ большая арифметика ============
+    // большая арифметика
     
     // работа со знаками
     bool isNegative(const string& num) const;
@@ -41,6 +38,9 @@ private:
     
     // сравнение больших чисел (без знака)
     int compareBigUnsigned(const string& a, const string& b) const;
+
+	// максимальная длина числа в разрядах (используется для построения универсума)
+    static const int MAX_DIGITS = 8;
     
 public:
     // конструктор
@@ -52,10 +52,11 @@ public:
     
     // геттеры
     const vector<string>& getAlphabet() const;
+	int getMaxDigits() const;
     string getMinNumber() const;
     string getMaxNumber() const;
     
-    // ============ операции большой арифметики ============
+    // операции большой арифметики
     
     string add(const string& a, const string& b) const;
     string multiply(const string& a, const string& b) const;
@@ -66,7 +67,7 @@ public:
     void printAddTable() const;
     void printMulTable() const;
     void printSubTable() const;
-    void printDivTable() const;
+    // void printDivTable() const;
     void printAllTables() const;
     void printInfo() const;
     void printHasseDiagram() const;

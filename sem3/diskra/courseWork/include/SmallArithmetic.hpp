@@ -8,7 +8,6 @@
 
 using namespace std;
 
-// Малая конечная арифметика на алфавите с правилом "+1"
 class SmallArithmetic {
 private:
     // основные параметры арифметики
@@ -27,24 +26,24 @@ private:
     vector<vector<string>> addTable;
     vector<vector<string>> mulTable;
     vector<vector<string>> subTable;
-    vector<vector<string>> divTable;
+    // vector<vector<string>> divTable;
 
     // специальные элементы
     string additiveIdentity;
     string multiplicativeIdentity;
     string universum;
     string emptySet;
-
-    // максимальная длина числа в разрядах (используется для построения универсума)
+	
+	// максимальная длина числа в разрядах (используется для построения универсума)
     static const int MAX_DIGITS = 8;
 
-    // ============ малая арифметика ============
+    // малая арифметика
 
     // базовые операции через диаграмму хассе
     string addByHasse(const string& a, const string& b) const;
     string multiplyByHasse(const string& a, const string& b) const;
     string subtractByHasse(const string& a, const string& b) const;
-    string divideByHasse(const string& a, const string& b) const;
+    // string divideByHasse(const string& a, const string& b) const;
 
     // поиск обратных элементов
     optional<string> findMultiplicativeInverse(const string& x);
@@ -54,7 +53,7 @@ private:
     void buildAddTable();
     void buildMulTable();
     void buildSubTable();
-    void buildDivTable();
+    // void buildDivTable();
 
     // построение таблиц для больших операций
     void buildAdditionTableWithCarry();
@@ -100,7 +99,7 @@ public:
     void printAddTable() const;
     void printMulTable() const;
     void printSubTable() const;
-    void printDivTable() const;
+    // void printDivTable() const;
     void printAllTables() const;
     void printHasseDiagram() const;
 };

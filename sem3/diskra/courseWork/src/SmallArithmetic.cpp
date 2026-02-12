@@ -51,14 +51,14 @@ SmallArithmetic::SmallArithmetic(int n,
 
     buildNegationMap();
     buildAdditionTableWithCarry();
-    buildInverseMap();
+    // buildInverseMap();
     buildAddTable();
     buildMulTable();
     buildSubTable();
-    buildDivTable();
+    // buildDivTable();
 }
 
-// ============ малая арифметика ============
+// малая арифметика
 
 string SmallArithmetic::addByHasse(const string& a, const string& b) const {
     if (b == additiveIdentity) return a;
@@ -105,18 +105,18 @@ string SmallArithmetic::subtractByHasse(const string& a, const string& b) const 
     return "ERR: with subtract";
 }
 
-string SmallArithmetic::divideByHasse(const string& a, const string& b) const {
-    if (b == additiveIdentity) {
-        return emptySet;
-    }
+// string SmallArithmetic::divideByHasse(const string& a, const string& b) const {
+//     if (b == additiveIdentity) {
+//         return emptySet;
+//     }
 
-    if (inverseMap.find(b) == inverseMap.end()) {
-        return "ERR";
-    }
+//     if (inverseMap.find(b) == inverseMap.end()) {
+//         return "ERR";
+//     }
 
-    string bInverse = inverseMap.at(b);
-    return multiplyByHasse(a, bInverse);
-}
+//     string bInverse = inverseMap.at(b);
+//     return multiplyByHasse(a, bInverse);
+// }
 
 optional<string> SmallArithmetic::findMultiplicativeInverse(const string& x) {
     if (x == additiveIdentity) return nullopt;
@@ -166,14 +166,14 @@ void SmallArithmetic::buildSubTable() {
     }
 }
 
-void SmallArithmetic::buildDivTable() {
-    divTable.assign(N, vector<string>(N));
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            divTable[i][j] = divideByHasse(alphabet[i], alphabet[j]);
-        }
-    }
-}
+// void SmallArithmetic::buildDivTable() {
+//     divTable.assign(N, vector<string>(N));
+//     for (int i = 0; i < N; ++i) {
+//         for (int j = 0; j < N; ++j) {
+//             divTable[i][j] = divideByHasse(alphabet[i], alphabet[j]);
+//         }
+//     }
+// }
 
 void SmallArithmetic::buildNegationMap() {
     //ищем x + candidate = additiveIdentity
@@ -223,7 +223,7 @@ bool SmallArithmetic::checkCarry(const string& start, const string& steps) const
     return false;
 }
 
-// ======== геттеры и утилиты, используемые большой арифметикой ========
+// геттеры и утилиты, используемые большой арифметикой
 
 const vector<string>& SmallArithmetic::getAlphabet() const {
     return alphabet;
@@ -284,9 +284,7 @@ string SmallArithmetic::nextElem(const string& current) const {
     return nextSymbol(current);
 }
 
-pair<string, string> SmallArithmetic::addWithCarry(const string& c1,
-                                                   const string& c2,
-                                                   const string& carry_in) const {
+pair<string, string> SmallArithmetic::addWithCarry(const string& c1, const string& c2, const string& carry_in) const {
     auto key = make_tuple(c1, c2, carry_in);
     auto it = additionTableWithCarry.find(key);
     if (it == additionTableWithCarry.end()) {
@@ -332,16 +330,16 @@ void SmallArithmetic::printSubTable() const {
     printTable(subTable);
 }
 
-void SmallArithmetic::printDivTable() const {
-    cout << "=========== ТАБЛИЦА ДЕЛЕНИЯ (/) ===========" << endl;
-    printTable(divTable);
-}
+// void SmallArithmetic::printDivTable() const {
+//     cout << "=========== ТАБЛИЦА ДЕЛЕНИЯ (/) ===========" << endl;
+//     printTable(divTable);
+// }
 
 void SmallArithmetic::printAllTables() const {
     printAddTable();
     printMulTable();
     printSubTable();
-    printDivTable();
+    // printDivTable();
 }
 
 void SmallArithmetic::printHasseDiagram() const {

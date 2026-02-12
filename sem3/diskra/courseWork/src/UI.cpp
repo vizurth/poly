@@ -83,9 +83,9 @@ void UI::handleSubTable() const {
     calc.printSubTable();
 }
 
-void UI::handleDivTable() const {
-    calc.printDivTable();
-}
+// void UI::handleDivTable() const {
+//     calc.printDivTable();
+// }
 
 void UI::handleBigOperation(const string& operand1, const string& operation, 
                            const string& operand2) const {
@@ -161,10 +161,10 @@ bool UI::processCommand(const string& input) {
         handleSubTable();
         return true;
     }
-    if (command == "div_table") {
-        handleDivTable();
-        return true;
-    }
+    // if (command == "div_table") {
+    //     handleDivTable();
+    //     return true;
+    // }
     
     // Парсинг команд с параметрами
     istringstream iss(trimmedInput);
