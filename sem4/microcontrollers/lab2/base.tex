@@ -1,0 +1,136 @@
+\section{Цель работы}
+
+Ознакомиться с основными приемами работы с
+документацией при составлении программ для микроконтроллеров
+
+\section{Постановка задачи}
+Создать новый проект в Keil μVision5 и разработать программу для микроконтроллера STM32F200, которая включает и выключает светодиод, а также вторую часть задания с “бегущим светодиодом”, а именно последовательного включения всех светодиодов.
+
+\section{Алгоритм работы программы}
+
+Данный раздел описывает последовательность действий, необходимых для разработки и реализации проекта на базе микроконтроллера STM32F207IGHx в среде Keil~µVision5. Алгоритм включает этапы инициализации проекта, настройки портов ввода–вывода, реализации мигания светодиода и модификации программы для создания эффекта «бегущего огня».
+
+\subsection{Инициализация проекта}
+
+\begin{enumerate}
+  \item Создать новый проект в среде Keil~µVision5.
+  \item Выбрать микроконтроллер семейства STM32F207IGHx.
+  \item Выполнить базовую конфигурацию проекта:
+  \begin{itemize}
+      \item подключить поддержку ядра CMSIS (CMSIS~CORE);
+      \item добавить стартовый файл;
+      \item подключить необходимые модули HAL.
+  \end{itemize}
+\end{enumerate}
+
+\subsection{Настройка портов GPIO}
+
+Для работы со светодиодами требуется настроить порты \texttt{GPIOG}, \texttt{GPIOH} и \texttt{GPIOI}.
+
+\begin{enumerate}
+  \item Разрешить тактирование соответствующего порта, установив нужные биты в регистре \texttt{RCC\_AHB1ENR}.
+  \item Настроить режим работы выводов как «выход» через регистр \texttt{GPIOx\_MODER}.
+  \item Определить параметры выхода:
+  \begin{itemize}
+      \item тип выхода — push--pull (\texttt{GPIOx\_OTYPER});
+      \item низкая скорость переключения (\texttt{GPIOx\_OSPEEDR}).
+  \end{itemize}
+\end{enumerate}
+
+\subsection{Реализация мигания светодиода}
+
+\begin{enumerate}
+  \item Установить бит \texttt{PG7} в регистре \texttt{GPIOG\_ODR} в состояние «1», включая светодиод.
+  \item Выполнить задержку для визуального восприятия.
+  \item Сбросить бит \texttt{PG7} в «0», выключив светодиод.
+  \item Повторять цикл для получения эффекта мигания.
+\end{enumerate}
+
+\subsection{Модификация программы}
+
+\begin{enumerate}
+  \item Последовательно включать светодиоды, подключённые к выводам:
+  
+
+\[
+  \texttt{PG6},\ \texttt{PG7},\ \texttt{PG8},\ \texttt{PH2},\ \texttt{PH3},\ \texttt{PH6},\ \texttt{PH7},\ \texttt{PI10}.
+  \]
+
+
+  \item Между активациями светодиодов выполнять задержку.
+  \item После включения всех светодиодов последовательно выключать их в том же порядке.
+  \item Организовать бесконечный цикл для непрерывного эффекта «бегущей строки».
+\end{enumerate}
+
+\newpage
+
+\section*{Код программы}
+
+\begin{lstlisting}[style=cstyle, caption={Код программы}]
+int main ()
+{
+	int i; //counter for get ready delay
+	unsigned long int  j; //counter for blinky delay
+
+#define SHORT_DELAY() for (i = 0; i < 400000; ++i) {}    
+#define DELAY() for (j = 0; j < 400000; ++j) {}
+
+	i=0;
+	j=0;
+
+	*(unsigned long*)(0x40023830) |= 0x40; //Enable port G clocking
+	SHORT_DELAY();	 
+	*(unsigned long*)(0x40023830) |= 0x80; //Enable port H clocking
+	SHORT_DELAY();
+	*(unsigned long*)(0x40023830) |= 0x100; //Enable port I clocking
+	SHORT_DELAY();        	 
+
+	*(unsigned long*)(0x40021800) = (*(unsigned long*)(0x40021800)  ) | (0x1000); //Set PG6 as General purpose output mode
+	*(unsigned long*)(0x40021800) = (*(unsigned long*)(0x40021800) & (~0x8000)) | (0x4000); //Set PG7 as General purpose output mode
+	*(unsigned long*)(0x40021800) = (*(unsigned long*)(0x40021800) & (~0x20000)) | (0x10000); //Set PG8 as General purpose output mode
+
+	*(unsigned long*)(0x40021C00) = (*(unsigned long*)(0x40021C00) & (~0x20)) | (0x10); //Set PH2 as General purpose output mode
+	*(unsigned long*)(0x40021C00) = (*(unsigned long*)(0x40021C00) & (~0x80)) | (0x40); //Set PH3 as General purpose output mode
+	*(unsigned long*)(0x40021C00) = (*(unsigned long*)(0x40021C00) & (~0x2000)) | (0x1000); //Set PH6 as General purpose output mode
+	*(unsigned long*)(0x40021C00) = (*(unsigned long*)(0x40021C00) & (~0x8000)) | (0x4000); //Set PH7 as General purpose output mode  
+
+	*(unsigned long*)(0x40022000) = (*(unsigned long*)(0x40022000) & (~0x200000)) | (0x100000); //Set PI10 as General purpose output mode
+       	 
+while(1){
+    		*(unsigned long*) (0x40021C14) &= ~0x40; // Off PH6
+    		*(unsigned long*) (0x40021814) |= 0x40; // On PG6
+    		DELAY();
+   	 
+    		*(unsigned long*) (0x40021C14) &= ~0x80; // Off PH7
+    		*(unsigned long*) (0x40021814) |= 0x80; // On PG7
+    		DELAY();
+
+    		*(unsigned long*) (0x40022014) &= ~0x400; // Off PI10
+    		*(unsigned long*) (0x40021814) |= 0x100; // On PG8
+    		DELAY();
+
+    		*(unsigned long*) (0x40021814) &= ~0x40; // Off PG6
+    		*(unsigned long*) (0x40021C14) |= 0x4; // On PH2
+    		DELAY();
+
+    		*(unsigned long*) (0x40021814) &= ~0x80; // Off PG7
+    		*(unsigned long*) (0x40021C14) |= 0x8; // On PH3
+    		DELAY();
+
+    		*(unsigned long*) (0x40021814) &= ~0x100; // Off PG8
+    		*(unsigned long*) (0x40021C14) |= 0x40; // On PH6	
+    		DELAY();
+
+    		*(unsigned long*) (0x40021C14) &= ~0x4; // Off PH2
+    		*(unsigned long*) (0x40021C14) |= 0x80; // On PH7	
+    		DELAY();
+
+    		*(unsigned long*) (0x40021C14) &= ~0x8; // Off PH3
+    		*(unsigned long*) (0x40022014) |= 0x400; // On PI10
+    		DELAY();
+	}
+}
+
+\end{lstlisting}
+
+\newpage

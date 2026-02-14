@@ -360,4 +360,3 @@ void SmallArithmetic::printHasseDiagram() const {
     cout << "\n===================================================\n" << endl;
 }
 
-

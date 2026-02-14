@@ -11,8 +11,6 @@ class BigArithmeticCalc {
 private:
     SmallArithmetic small;
 
-    // большая арифметика
-    
     // работа со знаками
     bool isNegative(const string& num) const;
     string removeSign(const string& num) const;
@@ -21,25 +19,25 @@ private:
     // проверка валидности
     bool isValidNumber(const string& num) const;
     
-    // нормализация: удаление ведущих нулей
+    // удаление ведущих нулей
     string deleteTrashZeros(const string& num) const;
     
     // проверка на переполнение
     bool isOverflow(const string& num) const;
 
-    // операции столбиком (только для положительных)
+    // операции столбиком для без знака
     string addBigUnsigned(const string& a, const string& b) const;
     string subtractBigUnsigned(const string& a, const string& b) const;
     string multiplyBigUnsigned(const string& a, const string& b) const;
     pair<string, string> divideBigUnsigned(const string& a, const string& b) const;
     
-    // умножение большого числа на однозначное
+    // не полное умножение
     string multiplyByDigit(const string& num, const string& digit) const;
     
-    // сравнение больших чисел (без знака)
+    // сравнение больших чисел
     int compareBigUnsigned(const string& a, const string& b) const;
 
-	// максимальная длина числа в разрядах (используется для построения универсума)
+	// максимальная длина числа в разрядах
     static const int MAX_DIGITS = 8;
     
 public:
@@ -57,7 +55,6 @@ public:
     string getMaxNumber() const;
     
     // операции большой арифметики
-    
     string add(const string& a, const string& b) const;
     string multiply(const string& a, const string& b) const;
     string subtract(const string& a, const string& b) const;
@@ -68,6 +65,7 @@ public:
     void printMulTable() const;
     void printSubTable() const;
     // void printDivTable() const;
+
     void printAllTables() const;
     void printInfo() const;
     void printHasseDiagram() const;
