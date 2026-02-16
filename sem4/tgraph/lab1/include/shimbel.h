@@ -1,35 +1,41 @@
 #ifndef SHIMBEL_H
 #define SHIMBEL_H
 
-#include "../../common/graph/graph.h"
+#include "common/graph/graph.h"
 #include <vector>
 #include <limits>
-#include <string>
+#include <iomanip>
+#include <iostream>
 
-// класс для работы с методом Шимбелла
-// T - тип весов рёбер
-template <typename T = double>
-class Shimbel {
+using namespace std;
+
+template <typename T>
+class ShimbelSolver {
 private:
     const Graph<T>& graph;
-    int numVertices;
-    const T INF = std::numeric_limits<T>::infinity();
+    int n; // number of vertices
+    std::vector<std::vector<T>> currentMatrix;
+    
+    static T getINF() {
+        return std::numeric_limits<T>::max() / 2;
+    }
+    
+    void initializeMatrix();
+    void multiplyMatrix(bool findMin);
     
 public:
-    // конструктор: принимает граф для анализа
-    Shimbel(const Graph<T>& g);
+    explicit ShimbelSolver(const Graph<T>& g);
     
-    // найти минимальные пути длины ровно k рёбер
-    // возвращает матрицу минимальных весов путей
-    std::vector<std::vector<T>> findMinPaths(int k);
+	// кратчайшие пути с точно K рёбрами
+    std::vector<std::vector<T>> computeShortestPaths(int K);
     
-    // найти максимальные пути длины ровно k рёбер
-    // возвращает матрицу максимальных весов путей
-    std::vector<std::vector<T>> findMaxPaths(int k);
+    // самые длинные пути с точно K рёбрами
+    std::vector<std::vector<T>> computeLongestPaths(int K);
     
-    // вывести матрицу путей на экран
-    static void printPathMatrix(const std::vector<std::vector<T>>& matrix, 
-                                const std::string& title);
+    // утилита для печати матрицы
+    static void printMatrix(const std::vector<std::vector<T>>& matrix, const std::string& title);
 };
+
+#include "lab1/src/shimbel.cpp"
 
 #endif // SHIMBEL_H

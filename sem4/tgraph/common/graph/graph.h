@@ -29,3 +29,5 @@ public:
 	vector<pair<int, T>> getIncomingEdges(int v) const; // получить список рёбер, входящих в вершину v
 	vector<pair<int, T>> getAdj(int v) const; // получить список соседей вершины v (для неориентированного графа)
 };
+
+#include "graph.cpp"

@@ -1,8 +1,8 @@
 #include "normal.h"
 
-NormalDistribution::NormalDistribution(double mean = 10.0, double stddev = 3.0, unsigned int seed = std::random_device{}()) : mean(mean), stddev(stddev), generator(seed), distribution(mean, stddev) {}
+NormalDistribution::NormalDistribution(double mean, double stddev, unsigned int seed) : mean(mean), stddev(stddev), generator(seed), distribution(mean, stddev) {}
 
-	// генерация случайного числа по нормальному распределению
+// генерация случайного числа по нормальному распределению
 double NormalDistribution::generate() {
 	double value;
 	do {

@@ -1,103 +1,77 @@
-#include "../include/route_counter.h"
-#include <iostream>
+#include "lab1/include/route_counter.h"
 
-// конструктор: сохраняем ссылку на граф
 template <typename T>
-RouteCounter<T>::RouteCounter(const Graph<T>& g) 
-    : graph(g), numVertices(g.getNumVertices()), routeCount(0) {
-    visited.resize(numVertices, false);
+RouteCounter<T>::RouteCounter(const Graph<T>& g) : graph(g), n(g.getNumVertices()) {
+    visited.resize(n, false);
 }
 
-// рекурсивная функция backtracking для поиска всех маршрутов
-// от current до target
 template <typename T>
-void RouteCounter<T>::backtrack(int current, int target) {
-    // добавить текущую вершину в путь
+void RouteCounter<T>::findAllPaths(int current, int target) {
+    // добавляем текущую вершину в путь
     currentPath.push_back(current);
-    
-    // базовый случай: достигли целевой вершины
-    if (current == target) {
-        routeCount++;
-        // сохранить найденный маршрут
-        allRoutes.push_back(currentPath);
-        // убрать вершину из пути перед возвратом
-        currentPath.pop_back();
-        return;
-    }
-    
-    // отметить текущую вершину как посещённую
     visited[current] = true;
     
-    // попробовать перейти во все соседние вершины
-    for (int next = 0; next < numVertices; next++) {
-        // если есть ребро в следующую вершину и она не посещена
-        if (graph.hasEdge(current, next) && !visited[next]) {
-            // рекурсивно продолжить поиск из следующей вершины
-            backtrack(next, target);
+    // если достигли целевой вершины, сохраняем путь
+    if (current == target) {
+        allRoutes.push_back(currentPath);
+    } else {
+        // пробуем все исходящие рёбра
+        auto outgoing = graph.getOutgoingEdges(current);
+        for (const auto& edge : outgoing) {
+            int next = edge.first;
+            // если вершина не посещена, идём в неё
+            if (!visited[next]) {
+                findAllPaths(next, target);
+            }
         }
     }
     
-    // откатить изменения (backtrack): убрать отметку о посещении
-    // это позволяет использовать эту вершину в других маршрутах
+    // откатываем изменения (backtracking)
     visited[current] = false;
-    // убрать вершину из текущего пути
     currentPath.pop_back();
 }
 
-// подсчитать количество различных маршрутов из start в target
 template <typename T>
-int RouteCounter<T>::countRoutes(int start, int target) {
-    // проверка корректности входных данных
-    if (start < 0 || start >= numVertices || target < 0 || target >= numVertices) {
-        return 0;
+std::vector<std::vector<int>> RouteCounter<T>::findAllRoutes(int source, int target) {
+    // очищаем предыдущие результаты
+    allRoutes.clear();
+    currentPath.clear();
+    std::fill(visited.begin(), visited.end(), false);
+    
+    // проверяем корректность вершин
+    if (source < 0 || source >= n || target < 0 || target >= n) {
+        return allRoutes;
     }
     
-    // сброс счётчика и массивов
-    routeCount = 0;
-    visited.assign(numVertices, false);
-    currentPath.clear();
-    allRoutes.clear();
+    // запускаем поиск
+    findAllPaths(source, target);
     
-    // запустить рекурсивный поиск
-    backtrack(start, target);
-    
-    return routeCount;
-}
-
-// проверить, существует ли хотя бы один маршрут
-template <typename T>
-bool RouteCounter<T>::hasRoute(int start, int target) {
-    return countRoutes(start, target) > 0;
-}
-
-// получить все найденные маршруты
-template <typename T>
-const std::vector<std::vector<int>>& RouteCounter<T>::getAllRoutes() const {
     return allRoutes;
 }
 
-// вывести все найденные маршруты в формате 0->2->3
 template <typename T>
-void RouteCounter<T>::printAllRoutes() const {
-    if (allRoutes.empty()) {
-        std::cout << "маршруты не найдены\n";
+void RouteCounter<T>::printRoutes(int source, int target, const std::vector<std::vector<int>>& routes) {
+    std::cout << "\n=== поиск маршрутов от вершины " << source << " до вершины " << target << " ===\n\n";
+    
+    if (routes.empty()) {
+        std::cout << "существует маршрут: НЕТ\n";
+        std::cout << "количество маршрутов: 0\n";
         return;
     }
     
-    std::cout << "\nнайденные маршруты:\n";
-    for (size_t i = 0; i < allRoutes.size(); i++) {
-        std::cout << "маршрут " << (i + 1) << ": ";
-        const auto& route = allRoutes[i];
-        for (size_t j = 0; j < route.size(); j++) {
-            std::cout << route[j];
-            if (j < route.size() - 1) {
-                std::cout << "->";
+    std::cout << "существует маршрут: ДА\n";
+    std::cout << "количество маршрутов: " << routes.size() << "\n\n";
+    std::cout << "все найденные маршруты:\n";
+    
+    for (size_t i = 0; i < routes.size(); i++) {
+        std::cout << "  маршрут " << (i + 1) << ": ";
+        for (size_t j = 0; j < routes[i].size(); j++) {
+            std::cout << routes[i][j];
+            if (j < routes[i].size() - 1) {
+                std::cout << " -> ";
             }
         }
         std::cout << "\n";
     }
+    std::cout << "\n";
 }
-
-// явная инстанциация шаблона для double
-template class RouteCounter<double>;
-

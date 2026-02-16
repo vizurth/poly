@@ -154,8 +154,3 @@ vector<pair<int, T>> Graph<T>::getAdj(int v) const {
 	
 	return neighbors;
 }
-
-// явная инстанциация шаблонов
-template class Graph<double>;
-template class Graph<int>;
-template class Graph<float>;

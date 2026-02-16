@@ -5,12 +5,20 @@
 
 using namespace std;
 
+// конструктор: принимает распределение для генерации весов (seed генерируется автоматически)
+template<typename T>
+DAGGenerator<T>::DAGGenerator(NormalDistribution& dist) 
+    : distribution(dist), generator(std::random_device{}()) {}
+
 // конструктор: принимает распределение для генерации весов и зерно для генератора случайных чисел
 template<typename T>
 DAGGenerator<T>::DAGGenerator(NormalDistribution& dist, unsigned int seed) 
     : distribution(dist), generator(seed) {}
 
-// проверить, что граф связный (используя DFS)
+/*
+	LOOK: isConnected(const Graph<T>&)
+	Проверяем, что наш граф связный
+*/
 template<typename T>
 bool DAGGenerator<T>::isConnected(const Graph<T>& graph) {
     int n = graph.getNumVertices();
@@ -54,7 +62,10 @@ bool DAGGenerator<T>::isConnected(const Graph<T>& graph) {
     return visitedCount == n;
 }
 
-// сгенерировать связный ациклический граф с заданным количеством вершин
+/*
+	LOOK: Graph<T> generateDAG(int numVertices)
+	Генерируем связный ациклический граф с заданным количеством вершин
+*/
 template<typename T>
 Graph<T> DAGGenerator<T>::generateDAG(int numVertices) {
     Graph<T> graph(numVertices);
@@ -92,8 +103,3 @@ Graph<T> DAGGenerator<T>::generateDAG(int numVertices) {
     
     return graph;
 }
-
-// явная инстанциация шаблонов
-template class DAGGenerator<double>;
-template class DAGGenerator<int>;
-template class DAGGenerator<float>;

@@ -1,123 +1,123 @@
-#include "../include/shimbel.h"
-#include <iostream>
-#include <iomanip>
-#include <algorithm>
+#include "lab1/include/shimbel.h"
 
-// конструктор: сохраняем ссылку на граф
 template <typename T>
-Shimbel<T>::Shimbel(const Graph<T>& g) : graph(g), numVertices(g.getNumVertices()) {}
+ShimbelSolver<T>::ShimbelSolver(const Graph<T>& g) : graph(g), n(g.getNumVertices()) {
+    currentMatrix.resize(n, std::vector<T>(n, getINF()));
+}
 
-// метод Шимбелла для поиска минимальных путей длины ровно k рёбер
-// используем динамическое программирование: D[k][i][j] - минимальный путь из i в j длины k
 template <typename T>
-std::vector<std::vector<T>> Shimbel<T>::findMinPaths(int k) {
-    // инициализация: D[0] - нулевая матрица (путь длины 0 от вершины к себе)
-    std::vector<std::vector<T>> prev(numVertices, std::vector<T>(numVertices, INF));
-    for (int i = 0; i < numVertices; i++) {
-        prev[i][i] = T(0);
-    }
-    
-    // D[1] - матрица смежности (пути длины 1)
-    const auto& adjMatrix = graph.getAdjMatrix();
-    std::vector<std::vector<T>> current(numVertices, std::vector<T>(numVertices, INF));
-    for (int i = 0; i < numVertices; i++) {
-        for (int j = 0; j < numVertices; j++) {
-            if (adjMatrix[i][j] != T(0)) {
-                current[i][j] = adjMatrix[i][j];
+void ShimbelSolver<T>::initializeMatrix() {
+    // заполняем матрицу весами из графа
+    // для несуществующих рёбер ставим INF
+    T INF = getINF();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) {
+                currentMatrix[i][j] = 0; // нет петель в DAG
+            } else if (graph.hasEdge(i, j)) {
+                currentMatrix[i][j] = graph.getEdge(i, j);
+            } else {
+                currentMatrix[i][j] = INF;
             }
         }
     }
+}
+
+template <typename T>
+void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
+    // создаём новую матрицу для D^(k)
+    T INF = getINF();
+    std::vector<std::vector<T>> newMatrix(n, std::vector<T>(n, INF));
     
-    // итеративно вычисляем D[m] для m от 2 до k
-    // D[m][i][j] = min по всем вершинам v (D[m-1][i][v] + D[1][v][j])
-    for (int m = 2; m <= k; m++) {
-        std::vector<std::vector<T>> next(numVertices, std::vector<T>(numVertices, INF));
-        
-        for (int i = 0; i < numVertices; i++) {
-            for (int j = 0; j < numVertices; j++) {
-                for (int v = 0; v < numVertices; v++) {
-                    if (current[i][v] != INF && adjMatrix[v][j] != T(0)) {
-                        next[i][j] = std::min(next[i][j], current[i][v] + adjMatrix[v][j]);
-                    }
+    // D^(k)[i][j] = min/max по всем p: D^(k-1)[i][p] + A[p][j]
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            std::vector<T> possiblePaths; // все возможные пути
+            
+            for (int p = 0; p < n; p++) {
+                // проверяем есть ли путь: i -> p (k-1 рёбер) и p -> j (1 ребро)
+                if (currentMatrix[i][p] != INF && currentMatrix[i][p] != 0 && graph.hasEdge(p, j)) {
+                    T pathWeight = currentMatrix[i][p] + graph.getEdge(p, j);
+                    possiblePaths.push_back(pathWeight);
+                }
+            }
+            
+            // если нет путей, ставим INF
+            if (possiblePaths.empty()) {
+                newMatrix[i][j] = INF;
+            } else {
+                // выбираем минимум или максимум из всех путей
+                if (findMin) {
+                    newMatrix[i][j] = *std::min_element(possiblePaths.begin(), possiblePaths.end());
+                } else {
+                    newMatrix[i][j] = *std::max_element(possiblePaths.begin(), possiblePaths.end());
                 }
             }
         }
-        
-        current = next;
     }
     
-    return current;
+    currentMatrix = newMatrix;
 }
 
-// метод Шимбелла для поиска максимальных путей длины ровно k рёбер
-// аналогично минимальным путям, но используем операцию max вместо min
 template <typename T>
-std::vector<std::vector<T>> Shimbel<T>::findMaxPaths(int k) {
-    // инициализация: D[0] - нулевая матрица
-    T negInf = -std::numeric_limits<T>::infinity();
-    std::vector<std::vector<T>> prev(numVertices, std::vector<T>(numVertices, negInf));
-    for (int i = 0; i < numVertices; i++) {
-        prev[i][i] = T(0);
+std::vector<std::vector<T>> ShimbelSolver<T>::computeShortestPaths(int K) {
+    if (K <= 0) {
+        return std::vector<std::vector<T>>(n, std::vector<T>(n, getINF()));
     }
     
-    // D[1] - матрица смежности
-    const auto& adjMatrix = graph.getAdjMatrix();
-    std::vector<std::vector<T>> current(numVertices, std::vector<T>(numVertices, negInf));
-    for (int i = 0; i < numVertices; i++) {
-        for (int j = 0; j < numVertices; j++) {
-            if (adjMatrix[i][j] != T(0)) {
-                current[i][j] = adjMatrix[i][j];
-            }
-        }
+    initializeMatrix();
+    
+    // D^(1) уже есть (пути через 1 ребро)
+    // для K=2 делаем 1 умножение, для K=3 делаем 2 умножения и т.д.
+    for (int k = 2; k <= K; k++) {
+        multiplyMatrix(true); // ищем минимум
     }
     
-    // итеративно вычисляем D[m] для m от 2 до k
-    // D[m][i][j] = max по всем вершинам v (D[m-1][i][v] + D[1][v][j])
-    for (int m = 2; m <= k; m++) {
-        std::vector<std::vector<T>> next(numVertices, std::vector<T>(numVertices, negInf));
-        
-        for (int i = 0; i < numVertices; i++) {
-            for (int j = 0; j < numVertices; j++) {
-                for (int v = 0; v < numVertices; v++) {
-                    if (current[i][v] != negInf && adjMatrix[v][j] != T(0)) {
-                        next[i][j] = std::max(next[i][j], current[i][v] + adjMatrix[v][j]);
-                    }
-                }
-            }
-        }
-        
-        current = next;
-    }
-    
-    return current;
+    return currentMatrix;
 }
-// вывести матрицу путей на экран
+
 template <typename T>
-void Shimbel<T>::printPathMatrix(const std::vector<std::vector<T>>& matrix, 
-                              const std::string& title) {
-    std::cout << "\n" << title << ":\n";
+std::vector<std::vector<T>> ShimbelSolver<T>::computeLongestPaths(int K) {
+    if (K <= 0) {
+        return std::vector<std::vector<T>>(n, std::vector<T>(n, getINF()));
+    }
+    
+    initializeMatrix();
+    
+    // D^(1) уже есть (пути через 1 ребро)
+    // для K=2 делаем 1 умножение, для K=3 делаем 2 умножения и т.д.
+    for (int k = 2; k <= K; k++) {
+        multiplyMatrix(false); // ищем максимум
+    }
+    
+    return currentMatrix;
+}
+
+template <typename T>
+void ShimbelSolver<T>::printMatrix(const std::vector<std::vector<T>>& matrix, const std::string& title) {
     int n = matrix.size();
+    T INF = getINF();
     
-    // вывести номера столбцов
+    std::cout << "\n" << title << "\n";
+    
+    // шапка таблицы
     std::cout << "    ";
     for (int i = 0; i < n; i++) {
         std::cout << std::setw(8) << i;
     }
     std::cout << "\n";
     
-    // вывести строки матрицы
+    // строки матрицы
     for (int i = 0; i < n; i++) {
         std::cout << std::setw(3) << i << " ";
         for (int j = 0; j < n; j++) {
-            if (std::isinf(matrix[i][j]) || matrix[i][j] == -std::numeric_limits<T>::infinity()) {
-                std::cout << std::setw(10) << "∞";
+            if (matrix[i][j] != INF) {
+                std::cout << std::setw(8) << std::fixed << std::setprecision(2) << matrix[i][j];
             } else {
-                std::cout << std::setw(10) << std::fixed << std::setprecision(2) << matrix[i][j];
+                std::cout << std::setw(8) << "-";
             }
         }
         std::cout << "\n";
     }
+    std::cout << "\n";
 }
-
-// явная инстанциация шаблона для double
-template class Shimbel<double>;
