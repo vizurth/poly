@@ -1,26 +1,23 @@
 #include "normal.h"
-#include <chrono>
 
-// конструктор: инициализируем параметры распределения и генератор случайных чисел
-NormalDistribution::NormalDistribution(double mean, double stddev) 
-    : mean(mean), stddev(stddev) {
-    // инициализируем генератор текущим временем для разных последовательностей при каждом запуске
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-    generator = std::mt19937(seed);
-    distribution = std::normal_distribution<double>(mean, stddev);
-}
+NormalDistribution::NormalDistribution(double mean = 10.0, double stddev = 3.0, unsigned int seed = std::random_device{}()) : mean(mean), stddev(stddev), generator(seed), distribution(mean, stddev) {}
 
-// генерация случайного числа по нормальному распределению
+	// генерация случайного числа по нормальному распределению
 double NormalDistribution::generate() {
-    return distribution(generator);
+	double value;
+	do {
+		value = distribution(generator);
+	} while (value <= 0); // гарантируем положительные значения для весов рёбер
+	return value;
 }
 
-// получить среднее значение распределения
+double NormalDistribution::generateAny() {
+	return distribution(generator);
+}
+
 double NormalDistribution::getMean() const {
-    return mean;
+	return mean;
 }
-
-// получить стандартное отклонение
 double NormalDistribution::getStdDev() const {
-    return stddev;
+	return stddev;
 }

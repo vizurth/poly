@@ -1,29 +1,26 @@
-#ifndef NORMAL_H
-#define NORMAL_H
+#pragma once
 
-#include "distribution.h"
+#include <cmath>
 #include <random>
 
-// нормальное (гауссово) распределение
-class NormalDistribution : public Distribution {
-private:
-    double mean;    // среднее значение (μ)
-    double stddev;  // стандартное отклонение (σ)
-    std::mt19937 generator;  // генератор случайных чисел
-    std::normal_distribution<double> distribution;
-    
-public:
-    // конструктор с параметрами распределения
-    NormalDistribution(double mean, double stddev);
-    
-    // генерация случайного числа по нормальному распределению
-    double generate() override;
-    
-    // получить среднее значение
-    double getMean() const override;
-    
-    // получить стандартное отклонение
-    double getStdDev() const override;
-};
+// класс для генерации случайных чисел по нормальному распределению
 
-#endif // NORMAL_H
+class NormalDistribution {
+private:
+	double mean; // среднее значение (μ)
+	double stddev; // стандартное отклонение (σ)
+	std::mt19937 generator; // генератор случайных чисел
+	std::normal_distribution<double> distribution; // распределение для генерации чисел
+
+public:
+	// конструктор: принимает среднее и стандартное отклонение
+	NormalDistribution(double mean = 10.0, double stddev = 3.0, unsigned int seed = std::random_device{}());
+
+	// генерация случайного числа по нормальному распределению
+	double generate();
+
+	double generateAny();
+
+	double getMean() const;
+	double getStdDev() const;
+};
