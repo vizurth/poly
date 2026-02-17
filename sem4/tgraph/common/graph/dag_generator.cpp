@@ -63,40 +63,56 @@ bool DAGGenerator<T>::isConnected(const Graph<T>& graph) {
 }
 
 /*
-	LOOK: Graph<T> generateDAG(int numVertices)
-	Генерируем связный ациклический граф с заданным количеством вершин
+	LOOK: Graph<T> generateDAG(int numVertices, bool isDirected)
+	Генерируем связный граф с заданным количеством вершин
+	isDirected = true: ориентированный ациклический граф (DAG)
+	isDirected = false: неориентированный граф (добавляем обратные рёбра)
 */
 template<typename T>
-Graph<T> DAGGenerator<T>::generateDAG(int numVertices) {
+Graph<T> DAGGenerator<T>::generateDAG(int numVertices, bool isDirected) {
     Graph<T> graph(numVertices);
     
     if (numVertices <= 0) {
         return graph;
     }
     
-    // для DAG: вершины упорядочены, рёбра идут только от меньших номеров к большим
-    // это автоматически гарантирует ацикличность
-    
-    // сначала создаём базовый связный путь: 0 -> 1 -> 2 -> ... -> n-1
-    // это гарантирует связность
+    // создаём базовый связный путь: 0 -> 1 -> 2 -> ... -> n-1
     for (int i = 0; i < numVertices - 1; i++) {
         double weight = abs(distribution.generate());
-        if (weight == 0) weight = 1.0; // избегаем нулевых весов
+        if (weight < 0.1) weight = 0.1; // минимальный вес
         graph.addEdge(i, i + 1, static_cast<T>(weight));
+        
+        // если неориентированный, добавляем обратное ребро с тем же весом
+        if (!isDirected) {
+            graph.addEdge(i + 1, i, static_cast<T>(weight));
+        }
     }
     
-    // теперь добавляем случайные рёбра с вероятностью p
-    // вероятность зависит от размера графа (чтобы не было слишком много рёбер)
+    // добавляем случайные рёбра
     double probability = min(0.5, 3.0 / numVertices);
     uniform_real_distribution<double> dist(0.0, 1.0);
     
-    for (int i = 0; i < numVertices; i++) {
-        for (int j = i + 2; j < numVertices; j++) { // i+2 чтобы не дублировать базовый путь
-            // добавляем ребро с вероятностью p
-            if (dist(generator) < probability) {
-                double weight = abs(distribution.generate());
-                if (weight == 0) weight = 1.0;
-                graph.addEdge(i, j, static_cast<T>(weight));
+    if (isDirected) {
+        // для ориентированного: только вперёд (i -> j, где i < j)
+        for (int i = 0; i < numVertices; i++) {
+            for (int j = i + 2; j < numVertices; j++) {
+                if (dist(generator) < probability) {
+                    double weight = abs(distribution.generate());
+                    if (weight < 0.1) weight = 0.1;
+                    graph.addEdge(i, j, static_cast<T>(weight));
+                }
+            }
+        }
+    } else {
+        // для неориентированного: в обе стороны
+        for (int i = 0; i < numVertices; i++) {
+            for (int j = i + 2; j < numVertices; j++) {
+                if (dist(generator) < probability) {
+                    double weight = abs(distribution.generate());
+                    if (weight < 0.1) weight = 0.1;
+                    graph.addEdge(i, j, static_cast<T>(weight));
+                    graph.addEdge(j, i, static_cast<T>(weight)); // обратное ребро
+                }
             }
         }
     }
