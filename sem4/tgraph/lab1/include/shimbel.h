@@ -1,5 +1,4 @@
-#ifndef SHIMBEL_H
-#define SHIMBEL_H
+#pragma once
 
 #include "common/graph/graph.h"
 #include <vector>
@@ -13,29 +12,23 @@ template <typename T>
 class ShimbelSolver {
 private:
     const Graph<T>& graph;
-    int n; // number of vertices
-    std::vector<std::vector<T>> currentMatrix;
+    int n; // количество вершин
+    vector<vector<T>> currentMatrix; // текушая матрица
     
     static T getINF() {
-        return std::numeric_limits<T>::max() / 2;
+        return numeric_limits<T>::max() / 2;
     }
     
     void initializeMatrix();
     void multiplyMatrix(bool findMin);
     
 public:
-    explicit ShimbelSolver(const Graph<T>& g);
+    ShimbelSolver(const Graph<T>& g);
     
-	// кратчайшие пути с точно K рёбрами
-    std::vector<std::vector<T>> computeShortestPaths(int K);
+    vector<vector<T>> computeShortestPaths(int K);
+    vector<vector<T>> computeLongestPaths(int K);
     
-    // самые длинные пути с точно K рёбрами
-    std::vector<std::vector<T>> computeLongestPaths(int K);
-    
-    // утилита для печати матрицы
-    static void printMatrix(const std::vector<std::vector<T>>& matrix, const std::string& title);
+    static void printMatrix(const vector<vector<T>>& matrix, const string& title);
 };
 
 #include "lab1/src/shimbel.cpp"
-
-#endif // SHIMBEL_H

@@ -4,13 +4,10 @@
 
 using namespace std;
 
-// получить количество вершин
-template<typename T>
-int Graph<T>::getNumVertices() const {
-	return numVertices;
-}
-
-// добавить ориентированное ребро (u, v) с весом weight
+/*
+	LOOK: void addEdge(u, v, weight)
+	Добавляем ребло (u, v) c весов weight
+*/
 template<typename T>
 void Graph<T>::addEdge(int u, int v, T weight) {
 	if (u >= 0 && u < numVertices && v >= 0 && v < numVertices) {
@@ -18,16 +15,10 @@ void Graph<T>::addEdge(int u, int v, T weight) {
 	}
 }
 
-// получить вес ребра (u, v), 0 если ребра нет
-template<typename T>
-T Graph<T>::getEdge(int u, int v) const {
-	if (u >= 0 && u < numVertices && v >= 0 && v < numVertices) {
-		return adjMatrix[u][v];
-	}
-	return 0;
-}
-
-// проверить наличие ребра (u, v)
+/*
+	LOOK: bool hasEdge(u, v)
+	Проверяем имеем ли ребро (u, v) 
+*/
 template<typename T>
 bool Graph<T>::hasEdge(int u, int v) const {
 	if (u >= 0 && u < numVertices && v >= 0 && v < numVertices) {
@@ -36,13 +27,10 @@ bool Graph<T>::hasEdge(int u, int v) const {
 	return false;
 }
 
-// получить матрицу смежности
-template<typename T>
-const vector<vector<T>>& Graph<T>::getAdjMatrix() const {
-	return adjMatrix;
-}
-
-// вывести матрицу смежности на экран
+/*
+	LOOK: void printAdjMatrix()
+	Выводим матрицу смежности
+*/
 template<typename T>	
 void Graph<T>::printAdjMatrix() const {
 	cout << "\nматрица смежности:\n";
@@ -68,7 +56,10 @@ void Graph<T>::printAdjMatrix() const {
 	}
 }
 
-// вывести список рёбер на экран
+/*
+	LOOK: void printEdges()
+	Выводим список ребер графа
+*/
 template<typename T>
 void Graph<T>::printEdges() const {
 	cout << "\nсписок рёбер:\n";
@@ -91,7 +82,41 @@ void Graph<T>::printEdges() const {
 	}
 }
 
-// получить список рёбер, исходящих из вершины u
+/*
+	LOOK: int getNumVertices() 
+	Получаем количество вершин
+*/
+template<typename T>
+int Graph<T>::getNumVertices() const {
+	return numVertices;
+}
+
+/*
+	LOOK: T getEdge(u, v)
+	Получаем вес ребра (u, v) если его нет получим 0
+*/
+template<typename T>
+T Graph<T>::getEdge(int u, int v) const {
+	if (u >= 0 && u < numVertices && v >= 0 && v < numVertices) {
+		return adjMatrix[u][v];
+	}
+	return 0;
+}
+
+/*
+	LOOK: vector<vector<T>>& Graph<T>::getAdjMatrix()
+	Получаем матрицу смежности
+*/
+template<typename T>
+const vector<vector<T>>& Graph<T>::getAdjMatrix() const {
+	return adjMatrix;
+}
+
+
+/*
+	LOOK: vector<pair<int, T>> Graph<T>::getOutgoingEdges(int u)
+	Получим список рёбер, исходящих из вершины u
+*/
 template<typename T>
 vector<pair<int, T>> Graph<T>::getOutgoingEdges(int u) const {
 	vector<pair<int, T>> edges;
@@ -107,7 +132,10 @@ vector<pair<int, T>> Graph<T>::getOutgoingEdges(int u) const {
 	return edges;
 }
 
-// получить список рёбер, входящих в вершину v
+/*
+	LOOK: vector<pair<int, T>> Graph<T>::getIncomingEdges(int v)
+	Получим список входящех ребер из вершины v
+*/
 template<typename T>
 vector<pair<int, T>> Graph<T>::getIncomingEdges(int v) const {
 	vector<pair<int, T>> edges;
@@ -122,8 +150,10 @@ vector<pair<int, T>> Graph<T>::getIncomingEdges(int v) const {
 	
 	return edges;
 }
-
-// получить список соседей вершины v (для неориентированного графа)
+/*
+	LOOK: vector<pair<int, T>> Graph<T>::get(int v)
+	Получим список соседей вершины для не ор графа
+*/
 template<typename T>
 vector<pair<int, T>> Graph<T>::getAdj(int v) const {
 	vector<pair<int, T>> neighbors;

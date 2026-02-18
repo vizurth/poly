@@ -1,5 +1,4 @@
-#ifndef UI_H
-#define UI_H
+#pragma once
 
 #include "common/graph/graph.h"
 #include "common/graph/dag_generator.h"
@@ -8,10 +7,12 @@
 #include "lab1/include/route_counter.h"
 #include <memory>
 
+using namespace std;
+
 class UI {
 private:
-    std::unique_ptr<Graph<double>> graph; // текущий граф
-    bool graphGenerated; // флаг что граф создан
+    unique_ptr<Graph<double>> graph;
+    bool graphGenerated; // флаг генерации графа
     
     void printMenu();
     void task1_generateDAG();
@@ -20,7 +21,5 @@ private:
     
 public:
     UI();
-    void run(); // главный цикл
+    void run();
 };
-
-#endif // UI_H

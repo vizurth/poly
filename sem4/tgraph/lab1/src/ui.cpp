@@ -5,41 +5,41 @@
 UI::UI() : graphGenerated(false) {}
 
 void UI::printMenu() {
-    std::cout << "\n========================================\n";
-    std::cout << "лабораторная работа №1: теория графов\n";
-    std::cout << "========================================\n";
-    std::cout << "1. генерация связного графа\n";
-    std::cout << "2. метод Шимбелла\n";
-    std::cout << "3. подсчёт маршрутов (backtracking)\n";
-    std::cout << "0. выход\n";
-    std::cout << "========================================\n";
-    std::cout << "выберите действие: ";
+    cout << "\n========================================\n";
+    cout << "лабораторная работа №1: теория графов\n";
+    cout << "========================================\n";
+    cout << "1. генерация связного графа\n";
+    cout << "2. метод Шимбелла\n";
+    cout << "3. подсчёт маршрутов (backtracking)\n";
+    cout << "0. выход\n";
+    cout << "========================================\n";
+    cout << "выберите действие: ";
 }
 
 void UI::task1_generateDAG() {
-    std::cout << "\n=== ГЕНЕРАЦИЯ ГРАФА ===\n\n";
+    cout << "\n=== ГЕНЕРАЦИЯ ГРАФА ===\n\n";
     
     int n;
-    std::cout << "введите количество вершин N: ";
-    std::cin >> n;
+    cout << "введите количество вершин N: ";
+    cin >> n;
     
     if (n <= 0) {
-        std::cout << "ошибка: количество вершин должно быть больше 0\n";
+        cout << "ошибка: количество вершин должно быть больше 0\n";
         return;
     }
     
     int graphType;
-    std::cout << "выберите тип графа:\n";
-    std::cout << "1. ориентированный (DAG)\n";
-    std::cout << "2. неориентированный\n";
-    std::cout << "ваш выбор: ";
-    std::cin >> graphType;
+    cout << "выберите тип графа:\n";
+    cout << "1. ориентированный (DAG)\n";
+    cout << "2. неориентированный\n";
+    cout << "ваш выбор: ";
+    cin >> graphType;
     
     bool isDirected = (graphType == 1);
     
-    std::cout << "\nпараметры нормального распределения:\n";
-    std::cout << "среднее (μ) = 10.0\n";
-    std::cout << "стандартное отклонение (σ) = 3.0\n\n";
+    cout << "\nпараметры нормального распределения:\n";
+    cout << "среднее (μ) = 10.0\n";
+    cout << "стандартное отклонение (σ) = 3.0\n\n";
     
     // создаём распределение
     NormalDistribution dist(10.0, 3.0);
@@ -51,31 +51,31 @@ void UI::task1_generateDAG() {
     graph.reset(new Graph<double>(generator.generateDAG(n, isDirected)));
     graphGenerated = true;
     
-    std::cout << (isDirected ? "ориентированный" : "неориентированный") 
+    cout << (isDirected ? "ориентированный" : "неориентированный") 
               << " граф успешно сгенерирован!\n\n";
     
     // выводим матрицу смежности
     graph->printAdjMatrix();
     
     // выводим список рёбер
-    std::cout << "\nсписок рёбер:\n";
+    cout << "\nсписок рёбер:\n";
     graph->printEdges();
 }
 
 void UI::task2_shimbel() {
     if (!graphGenerated) {
-        std::cout << "\nошибка: сначала сгенерируйте граф (задание 1)\n";
+        cout << "\nошибка: сначала сгенерируйте граф (задание 1)\n";
         return;
     }
     
-    std::cout << "\n=== МЕТОД ШИМБЕЛЛА ===\n\n";
+    cout << "\n=== МЕТОД ШИМБЕЛЛА ===\n\n";
     
     int K;
-    std::cout << "введите количество рёбер K (длина пути): ";
-    std::cin >> K;
+    cout << "введите количество рёбер K (длина пути): ";
+    cin >> K;
     
     if (K <= 0) {
-        std::cout << "ошибка: K должно быть больше 0\n";
+        cout << "ошибка: K должно быть больше 0\n";
         return;
     }
     
@@ -83,30 +83,30 @@ void UI::task2_shimbel() {
     
     // вычисляем кратчайшие пути
     auto shortest = solver.computeShortestPaths(K);
-    ShimbelSolver<double>::printMatrix(shortest, "Матрица Шимбелла (мин) k = " + std::to_string(K) + ":");
+    ShimbelSolver<double>::printMatrix(shortest, "Матрица Шимбелла (мин) k = " + to_string(K) + ":");
     
     // вычисляем длиннейшие пути
     auto longest = solver.computeLongestPaths(K);
-    ShimbelSolver<double>::printMatrix(longest, "Матрица Шимбелла (макс) k = " + std::to_string(K) + ":");
+    ShimbelSolver<double>::printMatrix(longest, "Матрица Шимбелла (макс) k = " + to_string(K) + ":");
 }
 
 void UI::task3_routeCounter() {
     if (!graphGenerated) {
-        std::cout << "\nошибка: сначала сгенерируйте граф (задание 1)\n";
+        cout << "\nошибка: сначала сгенерируйте граф (задание 1)\n";
         return;
     }
     
-    std::cout << "\n=== ПОДСЧЁТ МАРШРУТОВ ===\n\n";
+    cout << "\n=== ПОДСЧЁТ МАРШРУТОВ ===\n\n";
     
     int source, target;
-    std::cout << "введите начальную вершину S: ";
-    std::cin >> source;
-    std::cout << "введите конечную вершину T: ";
-    std::cin >> target;
+    cout << "введите начальную вершину S: ";
+    cin >> source;
+    cout << "введите конечную вершину T: ";
+    cin >> target;
     
     int n = graph->getNumVertices();
     if (source < 0 || source >= n || target < 0 || target >= n) {
-        std::cout << "ошибка: вершины должны быть в диапазоне [0, " << (n - 1) << "]\n";
+        cout << "ошибка: вершины должны быть в диапазоне [0, " << (n - 1) << "]\n";
         return;
     }
     
@@ -120,13 +120,13 @@ void UI::run() {
     
     while (true) {
         printMenu();
-        std::cin >> choice;
+        cin >> choice;
         
         // проверка на ошибку ввода
-        if (std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "\nошибка: введите число\n";
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\nошибка: введите число\n";
             continue;
         }
         
@@ -141,10 +141,10 @@ void UI::run() {
                 task3_routeCounter();
                 break;
             case 0:
-                std::cout << "\nвыход из программы...\n";
+                cout << "\nвыход из программы...\n";
                 return;
             default:
-                std::cout << "\nошибка: неверный выбор\n";
+                cout << "\nошибка: неверный выбор\n";
         }
     }
 }

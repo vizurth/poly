@@ -5,19 +5,25 @@
 
 using namespace std;
 
-// конструктор: принимает распределение для генерации весов (seed генерируется автоматически)
+/*
+	LOOK: DAGGenerator(NormalDistribution& dist) 
+	Конструктор класса seed генерируем автоматически
+*/
 template<typename T>
 DAGGenerator<T>::DAGGenerator(NormalDistribution& dist) 
-    : distribution(dist), generator(std::random_device{}()) {}
+    : distribution(dist), generator(random_device{}()) {}
 
-// конструктор: принимает распределение для генерации весов и зерно для генератора случайных чисел
+/*
+	LOOK: DAGGenerator(NormalDistribution& dist) 
+	Конструктор класса seed генерируем автоматически
+*/
 template<typename T>
 DAGGenerator<T>::DAGGenerator(NormalDistribution& dist, unsigned int seed) 
     : distribution(dist), generator(seed) {}
 
 /*
 	LOOK: isConnected(const Graph<T>&)
-	Проверяем, что наш граф связный
+	Проверяем, что наш граф связный; проходимся по графу с помощью BFS и проверяем является число вершин в которые прошли общим количеством вершин
 */
 template<typename T>
 bool DAGGenerator<T>::isConnected(const Graph<T>& graph) {

@@ -9,25 +9,25 @@ using namespace std;
 template <typename T>
 class Graph {
 private:
-	int numVertices; // количество вершин
+	int numVertices;
 	vector<vector<T>> adjMatrix; // матрица смежности
 
 public:
-	Graph(int n) : numVertices(n), adjMatrix(n, vector<T>(n, 0)) {} // конструктор: создаёт граф с n вершинами
+	Graph(int n) : numVertices(n), adjMatrix(n, vector<T>(n, 0)) {}
+	void addEdge(int u, int v, T weight);
 
-	int getNumVertices() const; // получить количество вершин
-	void addEdge(int u, int v, T weight); // добавить ориентированное ребро (u, v) с весом weight
-	T getEdge(int u, int v) const; // получить вес ребра (u, v), 0 если ребра нет
-	bool hasEdge(int u, int v) const; // проверить наличие ребра (u, v)
-
-	const vector<vector<T>>& getAdjMatrix() const; // получить матрицу смежности
+	bool hasEdge(int u, int v) const;
 	
-	void printAdjMatrix() const; // вывести матрицу смежности на экран
-	void printEdges() const; // вывести список рёбер на экран
+	void printAdjMatrix() const;
+	void printEdges() const; // выводим списком
 
-	vector<pair<int, T>> getOutgoingEdges(int u) const; // получить список рёбер, исходящих из вершины u
-	vector<pair<int, T>> getIncomingEdges(int v) const; // получить список рёбер, входящих в вершину v
-	vector<pair<int, T>> getAdj(int v) const; // получить список соседей вершины v (для неориентированного графа)
+	// геттеры
+	int getNumVertices() const;
+	T getEdge(int u, int v) const;
+	const vector<vector<T>>& getAdjMatrix() const;
+	vector<pair<int, T>> getOutgoingEdges(int u) const;
+	vector<pair<int, T>> getIncomingEdges(int v) const;
+	vector<pair<int, T>> getAdj(int v) const; // список соседей для не ор графа
 };
 
 #include "graph.cpp"
