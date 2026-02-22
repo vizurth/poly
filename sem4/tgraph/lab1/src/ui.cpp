@@ -37,22 +37,46 @@ void UI::task1_generateDAG() {
     
     bool isDirected = (graphType == 1);
     
-    cout << "\nпараметры нормального распределения:\n";
-    cout << "среднее (μ) = 10.0\n";
-    cout << "стандартное отклонение (σ) = 3.0\n\n";
+    int weightChoice;
+    cout << "\nвыберите тип весов рёбер:\n";
+    cout << "1. положительные\n";
+    cout << "2. отрицательные\n";
+    cout << "3. смешанные (положительные и отрицательные)\n";
+    cout << "ваш выбор: ";
+    cin >> weightChoice;
     
-    // создаём распределение
-    NormalDistribution dist(10.0, 3.0);
+    WeightType weightType;
+    switch (weightChoice) {
+        case 1: weightType = WeightType::POSITIVE; break;
+        case 2: weightType = WeightType::NEGATIVE; break;
+        case 3: weightType = WeightType::MIXED; break;
+        default:
+            cout << "ошибка: неверный выбор, используем положительные веса\n";
+            weightType = WeightType::POSITIVE;
+    }
+    
+    cout << "\nпараметры распределения Вейбулла:\n";
+    cout << "масштаб (a) = 10.0\n";
+    cout << "форма (c) = 2.0\n\n";
+    
+    // создаём распределение Вейбулла
+    WeibullDistribution dist(10.0, 2.0);
     
     // создаём генератор DAG
     DAGGenerator<double> generator(dist);
     
-    // генерируем граф
-    graph.reset(new Graph<double>(generator.generateDAG(n, isDirected)));
+    // генерируем граф с выбранным типом весов
+    graph.reset(new Graph<double>(generator.generateDAG(n, isDirected, weightType)));
     graphGenerated = true;
     
     cout << (isDirected ? "ориентированный" : "неориентированный") 
-              << " граф успешно сгенерирован!\n\n";
+              << " граф с ";
+    switch (weightType) {
+        case WeightType::POSITIVE: cout << "положительными"; break;
+        case WeightType::NEGATIVE: cout << "отрицательными"; break;
+        case WeightType::MIXED: cout << "смешанными"; break;
+    }
+    cout << " весами успешно сгенерирован!\n\n";
     
     // выводим матрицу смежности
     graph->printAdjMatrix();

@@ -6,24 +6,24 @@
 using namespace std;
 
 /*
-	LOOK: DAGGenerator(NormalDistribution& dist) 
-	Конструктор класса seed генерируем автоматически
+    LOOK: DAGGenerator(WeibullDistribution& dist) 
+    Конструктор класса seed генерируем автоматически
 */
 template<typename T>
-DAGGenerator<T>::DAGGenerator(NormalDistribution& dist) 
+DAGGenerator<T>::DAGGenerator(WeibullDistribution& dist) 
     : distribution(dist), generator(random_device{}()) {}
 
 /*
-	LOOK: DAGGenerator(NormalDistribution& dist) 
-	Конструктор класса seed генерируем автоматически
+    LOOK: DAGGenerator(WeibullDistribution& dist, unsigned int seed) 
+    Конструктор класса с заданным seed
 */
 template<typename T>
-DAGGenerator<T>::DAGGenerator(NormalDistribution& dist, unsigned int seed) 
+DAGGenerator<T>::DAGGenerator(WeibullDistribution& dist, unsigned int seed) 
     : distribution(dist), generator(seed) {}
 
 /*
-	LOOK: isConnected(const Graph<T>&)
-	Проверяем, что наш граф связный; проходимся по графу с помощью BFS и проверяем является число вершин в которые прошли общим количеством вершин
+    LOOK: isConnected(const Graph<T>&)
+    Проверяем, что наш граф связный; проходимся по графу с помощью DFS и проверяем является число вершин в которые прошли общим количеством вершин
 */
 template<typename T>
 bool DAGGenerator<T>::isConnected(const Graph<T>& graph) {
@@ -53,7 +53,7 @@ bool DAGGenerator<T>::isConnected(const Graph<T>& graph) {
             }
         }
         
-        // проверяем все входящие рёбра (для связности)
+        // про��еряем все входящие рёбра (для связности)
         auto incoming = graph.getIncomingEdges(u);
         for (const auto& edge : incoming) {
             int v = edge.first;
@@ -69,28 +69,48 @@ bool DAGGenerator<T>::isConnected(const Graph<T>& graph) {
 }
 
 /*
-	LOOK: Graph<T> generateDAG(int numVertices, bool isDirected)
-	Генерируем связный граф с заданным количеством вершин
-	isDirected = true: ориентированный ациклический граф (DAG)
-	isDirected = false: неориентированный граф (добавляем обратные рёбра)
+    LOOK: Graph<T> generateDAG(int numVertices, bool isDirected, WeightType weightType)
+    Генерируем связный граф с заданным количеством вершин
+    Веса генерируются по распределению Вейбулла
+    isDirected = true: ориентированный ациклический граф (DAG)
+    isDirected = false: неориентированный граф (добавляем обратные рёбра)
+    weightType: тип весов (положительные/отрицательные/смешанные)
 */
 template<typename T>
-Graph<T> DAGGenerator<T>::generateDAG(int numVertices, bool isDirected) {
+Graph<T> DAGGenerator<T>::generateDAG(int numVertices, bool isDirected, WeightType weightType) {
     Graph<T> graph(numVertices);
     
     if (numVertices <= 0) {
         return graph;
     }
     
+    uniform_real_distribution<double> signDist(0.0, 1.0);
+    
+    auto generateWeight = [&]() -> T {
+        double weight = distribution.generate(); // Вейбулл всегда генерирует положительные числа
+        if (weight < 0.1) weight = 0.1; // минимальный вес
+        
+        // применяем знак в зависимости от типа весов
+        switch (weightType) {
+            case WeightType::POSITIVE:
+                return static_cast<T>(weight);
+            case WeightType::NEGATIVE:
+                return static_cast<T>(-weight);
+            case WeightType::MIXED:
+                // 50% вероятность отрицательного веса
+                return static_cast<T>((signDist(generator) < 0.5) ? weight : -weight);
+        }
+        return static_cast<T>(weight);
+    };
+    
     // создаём базовый связный путь: 0 -> 1 -> 2 -> ... -> n-1
     for (int i = 0; i < numVertices - 1; i++) {
-        double weight = abs(distribution.generate());
-        if (weight < 0.1) weight = 0.1; // минимальный вес
-        graph.addEdge(i, i + 1, static_cast<T>(weight));
+        T weight = generateWeight();
+        graph.addEdge(i, i + 1, weight);
         
         // если неориентированный, добавляем обратное ребро с тем же весом
         if (!isDirected) {
-            graph.addEdge(i + 1, i, static_cast<T>(weight));
+            graph.addEdge(i + 1, i, weight);
         }
     }
     
@@ -103,9 +123,8 @@ Graph<T> DAGGenerator<T>::generateDAG(int numVertices, bool isDirected) {
         for (int i = 0; i < numVertices; i++) {
             for (int j = i + 2; j < numVertices; j++) {
                 if (dist(generator) < probability) {
-                    double weight = abs(distribution.generate());
-                    if (weight < 0.1) weight = 0.1;
-                    graph.addEdge(i, j, static_cast<T>(weight));
+                    T weight = generateWeight();
+                    graph.addEdge(i, j, weight);
                 }
             }
         }
@@ -114,10 +133,9 @@ Graph<T> DAGGenerator<T>::generateDAG(int numVertices, bool isDirected) {
         for (int i = 0; i < numVertices; i++) {
             for (int j = i + 2; j < numVertices; j++) {
                 if (dist(generator) < probability) {
-                    double weight = abs(distribution.generate());
-                    if (weight < 0.1) weight = 0.1;
-                    graph.addEdge(i, j, static_cast<T>(weight));
-                    graph.addEdge(j, i, static_cast<T>(weight)); // обратное ребро
+                    T weight = generateWeight();
+                    graph.addEdge(i, j, weight);
+                    graph.addEdge(j, i, weight); // обратное ребро
                 }
             }
         }

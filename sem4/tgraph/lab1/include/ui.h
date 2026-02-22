@@ -2,7 +2,7 @@
 
 #include "common/graph/graph.h"
 #include "common/graph/dag_generator.h"
-#include "common/distributions/normal.h"
+#include "common/distributions/weibull.h"
 #include "lab1/include/shimbel.h"
 #include "lab1/include/route_counter.h"
 #include <memory>

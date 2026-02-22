@@ -1,25 +1,31 @@
 #pragma once 
 
 #include "graph.h"
-#include "../distributions/normal.h"
+#include "../distributions/weibull.h"
 #include <vector>
 #include <random>
 
 using namespace std;
 
+enum class WeightType {
+	POSITIVE,   // только положительные веса
+	NEGATIVE,   // только отрицательные веса
+	MIXED       // смешанные (положительные и отрицательные)
+};
+
 template<typename T>
 class DAGGenerator {
 private:
-	NormalDistribution& distribution; // распределение для генерации весов рёбер
+	WeibullDistribution& distribution; // распределение для генерации весов рёбер
 	mt19937 generator; // генератор случайных чисел
 
 public:
 	// конструкторы
-	DAGGenerator(NormalDistribution& dist);
-	DAGGenerator(NormalDistribution& dist, unsigned int seed);
+	DAGGenerator(WeibullDistribution& dist);
+	DAGGenerator(WeibullDistribution& dist, unsigned int seed);
 	
 	// функции
-	Graph<T> generateDAG(int numVertices, bool isDirected = true); 
+	Graph<T> generateDAG(int numVertices, bool isDirected = true, WeightType weightType = WeightType::POSITIVE); 
 	bool isConnected(const Graph<T>& graph);
 };
 

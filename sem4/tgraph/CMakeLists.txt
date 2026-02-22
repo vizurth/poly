@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # исходные файлы для common/distributions
 set(DISTRIBUTIONS_SOURCES
-    common/distributions/normal.cpp
+    common/distributions/weibull.cpp
 )
 
 # создать основной исполняемый файл для lab1
