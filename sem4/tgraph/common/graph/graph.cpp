@@ -2,6 +2,9 @@
 #include "../utils/utils.h"
 #include <iomanip>
 #include <iostream>
+#include <limits>
+#include <queue>
+using namespace std;
 
 /*
     LOOK: Graph(int n)
@@ -128,4 +131,96 @@ int Graph<T>::getNumVertices() const {
 template <typename T>
 vector<vector<T>> Graph<T>::getAdjMatrix() const {
 	return adjMatrix;
+}
+
+template <typename T>
+vector<int> Graph<T>::bfs(int start) const {
+	const int INF = std::numeric_limits<int>::max(); // ← int, не T!
+	vector<int> distances(numVertices, INF);
+	distances[start] = 0;
+
+	queue<int> q;
+	q.push(start);
+
+	while (!q.empty()) {
+		int v = q.front();
+		q.pop();
+
+		for (int to = 0; to < numVertices; to++) {
+			if (adjMatrix[v][to] != T{} && distances[to] == INF) {
+				distances[to] = distances[v] + 1;
+				q.push(to);
+			}
+		}
+	}
+
+	return distances;
+}
+
+template <typename T>
+int Graph<T>::eccentricity(int vertex) const {
+	vector<int> dist = bfs(vertex);
+	const int INF = std::numeric_limits<int>::max();
+
+	int maxDist = 0;
+	for (int i = 0; i < numVertices; i++) {
+		if (i == vertex)
+			continue;
+		if (dist[i] == INF)
+			return INF; // вершина недостижима
+		maxDist = std::max(maxDist, dist[i]);
+	}
+
+	return maxDist;
+}
+
+template <typename T>
+vector<int> Graph<T>::allEccentricities() const {
+	vector<int> eccs(numVertices);
+	for (int i = 0; i < numVertices; i++) {
+		eccs[i] = eccentricity(i);
+	}
+	return eccs;
+}
+
+template <typename T>
+vector<int> Graph<T>::findCenter() const {
+	vector<int> eccs = allEccentricities();
+	const int INF = std::numeric_limits<int>::max();
+
+	int radius = INF;
+	for (int ecc : eccs) {
+		if (ecc < radius) {
+			radius = ecc;
+		}
+	}
+
+	vector<int> centers;
+	for (int i = 0; i < numVertices; i++) {
+		if (eccs[i] == radius) {
+			centers.push_back(i);
+		}
+	}
+	return centers;
+}
+
+template <typename T>
+vector<int> Graph<T>::findDiametral() const {
+	vector<int> eccs = allEccentricities();
+	const int INF = std::numeric_limits<int>::max();
+
+	int diameter = 0;
+	for (int ecc : eccs) {
+		if (ecc != INF && ecc > diameter) {
+			diameter = ecc;
+		}
+	}
+
+	vector<int> diametral;
+	for (int i = 0; i < numVertices; i++) {
+		if (eccs[i] == diameter) {
+			diametral.push_back(i);
+		}
+	}
+	return diametral;
 }

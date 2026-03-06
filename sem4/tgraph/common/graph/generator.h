@@ -3,7 +3,6 @@
 #include "../distribution/weibull.h"
 #include "graph.h"
 #include <vector>
-using namespace std;
 
 enum class WeightType { POSITIVE, NEGATIVE, MIXED };
 
@@ -28,7 +27,7 @@ class Generator {
 	bool isNegative();
 
 	T generateWeight(WeightType weightType);
-	void weibullShuffle(vector<int> &vertices);
+	void weibullShuffle(std::vector<int> &vertices);
 
   public:
 	Generator(int numVertices, bool directed, WeightType weightMode,

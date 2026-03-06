@@ -23,6 +23,13 @@ class Graph {
 	vector<pair<int, T>> getIncomingEdges(int vertex) const;
 	int getNumVertices() const;
 	vector<vector<T>> getAdjMatrix() const;
+
+	vector<int> bfs(int start) const;
+
+	int eccentricity(int vertex) const;
+	vector<int> allEccentricities() const;
+	vector<int> findCenter() const;
+	vector<int> findDiametral() const;
 };
 
 #include "graph.cpp"

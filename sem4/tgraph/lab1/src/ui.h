@@ -10,6 +10,9 @@ class UI {
 	WeightType askWeightType();
 
 	void showGraph(Graph<double> &graph);
+	void showEccentricities(Graph<double> &graph);
+	void showCenter(Graph<double> &graph);
+	void showDiameter(Graph<double> &graph);
 
   public:
 	void run();

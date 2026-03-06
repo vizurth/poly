@@ -1,4 +1,8 @@
 #include "generator.h"
+
+#include <algorithm>
+#include <numeric>
+
 /*
     LOOK: int randomIndex(int n)
     Генерируем случайный индекс от 0 до n-1 с помощью распределения Вейбулла

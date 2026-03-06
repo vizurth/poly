@@ -64,6 +64,59 @@ void UI::showGraph(Graph<double> &graph) {
 	graph.printEdges();
 }
 
+void UI::showEccentricities(Graph<double> &graph) {
+	int n = graph.getNumVertices();
+	const int INF = std::numeric_limits<int>::max();
+
+	cout << "\n── Эксцентриситеты вершин ──────────────\n";
+	vector<int> eccs = graph.allEccentricities();
+	for (int i = 0; i < n; i++) {
+		cout << "  Вершина " << i << ": ";
+		if (eccs[i] == INF) {
+			cout << "недостижима\n";
+		} else {
+			cout << eccs[i] << "\n";
+		}
+	}
+}
+
+void UI::showCenter(Graph<double> &graph) {
+	vector<int> centers = graph.findCenter();
+	cout << "\n── Центр графа ─────────────────────────\n";
+	if (centers.empty()) {
+		cout << "  Центр не найден (граф несвязный).\n";
+	} else {
+		cout << "  Вершины центра: ";
+		for (int i = 0; i < (int)centers.size(); i++) {
+			if (i > 0)
+				cout << ", ";
+			cout << centers[i];
+		}
+		cout << "\n";
+		cout << "  Радиус графа: " << graph.eccentricity(centers[0]) << "\n";
+	}
+}
+
+void UI::showDiameter(Graph<double> &graph) {
+	vector<int> diametral = graph.findDiametral();
+	const int INF = std::numeric_limits<int>::max();
+
+	cout << "\n── Диаметр графа ───────────────────────\n";
+	if (diametral.empty()) {
+		cout << "  Диаметр не определён (граф несвязный).\n";
+	} else {
+		int diameter = graph.eccentricity(diametral[0]);
+		cout << "  Диаметр: " << diameter << "\n";
+		cout << "  Периферийные вершины: ";
+		for (int i = 0; i < (int)diametral.size(); i++) {
+			if (i > 0)
+				cout << ", ";
+			cout << diametral[i];
+		}
+		cout << "\n";
+	}
+}
+
 // ──────────────────────────────────────────────
 //  Главное меню
 // ──────────────────────────────────────────────
@@ -73,10 +126,15 @@ void UI::run() {
 	cout << "║     Генератор случайных графов       ║\n";
 	cout << "╚══════════════════════════════════════╝\n";
 
+	Graph<double> *currentGraph = nullptr;
+
 	int menuChoice;
 	do {
 		cout << "\n  Главное меню:\n";
 		cout << "    1. Сгенерировать граф\n";
+		cout << "    2. Вычислить эксцентриситеты вершин\n";
+		cout << "    3. Найти центр графа\n";
+		cout << "    4. Найти диаметр графа\n";
 		cout << "    0. Выход\n";
 		cout << "  Ваш выбор: ";
 
@@ -96,17 +154,44 @@ void UI::run() {
 			WeightType wt = askWeightType();
 
 			try {
-				Generator<double> gen(n, directed, wt, 10.0, 2.0, 10.0, 2.0);
-				Graph<double> graph = gen.generateGraph();
+				delete currentGraph;
+				currentGraph = new Graph<double>(
+				    Generator<double>(n, directed, wt, 10.0, 2.0, 10.0, 2.0)
+				        .generateGraph());
 
 				cout << "\n── Результат ───────────────────────────\n";
-				showGraph(graph);
+				showGraph(*currentGraph);
 			} catch (const exception &e) {
 				cout << "  Ошибка генерации: " << e.what() << "\n";
 			}
 		}
 
+		if (menuChoice == 2) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showEccentricities(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 3) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showCenter(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 4) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showDiameter(*currentGraph);
+			}
+		}
+
 	} while (menuChoice != 0);
 
+	delete currentGraph;
 	cout << "\nДо свидания!\n";
 }
