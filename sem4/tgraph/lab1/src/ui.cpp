@@ -117,6 +117,43 @@ void UI::showDiameter(Graph<double> &graph) {
 	}
 }
 
+void UI::showShimbell(Graph<double> &graph) {
+	int choice;
+	cout << "\n  Тип матрицы Шимбела:\n";
+	cout << "    1. Минимальные пути\n";
+	cout << "    2. Максимальные пути\n";
+	while (true) {
+		cout << "  Ваш выбор [1/2]: ";
+		if (cin >> choice && (choice == 1 || choice == 2))
+			break;
+		cout << "  Ошибка: введите 1 или 2.\n";
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
+
+	int k;
+	while (true) {
+		cout << "  Длина пути K (>= 0): ";
+		if (cin >> k && k >= 0)
+			break;
+		cout << "  Ошибка: введите целое число >= 0.\n";
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
+
+
+
+	ShimbelSolver<double> solver(graph);
+	bool findMin = (choice == 1);
+	auto matrix = findMin ? solver.computeShortestPaths(k)
+	                      : solver.computeLongestPaths(k);
+
+	string title =
+	    findMin ? "Матрица Шимбела (минимальные пути, K=" + to_string(k) + ")"
+	            : "Матрица Шимбела (максимальные пути, K=" + to_string(k) + ")";
+	ShimbelSolver<double>::printShimbelMatrix(matrix, title);
+}
+
 // ──────────────────────────────────────────────
 //  Главное меню
 // ──────────────────────────────────────────────
@@ -135,6 +172,7 @@ void UI::run() {
 		cout << "    2. Вычислить эксцентриситеты вершин\n";
 		cout << "    3. Найти центр графа\n";
 		cout << "    4. Найти диаметр графа\n";
+		cout << "    5. Матрица Шимбела\n";
 		cout << "    0. Выход\n";
 		cout << "  Ваш выбор: ";
 
@@ -187,6 +225,14 @@ void UI::run() {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
 				showDiameter(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 5) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showShimbell(*currentGraph);
 			}
 		}
 

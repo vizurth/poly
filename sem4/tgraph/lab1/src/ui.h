@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../common/graph/generator.h"
+#include "shimbel.h"
 #include <string>
 
 class UI {
@@ -13,6 +14,7 @@ class UI {
 	void showEccentricities(Graph<double> &graph);
 	void showCenter(Graph<double> &graph);
 	void showDiameter(Graph<double> &graph);
+	void showShimbell(Graph<double> &graph);
 
   public:
 	void run();
