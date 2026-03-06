@@ -142,8 +142,6 @@ void UI::showShimbell(Graph<double> &graph) {
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	}
 
-
-
 	ShimbelSolver<double> solver(graph);
 	bool findMin = (choice == 1);
 	auto matrix = findMin ? solver.computeShortestPaths(k)
@@ -161,14 +159,16 @@ void UI::showAllPaths(Graph<double> &graph) {
 
 	while (true) {
 		cout << "  Начальная вершина A [0-" << n - 1 << "]: ";
-		if (cin >> from && from >= 0 && from < n) break;
+		if (cin >> from && from >= 0 && from < n)
+			break;
 		cout << "  Ошибка: введите номер от 0 до " << n - 1 << ".\n";
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	}
 	while (true) {
 		cout << "  Конечная вершина B [0-" << n - 1 << "]: ";
-		if (cin >> to && to >= 0 && to < n) break;
+		if (cin >> to && to >= 0 && to < n)
+			break;
 		cout << "  Ошибка: введите номер от 0 до " << n - 1 << ".\n";
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -176,7 +176,8 @@ void UI::showAllPaths(Graph<double> &graph) {
 
 	auto paths = graph.findAllPaths(from, to);
 
-	cout << "\n── Все пути из " << from << " в " << to << " ────────────────────\n";
+	cout << "\n── Все пути из " << from << " в " << to
+	     << " ────────────────────\n";
 	if (paths.empty()) {
 		cout << "  Путей нет.\n";
 		return;
@@ -186,7 +187,8 @@ void UI::showAllPaths(Graph<double> &graph) {
 	for (int i = 0; i < (int)paths.size(); i++) {
 		cout << "  " << i + 1 << ". ";
 		for (int j = 0; j < (int)paths[i].size(); j++) {
-			if (j > 0) cout << " -> ";
+			if (j > 0)
+				cout << " -> ";
 			cout << paths[i][j];
 		}
 		// считаем суммарный вес пути
