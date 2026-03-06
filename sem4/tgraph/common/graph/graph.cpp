@@ -133,6 +133,10 @@ vector<vector<T>> Graph<T>::getAdjMatrix() const {
 	return adjMatrix;
 }
 
+/*
+	LOOK: vector<int> bfs(int start) const;
+	Реализуем алгоритм BFS для поиска кратчайших путей от вершины start
+*/
 template <typename T>
 vector<int> Graph<T>::bfs(int start) const {
 	const int INF = std::numeric_limits<int>::max(); // ← int, не T!
@@ -157,6 +161,10 @@ vector<int> Graph<T>::bfs(int start) const {
 	return distances;
 }
 
+/*
+	LOOK: void eccentricity(int vertex) const;
+	Вычисляем эксцентриситет вершины
+*/
 template <typename T>
 int Graph<T>::eccentricity(int vertex) const {
 	vector<int> dist = bfs(vertex);
@@ -174,6 +182,10 @@ int Graph<T>::eccentricity(int vertex) const {
 	return maxDist;
 }
 
+/*
+	LOOK: void allEccentricities() const;
+	Вычисляем эксцентриситеты для всех вершин
+*/
 template <typename T>
 vector<int> Graph<T>::allEccentricities() const {
 	vector<int> eccs(numVertices);
@@ -183,6 +195,10 @@ vector<int> Graph<T>::allEccentricities() const {
 	return eccs;
 }
 
+/*
+	LOOK: vector<int> findCenter() const;
+	Находим центр графа — вершины с минимальным эксцентриситетом
+*/
 template <typename T>
 vector<int> Graph<T>::findCenter() const {
 	vector<int> eccs = allEccentricities();
@@ -204,6 +220,10 @@ vector<int> Graph<T>::findCenter() const {
 	return centers;
 }
 
+/*
+	LOOK: vector<int> findDiametral() const;
+	Находим периферийные вершины — те, у которых эксцентриситет равен диаметру
+*/
 template <typename T>
 vector<int> Graph<T>::findDiametral() const {
 	vector<int> eccs = allEccentricities();
@@ -223,4 +243,50 @@ vector<int> Graph<T>::findDiametral() const {
 		}
 	}
 	return diametral;
+}
+
+/*
+    LOOK: dfs(int current, int target, vector<bool>& visited, vector<int>& currentPath,
+		 vector<vector<int>>& allPaths) const;
+    Рекурсивный обход — ищем все пути от current до target
+*/
+template <typename T>
+void Graph<T>::dfs(int current, int target, vector<bool> &visited,
+                   vector<int> &currentPath,
+                   vector<vector<int>> &allPaths) const {
+	// достигли цели — сохраняем путь
+	if (current == target) {
+		allPaths.push_back(currentPath);
+		return;
+	}
+
+	// обходим всех соседей
+	for (int next = 0; next < numVertices; next++) {
+		if (adjMatrix[current][next] != T{} && !visited[next]) {
+			visited[next] = true;
+			currentPath.push_back(next);
+
+			dfs(next, target, visited, currentPath, allPaths);
+
+			// backtracking — откатываемся назад
+			currentPath.pop_back();
+			visited[next] = false;
+		}
+	}
+}
+
+/*
+    LOOK: findAllPaths(int from, int to)
+    Находим все пути от вершины from до вершины to
+*/
+template <typename T>
+vector<vector<int>> Graph<T>::findAllPaths(int from, int to) const {
+	vector<vector<int>> allPaths;
+	vector<bool> visited(numVertices, false);
+	vector<int> currentPath = {from}; // путь начинается с from
+
+	visited[from] = true;
+	dfs(from, to, visited, currentPath, allPaths);
+
+	return allPaths;
 }

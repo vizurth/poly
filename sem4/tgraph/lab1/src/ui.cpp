@@ -1,4 +1,5 @@
 #include "ui.h"
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -154,6 +155,49 @@ void UI::showShimbell(Graph<double> &graph) {
 	ShimbelSolver<double>::printShimbelMatrix(matrix, title);
 }
 
+void UI::showAllPaths(Graph<double> &graph) {
+	int n = graph.getNumVertices();
+	int from, to;
+
+	while (true) {
+		cout << "  Начальная вершина A [0-" << n - 1 << "]: ";
+		if (cin >> from && from >= 0 && from < n) break;
+		cout << "  Ошибка: введите номер от 0 до " << n - 1 << ".\n";
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
+	while (true) {
+		cout << "  Конечная вершина B [0-" << n - 1 << "]: ";
+		if (cin >> to && to >= 0 && to < n) break;
+		cout << "  Ошибка: введите номер от 0 до " << n - 1 << ".\n";
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
+
+	auto paths = graph.findAllPaths(from, to);
+
+	cout << "\n── Все пути из " << from << " в " << to << " ────────────────────\n";
+	if (paths.empty()) {
+		cout << "  Путей нет.\n";
+		return;
+	}
+
+	cout << "  Найдено путей: " << paths.size() << "\n\n";
+	for (int i = 0; i < (int)paths.size(); i++) {
+		cout << "  " << i + 1 << ". ";
+		for (int j = 0; j < (int)paths[i].size(); j++) {
+			if (j > 0) cout << " -> ";
+			cout << paths[i][j];
+		}
+		// считаем суммарный вес пути
+		double totalWeight = 0;
+		for (int j = 0; j + 1 < (int)paths[i].size(); j++) {
+			totalWeight += graph.getEdge(paths[i][j], paths[i][j + 1]);
+		}
+		cout << "  (вес: " << fixed << setprecision(2) << totalWeight << ")\n";
+	}
+}
+
 // ──────────────────────────────────────────────
 //  Главное меню
 // ──────────────────────────────────────────────
@@ -173,6 +217,7 @@ void UI::run() {
 		cout << "    3. Найти центр графа\n";
 		cout << "    4. Найти диаметр графа\n";
 		cout << "    5. Матрица Шимбела\n";
+		cout << "    6. Найти все пути от A до B\n";
 		cout << "    0. Выход\n";
 		cout << "  Ваш выбор: ";
 
@@ -233,6 +278,14 @@ void UI::run() {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
 				showShimbell(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 6) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showAllPaths(*currentGraph);
 			}
 		}
 

@@ -15,6 +15,7 @@ class UI {
 	void showCenter(Graph<double> &graph);
 	void showDiameter(Graph<double> &graph);
 	void showShimbell(Graph<double> &graph);
+	void showAllPaths(Graph<double> &graph);
 
   public:
 	void run();

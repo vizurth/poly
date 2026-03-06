@@ -25,11 +25,15 @@ class Graph {
 	vector<vector<T>> getAdjMatrix() const;
 
 	vector<int> bfs(int start) const;
+	void dfs(int current, int target, vector<bool> &visited,
+	         vector<int> &currentPath, vector<vector<int>> &allPaths) const;
 
 	int eccentricity(int vertex) const;
 	vector<int> allEccentricities() const;
 	vector<int> findCenter() const;
 	vector<int> findDiametral() const;
+
+	vector<vector<int>> findAllPaths(int from, int to) const;
 };
 
 #include "graph.cpp"
