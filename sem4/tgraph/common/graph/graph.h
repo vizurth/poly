@@ -4,30 +4,25 @@
 
 using namespace std;
 
-// (u, v) == (from, to) - ориентированный граф, рёбра хранятся в виде матрицы смежности
-
 template <typename T>
 class Graph {
-private:
+  private:
 	int numVertices;
-	vector<vector<T>> adjMatrix; // матрица смежности
+	vector<vector<T>> adjMatrix;
 
-public:
-	Graph(int n) : numVertices(n), adjMatrix(n, vector<T>(n, 0)) {}
-	void addEdge(int u, int v, T weight);
+  public:
+	Graph(int n);
+	void addEdge(int from, int to, T weight);
+	bool hasEdge(int from, int to) const;
 
-	bool hasEdge(int u, int v) const;
-	
 	void printAdjMatrix() const;
-	void printEdges() const; // выводим списком
+	void printEdges() const;
 
-	// геттеры
+	T getEdge(int from, int to) const;
+	vector<pair<int, T>> getOutgoingEdges(int vertex) const;
+	vector<pair<int, T>> getIncomingEdges(int vertex) const;
 	int getNumVertices() const;
-	T getEdge(int u, int v) const;
-	const vector<vector<T>>& getAdjMatrix() const;
-	vector<pair<int, T>> getOutgoingEdges(int u) const;
-	vector<pair<int, T>> getIncomingEdges(int v) const;
-	vector<pair<int, T>> getAdj(int v) const; // список соседей для не ор графа
+	vector<vector<T>> getAdjMatrix() const;
 };
 
 #include "graph.cpp"
