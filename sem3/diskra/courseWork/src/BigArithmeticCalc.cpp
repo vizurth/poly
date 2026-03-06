@@ -34,7 +34,7 @@ string BigArithmeticCalc::addSign(const string& num, bool negative) const {
 
 // большая арифметика 
 
-// проверка не вылезает ли строка за пределы алфавита
+//  проверка не вылезает ли строка за пределы алфавита
 bool BigArithmeticCalc::isValidNumber(const string& num) const {
     if (num.empty()) return false;
     
@@ -211,7 +211,7 @@ string BigArithmeticCalc::subtractBigUnsigned(const string& a, const string& b) 
 }
 
 /*
-	LOOK: multiplyByDigit(num, digit)
+	LOOK: multiplyByDigit(num, digit) 
 	функция умножения числа на цифру
 	просто будем использовать counter чтолбы считать сколько раз уже умножили 
 	и result = addBigUnsigned(result, num)
