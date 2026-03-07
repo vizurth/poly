@@ -114,25 +114,5 @@ vector<vector<T>> ShimbelSolver<T>::computeLongestPaths(int k) {
 template <typename T>
 void ShimbelSolver<T>::printShimbelMatrix(const vector<vector<T>> &matrix,
                                           const string &title) {
-	const T INF = numeric_limits<T>::max() / 2;
-	int n = matrix.size();
-
-	cout << "\n── " << title << " ─────────────────────\n";
-	cout << setw(8) << " ";
-	for (int j = 0; j < n; j++) {
-		cout << setw(8) << j;
-	}
-	cout << "\n";
-
-	for (int i = 0; i < n; i++) {
-		cout << setw(8) << i;
-		for (int j = 0; j < n; j++) {
-			if (matrix[i][j] >= INF || matrix[i][j] <= -INF) {
-				cout << setw(8) << "-";
-			} else {
-				cout << setw(8) << fixed << setprecision(2) << matrix[i][j];
-			}
-		}
-		cout << "\n";
-	}
+	printMatrix(matrix, title);
 }

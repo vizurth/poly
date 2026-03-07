@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "../../common/utils/utils.h"
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -67,13 +68,12 @@ void UI::showGraph(Graph<double> &graph) {
 
 void UI::showEccentricities(Graph<double> &graph) {
 	int n = graph.getNumVertices();
-	const int INF = std::numeric_limits<int>::max();
 
 	cout << "\n── Эксцентриситеты вершин ──────────────\n";
 	vector<int> eccs = graph.allEccentricities();
 	for (int i = 0; i < n; i++) {
 		cout << "  Вершина " << i << ": ";
-		if (eccs[i] == INF) {
+		if (eccs[i] == INF<int>) {
 			cout << "недостижима\n";
 		} else {
 			cout << eccs[i] << "\n";
@@ -100,7 +100,6 @@ void UI::showCenter(Graph<double> &graph) {
 
 void UI::showDiameter(Graph<double> &graph) {
 	vector<int> diametral = graph.findDiametral();
-	const int INF = std::numeric_limits<int>::max();
 
 	cout << "\n── Диаметр графа ───────────────────────\n";
 	if (diametral.empty()) {
@@ -196,7 +195,7 @@ void UI::showAllPaths(Graph<double> &graph) {
 		for (int j = 0; j + 1 < (int)paths[i].size(); j++) {
 			totalWeight += graph.getEdge(paths[i][j], paths[i][j + 1]);
 		}
-		cout << "  (вес: " << fixed << setprecision(2) << totalWeight << ")\n";
+		// cout << "  (вес: " << fixed << setprecision(2) << totalWeight << ")\n";
 	}
 }
 

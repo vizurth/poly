@@ -175,7 +175,7 @@ int Graph<T>::eccentricity(int vertex) const {
 		if (i == vertex)
 			continue;
 		if (dist[i] == INF)
-			return INF; // вершина недостижима
+			continue; // недостижимо, не учитываем в эксцентриситете
 		maxDist = std::max(maxDist, dist[i]);
 	}
 

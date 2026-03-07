@@ -8,8 +8,8 @@
 */
 template <typename T>
 void printMatrix(const vector<vector<T>> &matrix, const string &title) {
-	const T POS_INF = numeric_limits<T>::max() / 2;
-	const T NEG_INF = -numeric_limits<T>::max() / 2;
+	const T POS_INF = INF<T> / 2;
+	const T NEG_INF = -INF<T> / 2;
 	int n = matrix.size();
 
 	cout << "\n" << title << "\n";
@@ -26,14 +26,31 @@ void printMatrix(const vector<vector<T>> &matrix, const string &title) {
 		cout << setw(3) << i << " ";
 		for (int j = 0; j < n; j++) {
 			T val = matrix[i][j];
-			if (val >= POS_INF || val <= NEG_INF) {
-				cout << setw(8) << "-"; // недостижимо
-			} else if (val == T{}) {
-				cout << setw(8) << "-"; // нет ребра
+			if (i == j) {
+				cout << setw(8) << "0";
+			} else if (val >= POS_INF || val <= NEG_INF || val == T{} ||
+			           val == INF<T>) {
+				cout << setw(8) << "-";
 			} else {
 				cout << setw(8) << fixed << setprecision(2) << val;
 			}
 		}
 		cout << "\n";
+	}
+}
+
+/*
+    LOOK: void printVector(const vector<T>& vec, const string& title)
+    Универсальная функция для печати вектора с заголовком
+*/
+template <typename T>
+void printVector(const vector<T> &vec, const string &title) {
+	cout << "\n" << title << "\n";
+	for (size_t i = 0; i < vec.size(); i++) {
+		if (vec[i] == INF<T>) {
+			cout << "  " << i << ": -\n"; // недостижимо
+		} else {
+			cout << "  " << i << ": " << vec[i] << "\n";
+		}
 	}
 }
