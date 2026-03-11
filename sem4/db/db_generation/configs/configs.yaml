@@ -1,0 +1,8 @@
+postgres:
+  host: 'postgres'
+  port: 5432
+  username: 'db-user'
+  password: 'db-password'
+  database: 'db'
+  max_conns: 10
+  min_conns: 2
