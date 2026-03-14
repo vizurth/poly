@@ -108,18 +108,38 @@
         № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
         \hline
         1 & авто\_id & car\_id & INT & - & PK & - & NOT NULL \\
-        2 & зона\_парковки\_id & parking\_zone\_id & INT & NULL & FK & park\_zone & NULL \\
-        3 & гос\_номер & reg\_number & VARCHAR(20) & - & UQ & - & NOT NULL \\
-        4 & марка & brand & VARCHAR(100) & - & - & - & NOT NULL \\
-        5 & модель & model & VARCHAR(100) & - & - & - & NOT NULL \\
-        6 & год\_выпуска & manufacture\_year & INT & - & - & - & NOT NULL \\
-        7 & vin\_номер & vin & VARCHAR(17) & - & UQ & - & NOT NULL \\
-        8 & статус & current\_status & VARCHAR(30) & - & - & - & NOT NULL \\
+        2 & гос\_номер & reg\_number & VARCHAR(20) & - & UQ & - & NOT NULL \\
+        3 & марка & brand & VARCHAR(100) & - & - & - & NOT NULL \\
+        4 & модель & model & VARCHAR(100) & - & - & - & NOT NULL \\
+        5 & год\_выпуска & manufacture\_year & INT & - & - & - & NOT NULL \\
+        6 & vin\_номер & vin & VARCHAR(17) & - & UQ & - & NOT NULL \\
+        7 & статус & current\_status & VARCHAR(30) & - & - & - & NOT NULL \\
         \hline
     \end{tabularx}
 \end{table}
 
-% --- Таблица 6: movement_track ---
+% --- Таблица 6: parking_session ---
+\begin{table}[H]
+    \caption{Таблица парковочных сессий}
+    \label{tab:parking_session}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Парковочная сессия -- parking\_session}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & сессия\_id & parking\_session\_id & INT & - & PK & - & NOT NULL \\
+        2 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
+        3 & зона\_парковки\_id & parking\_zone\_id & INT & - & FK & park\_zone & NOT NULL \\
+        4 & время\_въезда & entry\_time & TIMESTAMP & - & - & - & NOT NULL \\
+        5 & время\_выезда & exit\_time & TIMESTAMP & NULL & - & - & NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 7: movement_track ---
 \begin{table}[H]
     \caption{Таблица треков движения}
     \label{tab:movement_track}
@@ -141,7 +161,7 @@
     \end{tabularx}
 \end{table}
 
-% --- Таблица 7: track_point ---
+% --- Таблица 8: track_point ---
 \begin{table}[H]
     \caption{Точки трека движения}
     \label{tab:track_point}
@@ -164,7 +184,7 @@
     \end{tabularx}
 \end{table}
 
-% --- Таблица 8: alert_event ---
+% --- Таблица 9: alert_event ---
 \begin{table}[H]
     \caption{Таблица тревожных событий}
     \label{tab:alert_event}
@@ -188,7 +208,7 @@
     \end{tabularx}
 \end{table}
 
-% --- Таблица 9: geo_request ---
+% --- Таблица 10: geo_request ---
 \begin{table}[H]
     \caption{Таблица обращений}
     \label{tab:geo_request}
@@ -222,6 +242,8 @@
     
     \item Автомобиль (авто\_id(INT), зона\_парковки\_id(INT), гос\_номер(VARCHAR(20)), марка(VARCHAR(100)), модель(VARCHAR(100)), год\_выпуска(INT), \\ vin\_номер(VARCHAR(17)), статус(VARCHAR(30))).
     
+	\item Парковочная сессия (сессия\_id(INT), авто\_id(INT), зона\_парковки\_id(INT), время\_въезда(TIMESTAMP), время\_выезда(TIMESTAMP)).
+    
     \item Трек движения (трек\_id(INT), авто\_id(INT), время\_начала(TIMESTAMP), время\_конца(TIMESTAMP), статус\_трека(VARCHAR(30)), \\вид\_трека(VARCHAR(30))).
     
     \item Координаты точки трека (координаты\_точки\_id(INT), трек\_id(INT), широта(NUMERIC(9,6)), долгота(NUMERIC(9,6)), скорость(NUMERIC(6,2)), источник\_данных(VARCHAR(30))).
@@ -231,15 +253,8 @@
     \item Обращения к геомониторингу (запрос\_id(INT), сотрудник\_id(INT), авто\_id(INT), тип\_запроса(VARCHAR(50)), цель\_запроса(TEXT)).
 \end{enumerate}
 
-\begin{figure}[h!]
-\centering
-\includegraphics[width=0.9\textwidth]{myPhoto/levels.png}
-\caption{Уровни заполнения базы данных}
-\end{figure}
-\newpage
-
 \clearpage
-\newgeometry{paperwidth=420mm,paperheight=297mm,margin=-2mm}
+\newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
 \begin{landscape}
   \thispagestyle{empty}
   \captionsetup{font=small,skip=4pt}
@@ -256,7 +271,7 @@
 \clearpage
 
 \clearpage
-\newgeometry{paperwidth=420mm,paperheight=297mm,margin=-2mm}
+\newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
 \begin{landscape}
   \thispagestyle{empty}
   \captionsetup{font=small,skip=4pt}
@@ -276,6 +291,6 @@
 
 База данных создана средствами СУБД PostgreSQL с использованием SQL-скриптов, приведенных в \hyperref[app:A]{приложении A} (схема на рис. 3).
 
-Наполнение базы синтетическими данными (320225 записей в 9 таблицах) выполнено утилитой на языке Go 1.25.4 с использованием драйвера pgx. Таблицы-справочники заполнены статическими данными, а основные сущности сгенерированы алгоритмически с учетом логических связей в \hyperref[app:B]{приложении Б}.
+% Наполнение базы синтетическими данными (320225 записей в 9 таблицах) выполнено утилитой на языке Go 1.25.4 с использованием драйвера pgx. Таблицы-справочники заполнены статическими данными, а основные сущности сгенерированы алгоритмически с учетом логических связей в \hyperref[app:B]{приложении Б}.
 
 \newpage

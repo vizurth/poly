@@ -38,13 +38,20 @@ CREATE TABLE parking_zone_point (
 
 CREATE TABLE car (
     car_id             SERIAL PRIMARY KEY,
-    parking_zone_id    INT REFERENCES parking_zone(parking_zone_id),
     reg_number         VARCHAR(20)  NOT NULL UNIQUE,
     brand              VARCHAR(100) NOT NULL,
     model              VARCHAR(100) NOT NULL,
     manufacture_year   INT      NOT NULL,
     vin                VARCHAR(17)  NOT NULL UNIQUE,
     current_status     VARCHAR(30)  NOT NULL
+);
+
+CREATE TABLE parking_session (
+    parking_session_id         SERIAL PRIMARY KEY,
+    car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
+    parking_zone_id    INT NOT NULL REFERENCES parking_zone(parking_zone_id) ON DELETE CASCADE,
+    entry_time         TIMESTAMP NOT NULL, -- Время въезда
+    exit_time          TIMESTAMP           -- Время выезда (NULL = машина стоит там сейчас)
 );
 
 CREATE TABLE track (
@@ -58,7 +65,7 @@ CREATE TABLE track (
 
 CREATE TABLE track_point (
     track_point_id     SERIAL PRIMARY KEY,
-    track_id           INT REFERENCES track(track_id) ON DELETE CASCADE, -- NULL разрешён
+    track_id           INT REFERENCES track(track_id) ON DELETE CASCADE,
     car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
     latitude           NUMERIC(9,6)  NOT NULL,
     longitude          NUMERIC(9,6)  NOT NULL,
@@ -85,360 +92,371 @@ CREATE TABLE geo_request (
     request_goal       TEXT NOT NULL
 );
 
+DROP TABLE IF EXISTS geo_request;
+DROP TABLE IF EXISTS alert_event;
+DROP TABLE IF EXISTS track_point;
+DROP TABLE IF EXISTS track;
+DROP TABLE IF EXISTS parking_session;
+DROP TABLE IF EXISTS car;
+DROP TABLE IF EXISTS parking_zone_point;
+DROP TABLE IF EXISTS parking_zone;
+DROP TABLE IF EXISTS employee;
+DROP TABLE IF EXISTS employee_type;
+
 \end{lstlisting}
 \newpage
 
 \addcontentsline{toc}{section}{Приложение Б}
 \section*{Приложение Б «Исходный код программы заполнения базы данных тестовыми данными»}\label{app:B}
 	
-\begin{lstlisting}[style=cstyle, caption={Фнкция для очистки всех таблиц}, label={lst:truncate_all}]
-func truncateAll(ctx context.Context, tx pgx.Tx) error {
-	_, err := tx.Exec(ctx, `
-		TRUNCATE TABLE
-			geo_request,
-			alert_event,
-			track_point,
-			track,
-			car,
-			parking_zone_point,
-			employee,
-			parking_zone,
-			employee_type
-		RESTART IDENTITY CASCADE
-	`)
-	if err != nil {
-		return fmt.Errorf("truncate tables: %w", err)
-	}
-	return nil
-}
+% \begin{lstlisting}[style=cstyle, caption={Фнкция для очистки всех таблиц}, label={lst:truncate_all}]
+% func truncateAll(ctx context.Context, tx pgx.Tx) error {
+% 	_, err := tx.Exec(ctx, `
+% 		TRUNCATE TABLE
+% 			geo_request,
+% 			alert_event,
+% 			track_point,
+% 			track,
+% 			car,
+% 			parking_zone_point,
+% 			employee,
+% 			parking_zone,
+% 			employee_type
+% 		RESTART IDENTITY CASCADE
+% 	`)
+% 	if err != nil {
+% 		return fmt.Errorf("truncate tables: %w", err)
+% 	}
+% 	return nil
+% }
 
-\end{lstlisting}
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы employee\_type}, label={lst:seed_employee_types}]
-func seedEmployeeTypes(ctx context.Context, tx pgx.Tx, r *rand.Rand, count int) ([]int, error) {
-	names := []string{"operator", "dispatcher", "manager", "technician", "analyst"}
-	ids := make([]int, 0, count)
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы employee\_type}, label={lst:seed_employee_types}]
+% func seedEmployeeTypes(ctx context.Context, tx pgx.Tx, r *rand.Rand, count int) ([]int, error) {
+% 	names := []string{"operator", "dispatcher", "manager", "technician", "analyst"}
+% 	ids := make([]int, 0, count)
 
-	for i := 0; i < count; i++ {
-		var id int
-		err := tx.QueryRow(ctx,
-			`INSERT INTO employee_type(name, description)
-			 VALUES ($1, $2)
-			 RETURNING employee_type_id`,
-			fmt.Sprintf("%s_%d", names[i%len(names)], i+1),
-			fmt.Sprintf("generated employee type %d", i+1),
-		).Scan(&id)
-		if err != nil {
-			return nil, fmt.Errorf("insert employee_type[%d]: %w", i, err)
-		}
-		ids = append(ids, id)
-	}
-	return ids, nil
-}
-\end{lstlisting}
-\newpage
+% 	for i := 0; i < count; i++ {
+% 		var id int
+% 		err := tx.QueryRow(ctx,
+% 			`INSERT INTO employee_type(name, description)
+% 			 VALUES ($1, $2)
+% 			 RETURNING employee_type_id`,
+% 			fmt.Sprintf("%s_%d", names[i%len(names)], i+1),
+% 			fmt.Sprintf("generated employee type %d", i+1),
+% 		).Scan(&id)
+% 		if err != nil {
+% 			return nil, fmt.Errorf("insert employee_type[%d]: %w", i, err)
+% 		}
+% 		ids = append(ids, id)
+% 	}
+% 	return ids, nil
+% }
+% \end{lstlisting}
+% \newpage
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы parking\_zone}, label={lst:seed_parking_zones}]
-func seedParkingZones(ctx context.Context, tx pgx.Tx, r *rand.Rand, count int) ([]int, error) {
-	zoneTypes := []string{"city", "suburban", "hub"}
-	zoneStatuses := []string{"active", "maintenance", "limited"}
-	ids := make([]int, 0, count)
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы parking\_zone}, label={lst:seed_parking_zones}]
+% func seedParkingZones(ctx context.Context, tx pgx.Tx, r *rand.Rand, count int) ([]int, error) {
+% 	zoneTypes := []string{"city", "suburban", "hub"}
+% 	zoneStatuses := []string{"active", "maintenance", "limited"}
+% 	ids := make([]int, 0, count)
 
-	for i := 0; i < count; i++ {
-		var id int
-		err := tx.QueryRow(ctx,
-			`INSERT INTO parking_zone(name, zone_type, city_district, max_cars, active_status)
-			 VALUES ($1, $2, $3, $4, $5)
-			 RETURNING parking_zone_id`,
-			fmt.Sprintf("Zone-%03d", i+1),
-			zoneTypes[r.Intn(len(zoneTypes))],
-			fmt.Sprintf("district-%d", 1+r.Intn(8)),
-			20+r.Intn(150),
-			zoneStatuses[r.Intn(len(zoneStatuses))],
-		).Scan(&id)
-		if err != nil {
-			return nil, fmt.Errorf("insert parking_zone[%d]: %w", i, err)
-		}
-		ids = append(ids, id)
-	}
-	return ids, nil
-}
-\end{lstlisting}
+% 	for i := 0; i < count; i++ {
+% 		var id int
+% 		err := tx.QueryRow(ctx,
+% 			`INSERT INTO parking_zone(name, zone_type, city_district, max_cars, active_status)
+% 			 VALUES ($1, $2, $3, $4, $5)
+% 			 RETURNING parking_zone_id`,
+% 			fmt.Sprintf("Zone-%03d", i+1),
+% 			zoneTypes[r.Intn(len(zoneTypes))],
+% 			fmt.Sprintf("district-%d", 1+r.Intn(8)),
+% 			20+r.Intn(150),
+% 			zoneStatuses[r.Intn(len(zoneStatuses))],
+% 		).Scan(&id)
+% 		if err != nil {
+% 			return nil, fmt.Errorf("insert parking_zone[%d]: %w", i, err)
+% 		}
+% 		ids = append(ids, id)
+% 	}
+% 	return ids, nil
+% }
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы employee}, label={lst:seed_employees}]
-func seedEmployees(ctx context.Context, tx pgx.Tx, r *rand.Rand, employeeTypeIDs []int, count int) ([]int, error) {
-	statuses := []string{"active", "vacation", "inactive"}
-	positions := []string{"junior", "middle", "senior", "lead"}
-	ids := make([]int, 0, count)
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы employee}, label={lst:seed_employees}]
+% func seedEmployees(ctx context.Context, tx pgx.Tx, r *rand.Rand, employeeTypeIDs []int, count int) ([]int, error) {
+% 	statuses := []string{"active", "vacation", "inactive"}
+% 	positions := []string{"junior", "middle", "senior", "lead"}
+% 	ids := make([]int, 0, count)
 
-	for i := 0; i < count; i++ {
-		var id int
-		err := tx.QueryRow(ctx,
-			`INSERT INTO employee(employee_type_id, full_name, login, status, position)
-			 VALUES ($1, $2, $3, $4, $5)
-			 RETURNING employee_id`,
-			employeeTypeIDs[r.Intn(len(employeeTypeIDs))],
-			fmt.Sprintf("Employee %04d", i+1),
-			fmt.Sprintf("user_%04d", i+1),
-			statuses[r.Intn(len(statuses))],
-			positions[r.Intn(len(positions))],
-		).Scan(&id)
-		if err != nil {
-			return nil, fmt.Errorf("insert employee[%d]: %w", i, err)
-		}
-		ids = append(ids, id)
-	}
-	return ids, nil
-}
-\end{lstlisting}
+% 	for i := 0; i < count; i++ {
+% 		var id int
+% 		err := tx.QueryRow(ctx,
+% 			`INSERT INTO employee(employee_type_id, full_name, login, status, position)
+% 			 VALUES ($1, $2, $3, $4, $5)
+% 			 RETURNING employee_id`,
+% 			employeeTypeIDs[r.Intn(len(employeeTypeIDs))],
+% 			fmt.Sprintf("Employee %04d", i+1),
+% 			fmt.Sprintf("user_%04d", i+1),
+% 			statuses[r.Intn(len(statuses))],
+% 			positions[r.Intn(len(positions))],
+% 		).Scan(&id)
+% 		if err != nil {
+% 			return nil, fmt.Errorf("insert employee[%d]: %w", i, err)
+% 		}
+% 		ids = append(ids, id)
+% 	}
+% 	return ids, nil
+% }
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы parking\_zone\_point}, label={lst:seed_parking_zone_points}]
-func seedParkingZonePoints(ctx context.Context, tx pgx.Tx, r *rand.Rand, parkingZoneIDs []int, pointsPerZone int) error {
-	for _, zoneID := range parkingZoneIDs {
-		for pointNo := 1; pointNo <= pointsPerZone; pointNo++ {
-			_, err := tx.Exec(ctx,
-				`INSERT INTO parking_zone_point(parking_zone_id, vertex_number, latitude, longitude)
-				 VALUES ($1, $2, $3, $4)`,
-				zoneID,
-				pointNo,
-				59.85+r.Float64()*0.2,
-				30.15+r.Float64()*0.35,
-			)
-			if err != nil {
-				return fmt.Errorf("insert parking_zone_point(zone=%d, vertex=%d): %w", zoneID, pointNo, err)
-			}
-		}
-	}
-	return nil
-}
-\end{lstlisting}
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы parking\_zone\_point}, label={lst:seed_parking_zone_points}]
+% func seedParkingZonePoints(ctx context.Context, tx pgx.Tx, r *rand.Rand, parkingZoneIDs []int, pointsPerZone int) error {
+% 	for _, zoneID := range parkingZoneIDs {
+% 		for pointNo := 1; pointNo <= pointsPerZone; pointNo++ {
+% 			_, err := tx.Exec(ctx,
+% 				`INSERT INTO parking_zone_point(parking_zone_id, vertex_number, latitude, longitude)
+% 				 VALUES ($1, $2, $3, $4)`,
+% 				zoneID,
+% 				pointNo,
+% 				59.85+r.Float64()*0.2,
+% 				30.15+r.Float64()*0.35,
+% 			)
+% 			if err != nil {
+% 				return fmt.Errorf("insert parking_zone_point(zone=%d, vertex=%d): %w", zoneID, pointNo, err)
+% 			}
+% 		}
+% 	}
+% 	return nil
+% }
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы car}, label={lst:seed_cars}]
-func seedCars(ctx context.Context, tx pgx.Tx, r *rand.Rand, parkingZoneIDs []int, count int) ([]int, error) {
-	brands := []string{"VW", "Ford", "Hyundai", "Kia", "Lada", "Toyota"}
-	models := []string{"A", "B", "C", "D", "E"}
-	carStatuses := []string{"available", "busy", "maintenance", "offline"}
-	ids := make([]int, 0, count)
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы car}, label={lst:seed_cars}]
+% func seedCars(ctx context.Context, tx pgx.Tx, r *rand.Rand, parkingZoneIDs []int, count int) ([]int, error) {
+% 	brands := []string{"VW", "Ford", "Hyundai", "Kia", "Lada", "Toyota"}
+% 	models := []string{"A", "B", "C", "D", "E"}
+% 	carStatuses := []string{"available", "busy", "maintenance", "offline"}
+% 	ids := make([]int, 0, count)
 
-	for i := 0; i < count; i++ {
-		var id int
-		err := tx.QueryRow(ctx,
-			`INSERT INTO car(parking_zone_id, reg_number, brand, model, manufacture_year, vin, current_status)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7)
-			 RETURNING car_id`,
-			parkingZoneIDs[r.Intn(len(parkingZoneIDs))],
-			fmt.Sprintf("A%03dAA%03d", i%1000, 100+(i%799)),
-			brands[r.Intn(len(brands))],
-			models[r.Intn(len(models))],
-			2012+r.Intn(14),
-			fmt.Sprintf("VIN%014d", i+1),
-			carStatuses[r.Intn(len(carStatuses))],
-		).Scan(&id)
-		if err != nil {
-			return nil, fmt.Errorf("insert car[%d]: %w", i, err)
-		}
-		ids = append(ids, id)
-	}
-	return ids, nil
-}
-\end{lstlisting}
+% 	for i := 0; i < count; i++ {
+% 		var id int
+% 		err := tx.QueryRow(ctx,
+% 			`INSERT INTO car(parking_zone_id, reg_number, brand, model, manufacture_year, vin, current_status)
+% 			 VALUES ($1, $2, $3, $4, $5, $6, $7)
+% 			 RETURNING car_id`,
+% 			parkingZoneIDs[r.Intn(len(parkingZoneIDs))],
+% 			fmt.Sprintf("A%03dAA%03d", i%1000, 100+(i%799)),
+% 			brands[r.Intn(len(brands))],
+% 			models[r.Intn(len(models))],
+% 			2012+r.Intn(14),
+% 			fmt.Sprintf("VIN%014d", i+1),
+% 			carStatuses[r.Intn(len(carStatuses))],
+% 		).Scan(&id)
+% 		if err != nil {
+% 			return nil, fmt.Errorf("insert car[%d]: %w", i, err)
+% 		}
+% 		ids = append(ids, id)
+% 	}
+% 	return ids, nil
+% }
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы alert\_event}, label={lst:seed_alert_events}]
-func seedAlertEvents(ctx context.Context, tx pgx.Tx, r *rand.Rand, carIDs, employeeIDs []int, count int) error {
-	eventTypes := []string{"speeding", "zone_leave", "panic_button", "signal_lost"}
-	processStatuses := []string{"new", "in_progress", "closed"}
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы alert\_event}, label={lst:seed_alert_events}]
+% func seedAlertEvents(ctx context.Context, tx pgx.Tx, r *rand.Rand, carIDs, employeeIDs []int, count int) error {
+% 	eventTypes := []string{"speeding", "zone_leave", "panic_button", "signal_lost"}
+% 	processStatuses := []string{"new", "in_progress", "closed"}
 
-	for i := 0; i < count; i++ {
-		_, err := tx.Exec(ctx,
-			`INSERT INTO alert_event(car_id, employee_id, event_type, latitude, longitude, description, process_status)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-			carIDs[r.Intn(len(carIDs))],
-			employeeIDs[r.Intn(len(employeeIDs))],
-			eventTypes[r.Intn(len(eventTypes))],
-			59.85+r.Float64()*0.2,
-			30.15+r.Float64()*0.35,
-			fmt.Sprintf("generated alert event %d", i+1),
-			processStatuses[r.Intn(len(processStatuses))],
-		)
-		if err != nil {
-			return fmt.Errorf("insert alert_event[%d]: %w", i, err)
-		}
-	}
-	return nil
-}
-\end{lstlisting}
+% 	for i := 0; i < count; i++ {
+% 		_, err := tx.Exec(ctx,
+% 			`INSERT INTO alert_event(car_id, employee_id, event_type, latitude, longitude, description, process_status)
+% 			 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+% 			carIDs[r.Intn(len(carIDs))],
+% 			employeeIDs[r.Intn(len(employeeIDs))],
+% 			eventTypes[r.Intn(len(eventTypes))],
+% 			59.85+r.Float64()*0.2,
+% 			30.15+r.Float64()*0.35,
+% 			fmt.Sprintf("generated alert event %d", i+1),
+% 			processStatuses[r.Intn(len(processStatuses))],
+% 		)
+% 		if err != nil {
+% 			return fmt.Errorf("insert alert_event[%d]: %w", i, err)
+% 		}
+% 	}
+% 	return nil
+% }
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы geo\_request}, label={lst:seed_geo_requests}]
-func seedGeoRequests(ctx context.Context, tx pgx.Tx, r *rand.Rand, employeeIDs, carIDs []int, count int) error {
-	requestTypes := []string{"tracking", "history", "inspection", "incident_review"}
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы geo\_request}, label={lst:seed_geo_requests}]
+% func seedGeoRequests(ctx context.Context, tx pgx.Tx, r *rand.Rand, employeeIDs, carIDs []int, count int) error {
+% 	requestTypes := []string{"tracking", "history", "inspection", "incident_review"}
 
-	for i := 0; i < count; i++ {
-		_, err := tx.Exec(ctx,
-			`INSERT INTO geo_request(employee_id, car_id, request_type, request_goal)
-			 VALUES ($1, $2, $3, $4)`,
-			employeeIDs[r.Intn(len(employeeIDs))],
-			carIDs[r.Intn(len(carIDs))],
-			requestTypes[r.Intn(len(requestTypes))],
-			fmt.Sprintf("generated request goal %d", i+1),
-		)
-		if err != nil {
-			return fmt.Errorf("insert geo_request[%d]: %w", i, err)
-		}
-	}
-	return nil
-}
-\end{lstlisting}
+% 	for i := 0; i < count; i++ {
+% 		_, err := tx.Exec(ctx,
+% 			`INSERT INTO geo_request(employee_id, car_id, request_type, request_goal)
+% 			 VALUES ($1, $2, $3, $4)`,
+% 			employeeIDs[r.Intn(len(employeeIDs))],
+% 			carIDs[r.Intn(len(carIDs))],
+% 			requestTypes[r.Intn(len(requestTypes))],
+% 			fmt.Sprintf("generated request goal %d", i+1),
+% 		)
+% 		if err != nil {
+% 			return fmt.Errorf("insert geo_request[%d]: %w", i, err)
+% 		}
+% 	}
+% 	return nil
+% }
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы track\_point}, label={lst:seed_track_points}]
-func seedTrackPoints(
-	ctx context.Context,
-	tx pgx.Tx,
-	r *rand.Rand,
-	tracks []trackRef,
-	pointsPerTrack int,
-	pointsPerCarWithoutTracks int,
-) error {
-	dataSources := []string{"gps", "glonass", "manual"}
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения таблицы track\_point}, label={lst:seed_track_points}]
+% func seedTrackPoints(
+% 	ctx context.Context,
+% 	tx pgx.Tx,
+% 	r *rand.Rand,
+% 	tracks []trackRef,
+% 	pointsPerTrack int,
+% 	pointsPerCarWithoutTracks int,
+% ) error {
+% 	dataSources := []string{"gps", "glonass", "manual"}
 
-	for _, tr := range tracks {
-		for p := 0; p < pointsPerTrack; p++ {
-			_, err := tx.Exec(ctx,
-				`INSERT INTO track_point(track_id, car_id, latitude, longitude, speed_kmh, data_source)
-				 VALUES ($1, $2, $3, $4, $5, $6)`,
-				tr.ID,
-				tr.CarID,
-				59.85+r.Float64()*0.2,
-				30.15+r.Float64()*0.35,
-				float64(10+r.Intn(110)),
-				dataSources[r.Intn(len(dataSources))],
-			)
-			if err != nil {
-				return fmt.Errorf("insert track_point(track=%d, p=%d): %w", tr.ID, p, err)
-			}
-		}
+% 	for _, tr := range tracks {
+% 		for p := 0; p < pointsPerTrack; p++ {
+% 			_, err := tx.Exec(ctx,
+% 				`INSERT INTO track_point(track_id, car_id, latitude, longitude, speed_kmh, data_source)
+% 				 VALUES ($1, $2, $3, $4, $5, $6)`,
+% 				tr.ID,
+% 				tr.CarID,
+% 				59.85+r.Float64()*0.2,
+% 				30.15+r.Float64()*0.35,
+% 				float64(10+r.Intn(110)),
+% 				dataSources[r.Intn(len(dataSources))],
+% 			)
+% 			if err != nil {
+% 				return fmt.Errorf("insert track_point(track=%d, p=%d): %w", tr.ID, p, err)
+% 			}
+% 		}
 
-		for p := 0; p < pointsPerCarWithoutTracks; p++ {
-			_, err := tx.Exec(ctx,
-				`INSERT INTO track_point(track_id, car_id, latitude, longitude, speed_kmh, data_source)
-				 VALUES ($1, $2, $3, $4, $5, $6)`,
-				nil,
-				tr.CarID,
-				59.85+r.Float64()*0.2,
-				30.15+r.Float64()*0.35,
-				float64(10+r.Intn(110)),
-				dataSources[r.Intn(len(dataSources))],
-			)
-			if err != nil {
-				return fmt.Errorf("insert track_point(car=%d, p=%d) without track: %w", tr.CarID, p, err)
-			}
-		}
-	}
+% 		for p := 0; p < pointsPerCarWithoutTracks; p++ {
+% 			_, err := tx.Exec(ctx,
+% 				`INSERT INTO track_point(track_id, car_id, latitude, longitude, speed_kmh, data_source)
+% 				 VALUES ($1, $2, $3, $4, $5, $6)`,
+% 				nil,
+% 				tr.CarID,
+% 				59.85+r.Float64()*0.2,
+% 				30.15+r.Float64()*0.35,
+% 				float64(10+r.Intn(110)),
+% 				dataSources[r.Intn(len(dataSources))],
+% 			)
+% 			if err != nil {
+% 				return fmt.Errorf("insert track_point(car=%d, p=%d) without track: %w", tr.CarID, p, err)
+% 			}
+% 		}
+% 	}
 
-	return nil
-}
-\end{lstlisting}
+% 	return nil
+% }
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Список таблиц для генерации отчета}, label={lst:report_tables}]
-var reportTables = []string{
-	"employee_type",
-	"parking_zone",
-	"employee",
-	"parking_zone_point",
-	"car",
-	"track",
-	"alert_event",
-	"geo_request",
-	"track_point",
-}
+% \begin{lstlisting}[style=cstyle, caption={Список таблиц для генерации отчета}, label={lst:report_tables}]
+% var reportTables = []string{
+% 	"employee_type",
+% 	"parking_zone",
+% 	"employee",
+% 	"parking_zone_point",
+% 	"car",
+% 	"track",
+% 	"alert_event",
+% 	"geo_request",
+% 	"track_point",
+% }
 
-func buildReport(ctx context.Context, pool *pgxpool.Pool) (*Report, error) {
-	report := &Report{TableCounts: make(map[string]int, len(reportTables))}
+% func buildReport(ctx context.Context, pool *pgxpool.Pool) (*Report, error) {
+% 	report := &Report{TableCounts: make(map[string]int, len(reportTables))}
 
-	for _, table := range reportTables {
-		var count int
-		if err := pool.QueryRow(ctx, fmt.Sprintf("SELECT COUNT(*) FROM %s", table)).Scan(&count); err != nil {
-			return nil, fmt.Errorf("count %s: %w", table, err)
-		}
-		report.TableCounts[table] = count
-		report.TotalRows += count
-	}
+% 	for _, table := range reportTables {
+% 		var count int
+% 		if err := pool.QueryRow(ctx, fmt.Sprintf("SELECT COUNT(*) FROM %s", table)).Scan(&count); err != nil {
+% 			return nil, fmt.Errorf("count %s: %w", table, err)
+% 		}
+% 		report.TableCounts[table] = count
+% 		report.TotalRows += count
+% 	}
 
-	return report, nil
-}
+% 	return report, nil
+% }
 
-\end{lstlisting}
+% \end{lstlisting}
 
-\begin{lstlisting}[style=cstyle, caption={Функция для заполнения БД}, label={lst:seed}]
-func Seed(ctx context.Context, pool *pgxpool.Pool) error {
-	_, err := SeedWithReport(ctx, pool, DefaultConfig())
-	return err
-}
+% \begin{lstlisting}[style=cstyle, caption={Функция для заполнения БД}, label={lst:seed}]
+% func Seed(ctx context.Context, pool *pgxpool.Pool) error {
+% 	_, err := SeedWithReport(ctx, pool, DefaultConfig())
+% 	return err
+% }
 
-func SeedWithReport(ctx context.Context, pool *pgxpool.Pool, cfg Config) (*Report, error) {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+% func SeedWithReport(ctx context.Context, pool *pgxpool.Pool, cfg Config) (*Report, error) {
+% 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
+% 	tx, err := pool.Begin(ctx)
+% 	if err != nil {
+% 		return nil, fmt.Errorf("begin transaction: %w", err)
+% 	}
+% 	defer tx.Rollback(ctx)
 
-	if err = truncateAll(ctx, tx); err != nil {
-		return nil, err
-	}
+% 	if err = truncateAll(ctx, tx); err != nil {
+% 		return nil, err
+% 	}
 
-	// уровень 1
-	employeeTypeIDs, err := seedEmployeeTypes(ctx, tx, r, cfg.EmployeeTypes)
-	if err != nil {
-		return nil, err
-	}
+% 	// уровень 1
+% 	employeeTypeIDs, err := seedEmployeeTypes(ctx, tx, r, cfg.EmployeeTypes)
+% 	if err != nil {
+% 		return nil, err
+% 	}
 
-	parkingZoneIDs, err := seedParkingZones(ctx, tx, r, cfg.ParkingZones)
-	if err != nil {
-		return nil, err
-	}
+% 	parkingZoneIDs, err := seedParkingZones(ctx, tx, r, cfg.ParkingZones)
+% 	if err != nil {
+% 		return nil, err
+% 	}
 
-	// уровень 2
-	employeeIDs, err := seedEmployees(ctx, tx, r, employeeTypeIDs, cfg.Employees)
-	if err != nil {
-		return nil, err
-	}
+% 	// уровень 2
+% 	employeeIDs, err := seedEmployees(ctx, tx, r, employeeTypeIDs, cfg.Employees)
+% 	if err != nil {
+% 		return nil, err
+% 	}
 
-	if err = seedParkingZonePoints(ctx, tx, r, parkingZoneIDs, cfg.ZonePointsPerZone); err != nil {
-		return nil, err
-	}
+% 	if err = seedParkingZonePoints(ctx, tx, r, parkingZoneIDs, cfg.ZonePointsPerZone); err != nil {
+% 		return nil, err
+% 	}
 
-	carIDs, err := seedCars(ctx, tx, r, parkingZoneIDs, cfg.Cars)
-	if err != nil {
-		return nil, err
-	}
+% 	carIDs, err := seedCars(ctx, tx, r, parkingZoneIDs, cfg.Cars)
+% 	if err != nil {
+% 		return nil, err
+% 	}
 
-	// уровень 3
-	tracks, err := seedTracks(ctx, tx, r, carIDs, cfg.TracksPerCar)
-	if err != nil {
-		return nil, err
-	}
+% 	// уровень 3
+% 	tracks, err := seedTracks(ctx, tx, r, carIDs, cfg.TracksPerCar)
+% 	if err != nil {
+% 		return nil, err
+% 	}
 
-	if err = seedAlertEvents(ctx, tx, r, carIDs, employeeIDs, cfg.AlertEvents); err != nil {
-		return nil, err
-	}
+% 	if err = seedAlertEvents(ctx, tx, r, carIDs, employeeIDs, cfg.AlertEvents); err != nil {
+% 		return nil, err
+% 	}
 
-	if err = seedGeoRequests(ctx, tx, r, employeeIDs, carIDs, cfg.GeoRequests); err != nil {
-		return nil, err
-	}
+% 	if err = seedGeoRequests(ctx, tx, r, employeeIDs, carIDs, cfg.GeoRequests); err != nil {
+% 		return nil, err
+% 	}
 
-	// уровень 4
-	if err = seedTrackPoints(ctx, tx, r, tracks, cfg.TrackPointsPerTrack); err != nil {
-		return nil, err
-	}
+% 	// уровень 4
+% 	if err = seedTrackPoints(ctx, tx, r, tracks, cfg.TrackPointsPerTrack); err != nil {
+% 		return nil, err
+% 	}
 
-	if err = tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("commit transaction: %w", err)
-	}
+% 	if err = tx.Commit(ctx); err != nil {
+% 		return nil, fmt.Errorf("commit transaction: %w", err)
+% 	}
 
-	return buildReport(ctx, pool)
-}
+% 	return buildReport(ctx, pool)
+% }
 
-\end{lstlisting}
+% \end{lstlisting}
 
 \newpage

@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS geo_request;
 DROP TABLE IF EXISTS alert_event;
 DROP TABLE IF EXISTS track_point;
 DROP TABLE IF EXISTS track;
+DROP TABLE IF EXISTS parking_session;
 DROP TABLE IF EXISTS car;
 DROP TABLE IF EXISTS parking_zone_point;
 DROP TABLE IF EXISTS parking_zone;

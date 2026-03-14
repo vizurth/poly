@@ -33,13 +33,20 @@ CREATE TABLE parking_zone_point (
 
 CREATE TABLE car (
     car_id             SERIAL PRIMARY KEY,
-    parking_zone_id    INT REFERENCES parking_zone(parking_zone_id),
     reg_number         VARCHAR(20)  NOT NULL UNIQUE,
     brand              VARCHAR(100) NOT NULL,
     model              VARCHAR(100) NOT NULL,
     manufacture_year   INT      NOT NULL,
     vin                VARCHAR(17)  NOT NULL UNIQUE,
     current_status     VARCHAR(30)  NOT NULL
+);
+
+CREATE TABLE parking_session (
+    parking_session_id         SERIAL PRIMARY KEY,
+    car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
+    parking_zone_id    INT NOT NULL REFERENCES parking_zone(parking_zone_id) ON DELETE CASCADE,
+    entry_time         TIMESTAMP NOT NULL, -- Время въезда
+    exit_time          TIMESTAMP           -- Время выезда (NULL = машина стоит там сейчас)
 );
 
 CREATE TABLE track (
@@ -53,7 +60,7 @@ CREATE TABLE track (
 
 CREATE TABLE track_point (
     track_point_id     SERIAL PRIMARY KEY,
-    track_id           INT REFERENCES track(track_id) ON DELETE CASCADE, -- NULL разрешён
+    track_id           INT REFERENCES track(track_id) ON DELETE CASCADE,
     car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
     latitude           NUMERIC(9,6)  NOT NULL,
     longitude          NUMERIC(9,6)  NOT NULL,
@@ -80,3 +87,13 @@ CREATE TABLE geo_request (
     request_goal       TEXT NOT NULL
 );
 
+DROP TABLE IF EXISTS geo_request;
+DROP TABLE IF EXISTS alert_event;
+DROP TABLE IF EXISTS track_point;
+DROP TABLE IF EXISTS track;
+DROP TABLE IF EXISTS parking_session;
+DROP TABLE IF EXISTS car;
+DROP TABLE IF EXISTS parking_zone_point;
+DROP TABLE IF EXISTS parking_zone;
+DROP TABLE IF EXISTS employee;
+DROP TABLE IF EXISTS employee_type;
