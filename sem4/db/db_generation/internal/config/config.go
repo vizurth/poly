@@ -19,11 +19,15 @@ type Config struct {
 func New() (*Config, error) {
 	var cfg Config
 
-	// Ищем config.yaml в нескольких местах для совместимости с тестами и Docker
+	// Ищем конфиг в нескольких местах для совместимости с тестами и Docker
 	configPaths := []string{
+		"./configs/configs.yaml",
 		"./configs/config.yaml",
+		"configs/configs.yaml",
 		"configs/config.yaml",
+		"../configs/configs.yaml",
 		"../configs/config.yaml",
+		"../../configs/configs.yaml",
 		"../../configs/config.yaml",
 	}
 

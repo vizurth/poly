@@ -1,7 +1,7 @@
-volume:
+volumes:
   postgres_data:
 
-service:
+services:
   postgres:
     image: postgres:14
     environment:
