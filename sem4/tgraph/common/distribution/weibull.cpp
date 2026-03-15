@@ -1,8 +1,7 @@
 #include "weibull.h"
 
-// в дальнейшем подберем параметры для генерации весов и структуры графа
-const double WEIBULL_A = 10.0; // масштаб (a)
-const double WEIBULL_C = 2.0;  // форма (c)
+const double WEIBULL_A = 10.0; // масштаб
+const double WEIBULL_C = 2.0;  // форма
 
 /*
 	LOOK: WeibullDistribution(double scale, double shape)

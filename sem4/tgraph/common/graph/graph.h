@@ -19,8 +19,6 @@ class Graph {
 	void printEdges() const;
 
 	T getEdge(int from, int to) const;
-	vector<pair<int, T>> getOutgoingEdges(int vertex) const;
-	vector<pair<int, T>> getIncomingEdges(int vertex) const;
 	int getNumVertices() const;
 	vector<vector<T>> getAdjMatrix() const;
 

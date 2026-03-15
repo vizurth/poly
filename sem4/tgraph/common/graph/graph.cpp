@@ -78,44 +78,6 @@ T Graph<T>::getEdge(int from, int to) const {
 }
 
 /*
-    LOOK: vector<pair<int, T>> getOutgoingEdges(int vertex) const;
-    Получаем список рёбер, исходящих из вершины
-*/
-template <typename T>
-vector<pair<int, T>> Graph<T>::getOutgoingEdges(int vertex) const {
-	vector<pair<int, T>> result;
-
-	if (vertex >= 0 && vertex < numVertices) {
-		for (int i = 0; i < numVertices; i++) {
-			if (adjMatrix[vertex][i] != T{}) {
-				result.push_back({i, adjMatrix[vertex][i]});
-			}
-		}
-	}
-
-	return result;
-}
-
-/*
-    LOOK: vector<pair<int, T>> getIncomingEdges(int vertex) const;
-    Получаем список рёбер, входящих в вершину
-*/
-template <typename T>
-vector<pair<int, T>> Graph<T>::getIncomingEdges(int vertex) const {
-	vector<pair<int, T>> result;
-
-	if (vertex >= 0 && vertex < numVertices) {
-		for (int i = 0; i < numVertices; i++) {
-			if (adjMatrix[i][vertex] != T{}) {
-				result.push_back({i, adjMatrix[i][vertex]});
-			}
-		}
-	}
-
-	return result;
-}
-
-/*
     LOOK: int getNumVertices() const;
     Получаем количество вершин в графе
 */
@@ -135,11 +97,11 @@ vector<vector<T>> Graph<T>::getAdjMatrix() const {
 
 /*
 	LOOK: vector<int> bfs(int start) const;
-	Реализуем алгоритм BFS для поиска кратчайших путей от вершины start
+	BFS для поиска кратчайших путей от вершины start
 */
 template <typename T>
 vector<int> Graph<T>::bfs(int start) const {
-	const int INF = std::numeric_limits<int>::max(); // ← int, не T!
+	const int INF = std::numeric_limits<int>::max();
 	vector<int> distances(numVertices, INF);
 	distances[start] = 0;
 
@@ -175,7 +137,7 @@ int Graph<T>::eccentricity(int vertex) const {
 		if (i == vertex)
 			continue;
 		if (dist[i] == INF)
-			continue; // недостижимо, не учитываем в эксцентриситете
+			continue;
 		maxDist = std::max(maxDist, dist[i]);
 	}
 
@@ -197,7 +159,7 @@ vector<int> Graph<T>::allEccentricities() const {
 
 /*
 	LOOK: vector<int> findCenter() const;
-	Находим центр графа — вершины с минимальным эксцентриситетом
+	Находим центр графа, вершины с минимальным эксцентриситетом
 */
 template <typename T>
 vector<int> Graph<T>::findCenter() const {
@@ -222,7 +184,7 @@ vector<int> Graph<T>::findCenter() const {
 
 /*
 	LOOK: vector<int> findDiametral() const;
-	Находим периферийные вершины — те, у которых эксцентриситет равен диаметру
+	Находим периферийные вершины, у которых эксцентриситет равен диаметру
 */
 template <typename T>
 vector<int> Graph<T>::findDiametral() const {
@@ -248,7 +210,7 @@ vector<int> Graph<T>::findDiametral() const {
 /*
     LOOK: dfs(int current, int target, vector<bool>& visited, vector<int>& currentPath,
 		 vector<vector<int>>& allPaths) const;
-    Рекурсивный обход — ищем все пути от current до target
+    DFS ищем все пути от current до target
 */
 template <typename T>
 void Graph<T>::dfs(int current, int target, vector<bool> &visited,
@@ -268,7 +230,6 @@ void Graph<T>::dfs(int current, int target, vector<bool> &visited,
 
 			dfs(next, target, visited, currentPath, allPaths);
 
-			// backtracking — откатываемся назад
 			currentPath.pop_back();
 			visited[next] = false;
 		}

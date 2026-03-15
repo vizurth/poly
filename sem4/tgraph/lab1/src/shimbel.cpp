@@ -1,6 +1,16 @@
 #include "shimbel.h"
 
 /*
+    LOOK: ShimbelSolver(const Graph<T>& g)
+    Конструктор — инициализируем единичную матрицу
+*/
+template <typename T>
+ShimbelSolver<T>::ShimbelSolver(const Graph<T> &g)
+    : graph(g), n(g.getNumVertices()) {
+	initializeMatrix();
+}
+
+/*
     LOOK: initializeMatrix()
     Инициализируем единичную матрицу (k=0)
 */
@@ -15,8 +25,8 @@ void ShimbelSolver<T>::initializeMatrix() {
 /*
     LOOK: multiplyMatrix(bool findMin)
     Умножаем currentMatrix на матрицу смежности графа
-    findMin = true  → min (кратчайшие пути)
-    findMin = false → max (длиннейшие пути)
+    findMin = true == min (кратчайшие пути)
+    findMin = false == max (длиннейшие пути)
 */
 template <typename T>
 void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
@@ -44,16 +54,6 @@ void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
 	}
 
 	currentMatrix = next;
-}
-
-/*
-    LOOK: ShimbelSolver(const Graph<T>& g)
-    Конструктор — инициализируем единичную матрицу
-*/
-template <typename T>
-ShimbelSolver<T>::ShimbelSolver(const Graph<T> &g)
-    : graph(g), n(g.getNumVertices()) {
-	initializeMatrix();
 }
 
 /*

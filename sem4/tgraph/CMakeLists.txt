@@ -20,7 +20,17 @@ add_executable(lab1
     ${COMMON_SOURCES}
 )
 
+add_executable(lab2
+    lab2/main.cpp
+    lab2/src/ui.cpp
+    ${COMMON_SOURCES}
+)
+
 target_include_directories(lab1 PRIVATE
+    ${CMAKE_SOURCE_DIR}
+)
+
+target_include_directories(lab2 PRIVATE
     ${CMAKE_SOURCE_DIR}
 )
 

@@ -6,12 +6,6 @@
 
 enum class WeightType { POSITIVE, NEGATIVE, MIXED };
 
-struct GeneratorConfig {
-	int numVertices;
-	bool isDirected;
-	WeightType weightType;
-};
-
 template <typename T>
 class Generator {
   private:
@@ -37,7 +31,7 @@ class Generator {
 	      distributionForStructure(structScale, structShape),
 	      numVertices(numVertices), directed(directed), weightMode(weightMode) {
 		if (numVertices < 2) {
-			throw std::invalid_argument("Граф должен иметь хотя бы 2 вершины");
+			throw std::invalid_argument("граф должен иметь хотя бы 2 вершины");
 		}
 	}
 
