@@ -1,7 +1,7 @@
 #include "weibull.h"
 
-const double WEIBULL_A = 10.0; // масштаб
-const double WEIBULL_C = 2.0;  // форма
+const double WEIBULL_A = 1; // масштаб
+const double WEIBULL_C = 0.2;  // форма
 
 /*
 	LOOK: WeibullDistribution(double scale, double shape)
