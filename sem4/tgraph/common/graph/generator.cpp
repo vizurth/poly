@@ -39,20 +39,6 @@ T Generator<T>::generateWeight(WeightType weightType) {
 }
 
 /*
-    LOOK: void weibullShuffle(vector<int>& vertices)
-    Перемешиваем вектор вершин с помощью распределения Вейбулла для генерации
-   случайных индексов
-*/
-template <typename T>
-void Generator<T>::weibullShuffle(vector<int> &vertices) {
-	int n = vertices.size();
-	for (int i = n - 1; i > 0; i--) {
-		int j = randomIndex(i + 1);
-		swap(vertices[i], vertices[j]);
-	}
-}
-
-/*
     LOOK: Graph<T> generateGraph()
     Генерируем граф на основе переданных параметров в config
 */
@@ -62,17 +48,9 @@ Graph<T> Generator<T>::generateGraph() {
 
 	vector<int> vertices(numVertices);
 	std::iota(vertices.begin(), vertices.end(), 0);
-	weibullShuffle(vertices);
 
-	// cout << "Порядок вершин после перемешивания: ";
-	// for (int v : vertices) {
-	// 	cout << v << " ";
-	// }
-	// cout << "\n";
-
-	// базовое дерево (n-1 ребро)
 	for (int i = 1; i < numVertices; i++) {
-		int j = randomIndex(i);
+		int j = randomIndex(i); // i > j
 		int from = vertices[j];
 		int to = vertices[i];
 		T weight = generateWeight(weightMode);
@@ -84,7 +62,6 @@ Graph<T> Generator<T>::generateGraph() {
 		}
 	}
 
-	// дополнительные рёбра для DAG
 	if (directed) {
 		int maxExtraEdges = numVertices * 2;
 		int extraEdges = static_cast<int>(distributionForStructure.generate()) %
@@ -92,7 +69,7 @@ Graph<T> Generator<T>::generateGraph() {
 		for (int k = 0; k < extraEdges; k++) {
 			int i = 1 + static_cast<int>(distributionForStructure.generate()) %
 			                (numVertices - 1);
-			int j = static_cast<int>(distributionForStructure.generate()) % i;
+			int j = static_cast<int>(distributionForStructure.generate()) % i; // i > j
 			int from = vertices[j];
 			int to = vertices[i];
 			if (!graph.hasEdge(from, to)) {
@@ -101,6 +78,5 @@ Graph<T> Generator<T>::generateGraph() {
 			}
 		}
 	}
-
 	return graph;
 }

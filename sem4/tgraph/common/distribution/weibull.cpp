@@ -21,7 +21,7 @@ WeibullDistribution::WeibullDistribution()
 
 /*
 	LOOK: double generate()
-	Генерируем число по распределению Вейбулла с помощью inverse transform method
+	Генерируем число по распределению Вейбулла
 */
 double WeibullDistribution::generate() {
 	double u = distribution(generator);

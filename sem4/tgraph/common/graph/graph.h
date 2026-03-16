@@ -8,7 +8,8 @@ template <typename T>
 class Graph {
   private:
 	int numVertices;
-	vector<vector<T>> adjMatrix;
+	vector<vector<int>> adjMatrix;
+	vector<vector<T>> weightMatrix;
 
   public:
 	Graph(int n);
@@ -16,11 +17,13 @@ class Graph {
 	bool hasEdge(int from, int to) const;
 
 	void printAdjMatrix() const;
+	void printWeightMatrix() const;
 	void printEdges() const;
 
 	T getEdge(int from, int to) const;
 	int getNumVertices() const;
-	vector<vector<T>> getAdjMatrix() const;
+	vector<vector<int>> getAdjMatrix() const;
+	vector<vector<T>> getWeightMatrix() const;
 
 	vector<int> bfs(int start) const;
 	void dfs(int current, int target, vector<bool> &visited,

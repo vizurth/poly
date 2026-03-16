@@ -69,7 +69,8 @@ void UI::showGraph(Graph<double> &graph) {
 void UI::showEccentricities(Graph<double> &graph) {
 	int n = graph.getNumVertices();
 
-	cout << "\n── Эксцентриситеты вершин ──────────────\n";
+	cout << "\n===================== Эксцентриситеты вершин "
+	        "=====================\n";
 	vector<int> eccs = graph.allEccentricities();
 	for (int i = 0; i < n; i++) {
 		cout << "  Вершина " << i << ": ";
@@ -83,7 +84,7 @@ void UI::showEccentricities(Graph<double> &graph) {
 
 void UI::showCenter(Graph<double> &graph) {
 	vector<int> centers = graph.findCenter();
-	cout << "\n── Центр графа ─────────────────────────\n";
+	cout << "\n===================== Центр графа =====================\n";
 	if (centers.empty()) {
 		cout << "  Центр не найден (граф несвязный).\n";
 	} else {
@@ -101,7 +102,7 @@ void UI::showCenter(Graph<double> &graph) {
 void UI::showDiameter(Graph<double> &graph) {
 	vector<int> diametral = graph.findDiametral();
 
-	cout << "\n── Диаметр графа ───────────────────────\n";
+	cout << "\n===================== Диаметр графа =====================\n";
 	if (diametral.empty()) {
 		cout << "  Диаметр не определён (граф несвязный).\n";
 	} else {
@@ -113,7 +114,34 @@ void UI::showDiameter(Graph<double> &graph) {
 				cout << ", ";
 			cout << diametral[i];
 		}
-		cout << "\n";
+		cout << "\n\n  Периферийные пути:\n";
+		
+		for (int u : diametral) {
+			vector<int> dists = graph.bfs(u);
+			for (int v = 0; v < graph.getNumVertices(); v++) {
+				if (dists[v] == diameter) {
+					vector<int> path;
+					int curr = v;
+					while (curr != u) {
+						path.push_back(curr);
+						for (int prev = 0; prev < graph.getNumVertices(); prev++) {
+							if (graph.hasEdge(prev, curr) && dists[prev] == dists[curr] - 1) {
+								curr = prev;
+								break;
+							}
+						}
+					}
+					path.push_back(u);
+					
+					cout << "    ";
+					for (int k = (int)path.size() - 1; k >= 0; k--) {
+						cout << path[k];
+						if (k > 0) cout << " -> ";
+					}
+					cout << "\n";
+				}
+			}
+		}
 	}
 }
 
@@ -133,10 +161,10 @@ void UI::showShimbell(Graph<double> &graph) {
 
 	int k;
 	while (true) {
-		cout << "  Длина пути K (>= 0): ";
-		if (cin >> k && k >= 0)
+		cout << "  Длина пути K (от 0 до " << graph.getNumVertices() - 1 << "): ";
+		if (cin >> k && k >= 0 && k < graph.getNumVertices())
 			break;
-		cout << "  Ошибка: введите целое число >= 0.\n";
+		cout << "  Ошибка: введите целое число от 0 до " << graph.getNumVertices() - 1 << '.' << endl;
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	}
@@ -175,8 +203,8 @@ void UI::showAllPaths(Graph<double> &graph) {
 
 	auto paths = graph.findAllPaths(from, to);
 
-	cout << "\n── Все пути из " << from << " в " << to
-	     << " ────────────────────\n";
+	cout << "\n===================== Все пути из " << from << " в " << to
+	     << " =====================\n";
 	if (paths.empty()) {
 		cout << "  Путей нет.\n";
 		return;
@@ -190,12 +218,7 @@ void UI::showAllPaths(Graph<double> &graph) {
 				cout << " -> ";
 			cout << paths[i][j];
 		}
-		// считаем суммарный вес пути
-		double totalWeight = 0;
-		for (int j = 0; j + 1 < (int)paths[i].size(); j++) {
-			totalWeight += graph.getEdge(paths[i][j], paths[i][j + 1]);
-		}
-		// cout << "  (вес: " << fixed << setprecision(2) << totalWeight << ")\n";
+		cout << "\n";
 	}
 }
 
@@ -204,9 +227,8 @@ void UI::showAllPaths(Graph<double> &graph) {
 // ──────────────────────────────────────────────
 
 void UI::run() {
-	cout << "╔══════════════════════════════════════╗\n";
-	cout << "║     Генератор случайных графов       ║\n";
-	cout << "╚══════════════════════════════════════╝\n";
+	cout << "===================== Генератор случайных графов "
+	        "=====================\n";
 
 	Graph<double> *currentGraph = nullptr;
 
@@ -214,11 +236,13 @@ void UI::run() {
 	do {
 		cout << "\n  Главное меню:\n";
 		cout << "    1. Сгенерировать граф\n";
-		cout << "    2. Вычислить эксцентриситеты вершин\n";
-		cout << "    3. Найти центр графа\n";
-		cout << "    4. Найти диаметр графа\n";
-		cout << "    5. Матрица Шимбела\n";
-		cout << "    6. Найти все пути от A до B\n";
+		cout << "    2. Вывести матрицу смежности\n";
+		cout << "    3. Вывести матрицу весов\n";
+		cout << "    4. Вычислить эксцентриситеты вершин\n";
+		cout << "    5. Найти центр графа\n";
+		cout << "    6. Найти диаметр графа\n";
+		cout << "    7. Матрица Шимбела\n";
+		cout << "    8. Найти все пути от A до B\n";
 		cout << "    0. Выход\n";
 		cout << "  Ваш выбор: ";
 
@@ -232,7 +256,8 @@ void UI::run() {
 			break;
 
 		if (menuChoice == 1) {
-			cout << "\n── Параметры графа ─────────────────────\n";
+			cout << "\n===================== Параметры графа "
+			        "=====================\n";
 			int n = askNumVertices();
 			bool directed = askDirected();
 			WeightType wt = askWeightType();
@@ -243,18 +268,16 @@ void UI::run() {
 				    Generator<double>(n, directed, wt, 10.0, 2.0, 10.0, 2.0)
 				        .generateGraph());
 
-				cout << "\n── Результат ───────────────────────────\n";
-				showGraph(*currentGraph);
+				cout << "\nГраф сгенерирован\n";
 			} catch (const exception &e) {
 				cout << "  Ошибка генерации: " << e.what() << "\n";
 			}
 		}
-
 		if (menuChoice == 2) {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
-				showEccentricities(*currentGraph);
+				currentGraph->printAdjMatrix();
 			}
 		}
 
@@ -262,7 +285,8 @@ void UI::run() {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
-				showCenter(*currentGraph);
+				currentGraph->printWeightMatrix();
+				currentGraph->printEdges();
 			}
 		}
 
@@ -270,7 +294,7 @@ void UI::run() {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
-				showDiameter(*currentGraph);
+				showEccentricities(*currentGraph);
 			}
 		}
 
@@ -278,11 +302,27 @@ void UI::run() {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
-				showShimbell(*currentGraph);
+				showCenter(*currentGraph);
 			}
 		}
 
 		if (menuChoice == 6) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showDiameter(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 7) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showShimbell(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 8) {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {

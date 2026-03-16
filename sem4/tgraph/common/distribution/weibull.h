@@ -4,9 +4,9 @@
 
 class WeibullDistribution {
 private:
-	double a; // масштаб
-	double c; // параметр формы
-	std::mt19937 generator; // генератор случайных чисел
+	double a;
+	double c;
+	std::mt19937 generator;
 	std::uniform_real_distribution<double> distribution; // распределения для генерации 0 до 1
 
 public:

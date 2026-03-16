@@ -33,16 +33,16 @@ void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
 	const T INF = getINF();
 	const T empty = findMin ? INF : -INF;
 
-	auto adj = graph.getAdjMatrix();
+	auto weight = graph.getWeightMatrix();
 	vector<vector<T>> next(n, vector<T>(n, empty));
 
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
 			for (int m = 0; m < n; m++) {
-				if (currentMatrix[i][m] == empty || adj[m][j] == T{})
+				if (currentMatrix[i][m] == empty || weight[m][j] == T{})
 					continue;
 
-				T candidate = currentMatrix[i][m] + adj[m][j];
+				T candidate = currentMatrix[i][m] + weight[m][j];
 
 				if (findMin) {
 					next[i][j] = std::min(next[i][j], candidate);
@@ -69,19 +69,17 @@ vector<vector<T>> ShimbelSolver<T>::compute(int k, bool findMin) {
 
 	const T INF = getINF();
 	const T empty = findMin ? INF : -INF;
-	auto adj = graph.getAdjMatrix();
+	auto weights = graph.getWeightMatrix();
 
-	// Начальная матрица — матрица смежности
 	currentMatrix.assign(n, vector<T>(n, empty));
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
-			if (adj[i][j] != T{}) {
-				currentMatrix[i][j] = adj[i][j];
+			if (weights[i][j] != T{}) {
+				currentMatrix[i][j] = weights[i][j];
 			}
 		}
 	}
 
-	// k-1 раз умножаем на матрицу смежности
 	for (int step = 1; step < k; step++) {
 		multiplyMatrix(findMin);
 	}
