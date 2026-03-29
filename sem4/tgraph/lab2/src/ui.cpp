@@ -63,6 +63,8 @@ void UI::showGraph(Graph<double> &graph) {
 	cout << "\n";
 	graph.printAdjMatrix();
 	cout << "\n";
+	graph.printWeightMatrix();
+	cout << "\n";
 	graph.printEdges();
 }
 
@@ -104,6 +106,7 @@ void UI::showAllPaths(Graph<double> &graph) {
 				cout << " -> ";
 			cout << paths[i][j];
 		}
+		cout << "\n";
 	}
 }
 
@@ -176,6 +179,26 @@ void UI::showWarshall(Graph<double> &graph) {
 	fw.printPath(from, to);
 }
 
+void UI::showComparison(Graph<double> &graph) {
+	cout << "\n── Сравнение алгоритмов по числу итераций ─────\n";
+
+	// Фалкерсон
+	Fulkerson<double> fulkerson(graph);
+	fulkerson.computeOrder();
+	int falkerIter = fulkerson.getIterCount();
+
+	// Флойд-Уоршалл
+	FloydWarshall<double> fw(graph);
+	fw.compute();
+	int warshallIter = fw.getIterCount();
+
+	int n = graph.getNumVertices();
+	cout << "  Вершин в графе: " << n << "\n\n";
+	cout << "  Алгоритм Фалкерсона:    " << falkerIter << " итераций\n";
+	cout << "  Алгоритм Флойда-Уоршалла: " << warshallIter
+	     << " итераций  (= n^3 = " << n << "^3 = " << n * n * n << ")\n";
+}
+
 // ──────────────────────────────────────────────
 //  Главное меню
 // ──────────────────────────────────────────────
@@ -191,9 +214,11 @@ void UI::run() {
 	do {
 		cout << "\n  Главное меню:\n";
 		cout << "    1. Сгенерировать граф\n";
-		cout << "    2. Найти все пути от A до B\n";
-		cout << "    3. Топологическая сортировка (алгоритм Фалкерсона)\n";
-		cout << "    4. Кратчайшие пути (алгоритм Флойда-Уоршалла)\n";
+		cout << "    2. Вывести матрицу смежности\n";
+		cout << "    3. Вывести матрицу весов\n";
+		cout << "    4. Топологическая сортировка (алгоритм Фалкерсона)\n";
+		cout << "    5. Кратчайшие пути (алгоритм Флойда-Уоршалла)\n";
+		cout << "    6. Сравнить алгоритмы по числу итераций\n";
 		cout << "    0. Выход\n";
 		cout << "  Ваш выбор: ";
 
@@ -218,8 +243,7 @@ void UI::run() {
 				    Generator<double>(n, directed, wt, 10.0, 2.0, 10.0, 2.0)
 				        .generateGraph());
 
-				cout << "\n── Результат ───────────────────────────\n";
-				showGraph(*currentGraph);
+				cout << "\nГраф сгенерирован\n";
 			} catch (const exception &e) {
 				cout << "  Ошибка генерации: " << e.what() << "\n";
 			}
@@ -229,7 +253,7 @@ void UI::run() {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
-				showAllPaths(*currentGraph);
+				currentGraph->printAdjMatrix();
 			}
 		}
 
@@ -237,7 +261,8 @@ void UI::run() {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
-				showFulkerson(*currentGraph);
+				currentGraph->printWeightMatrix();
+				currentGraph->printEdges();
 			}
 		}
 
@@ -245,7 +270,23 @@ void UI::run() {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
+				showFulkerson(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 5) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
 				showWarshall(*currentGraph);
+			}
+		}
+
+		if (menuChoice == 6) {
+			if (!currentGraph) {
+				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
+			} else {
+				showComparison(*currentGraph);
 			}
 		}
 
