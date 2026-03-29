@@ -115,8 +115,7 @@ template <typename T>
 void FloydWarshall<T>::printPath(int from, int to) const {
 	const T INF = getPosINF();
 
-	cout << "\n── Кратчайший путь: " << from << " → " << to
-	     << " ──────────────\n";
+	cout << "\n== Кратчайший путь: " << from << " -> " << to << " ==\n";
 
 	if (distMatrix[from][to] == INF) {
 		cout << "  Путь недостижим\n";
@@ -134,7 +133,7 @@ void FloydWarshall<T>::printPath(int from, int to) const {
 	for (int i = 0; i < (int)path.size(); i++) {
 		cout << path[i];
 		if (i + 1 < (int)path.size())
-			cout << " → ";
+			cout << " -> ";
 	}
 
 	// выводим длину пути

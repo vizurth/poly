@@ -36,8 +36,6 @@ class Graph {
 
 	vector<vector<int>> findAllPaths(int from, int to) const;
 
-	// Возвращает новый граф, где вершина v получает номер order[v].
-	// Используется после топологической сортировки Фалкерсона.
 	Graph<T> reorder(const vector<int> &order) const;
 };
 

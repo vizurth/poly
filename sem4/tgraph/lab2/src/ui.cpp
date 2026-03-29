@@ -91,8 +91,7 @@ void UI::showAllPaths(Graph<double> &graph) {
 
 	auto paths = graph.findAllPaths(from, to);
 
-	cout << "\n── Все пути из " << from << " в " << to
-	     << " ────────────────────\n";
+	cout << "\n== Все пути из " << from << " в " << to << " ==\n";
 	if (paths.empty()) {
 		cout << "  Путей нет.\n";
 		return;
@@ -145,7 +144,7 @@ void UI::showWarshall(Graph<double> &graph) {
 	FloydWarshall<double> fw(graph);
 	fw.compute();
 
-	cout << "\n── Алгоритм Флойда-Уоршалла ──────────────────\n";
+	cout << "\n== Алгоритм Флойда-Уоршалла ==\n";
 	fw.printDistMatrix();
 
 	int choice;
@@ -181,7 +180,7 @@ void UI::showWarshall(Graph<double> &graph) {
 }
 
 void UI::showComparison(Graph<double> &graph) {
-	cout << "\n── Сравнение алгоритмов по числу итераций ─────\n";
+	cout << "\n== Сравнение алгоритмов по числу итераций ==\n";
 
 	// Фалкерсон
 	Fulkerson<double> fulkerson(graph);
@@ -205,9 +204,7 @@ void UI::showComparison(Graph<double> &graph) {
 // ──────────────────────────────────────────────
 
 void UI::run() {
-	cout << "╔══════════════════════════════════════╗\n";
-	cout << "║     Генератор случайных графов       ║\n";
-	cout << "╚══════════════════════════════════════╝\n";
+	cout << "== Генератор случайных графов ==\n";
 
 	Graph<double> *currentGraph = nullptr;
 
@@ -233,7 +230,7 @@ void UI::run() {
 			break;
 
 		if (menuChoice == 1) {
-			cout << "\n── Параметры графа ─────────────────────\n";
+			cout << "\n== Параметры графа ==\n";
 			int n = askNumVertices();
 			bool directed = askDirected();
 			WeightType wt = askWeightType();
