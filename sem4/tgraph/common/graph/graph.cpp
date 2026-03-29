@@ -274,3 +274,22 @@ vector<vector<int>> Graph<T>::findAllPaths(int from, int to) const {
 
 	return allPaths;
 }
+
+/*
+    LOOK: Graph<T> reorder(const vector<int>& order) const
+    Строим новый граф где вершина v получает номер order[v].
+    Ребро old_i → old_j с весом w становится order[old_i] → order[old_j].
+    После Фалкерсона матрица нового графа будет верхнетреугольной.
+*/
+template <typename T>
+Graph<T> Graph<T>::reorder(const vector<int> &order) const {
+	Graph<T> result(numVertices);
+	for (int i = 0; i < numVertices; i++) {
+		for (int j = 0; j < numVertices; j++) {
+			if (adjMatrix[i][j] != 0) {
+				result.addEdge(order[i], order[j], weightMatrix[i][j]);
+			}
+		}
+	}
+	return result;
+}

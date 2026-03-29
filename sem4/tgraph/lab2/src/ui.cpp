@@ -131,11 +131,12 @@ void UI::showAllPaths(Graph<double> &graph) {
 // 	sorted.printEdges();
 // }
 
-void UI::showFulkerson(Graph<double> &graph) {
+vector<int> UI::showFulkerson(Graph<double> &graph) {
 	Fulkerson<double> fulkerson(graph);
 
 	vector<int> order = fulkerson.computeOrder();
 	fulkerson.printResult(order);
+	return order;
 }
 
 void UI::showWarshall(Graph<double> &graph) {
@@ -270,7 +271,13 @@ void UI::run() {
 			if (!currentGraph) {
 				cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 			} else {
-				showFulkerson(*currentGraph);
+				vector<int> order = showFulkerson(*currentGraph);
+				if (!order.empty()) {
+					Graph<double> *reordered = new Graph<double>(currentGraph->reorder(order));
+					delete currentGraph;
+					currentGraph = reordered;
+					cout << "\n  Граф переупорядочен. Матрицы теперь отражают новую нумерацию.\n";
+				}
 			}
 		}
 

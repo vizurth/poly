@@ -13,7 +13,7 @@ class UI {
 
 	void showGraph(Graph<double> &graph);
 	void showAllPaths(Graph<double> &graph);
-	void showFulkerson(Graph<double> &graph);
+	vector<int> showFulkerson(Graph<double> &graph);
 	void showWarshall(Graph<double> &graph);
 	void showComparison(Graph<double> &graph);
 
