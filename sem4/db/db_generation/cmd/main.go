@@ -5,11 +5,8 @@ import (
 	"db_generation/internal/config"
 	"db_generation/internal/logger"
 	"db_generation/internal/postgres"
-	"db_generation/internal/seeder"
-	"sort"
 	"time"
 
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -41,21 +38,23 @@ func main() {
 		log.Fatal(ctx, "failed to run migrations")
 	}
 
-	report, err := seeder.SeedWithReport(ctx, pool, seeder.DefaultConfig())
-	if err != nil {
-		log.Fatal(ctx, "failed to seed database", zap.Error(err))
-	}
+	log.Info(ctx, "db migration success")
 
-	tables := make([]string, 0, len(report.TableCounts))
-	for table := range report.TableCounts {
-		tables = append(tables, table)
-	}
-	sort.Strings(tables)
+	// report, err := seeder.SeedWithReport(ctx, pool, seeder.DefaultConfig())
+	// if err != nil {
+	// 	log.Fatal(ctx, "failed to seed database", zap.Error(err))
+	// }
 
-	for _, table := range tables {
-		log.Info(ctx, "seed report", zap.String("table", table), zap.Int("count", report.TableCounts[table]))
-	}
-	log.Info(ctx, "seed report total", zap.Int("total_rows", report.TotalRows))
+	// tables := make([]string, 0, len(report.TableCounts))
+	// for table := range report.TableCounts {
+	// 	tables = append(tables, table)
+	// }
+	// sort.Strings(tables)
 
-	log.Info(ctx, "db generation completed successfully")
+	// for _, table := range tables {
+	// 	log.Info(ctx, "seed report", zap.String("table", table), zap.Int("count", report.TableCounts[table]))
+	// }
+	// log.Info(ctx, "seed report total", zap.Int("total_rows", report.TotalRows))
+
+	// log.Info(ctx, "db generation completed successfully")
 }

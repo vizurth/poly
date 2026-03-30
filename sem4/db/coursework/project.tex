@@ -30,7 +30,25 @@
     \end{tabularx}
 \end{table}
 
-% --- Таблица 2: employee ---
+% --- Таблица 2: employee_status ---
+\begin{table}[H]
+    \caption{Таблица статусов сотрудника}
+    \label{tab:employee_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус сотрудника -- employee\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_id & employee\_status\_id & INT & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(50) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 3: employee ---
 \begin{table}[H]
     \caption{Таблица сотрудников}
     \label{tab:employee}
@@ -44,15 +62,14 @@
         \hline
         1 & сотрудник\_id & employee\_id & INT & - & PK & - & NOT NULL \\
         2 & тип\_сотрудника\_id & employee\_type\_id & INT & - & FK & empl\_type & NOT NULL \\
-        3 & фио & full\_name & VARCHAR(255) & - & - & - & NOT NULL \\
+        3 & фио & full\_name & VARCHAR(150) & - & - & - & NOT NULL \\
         4 & логин & login & VARCHAR(50) & - & UQ & - & NOT NULL \\
-        5 & статус & status & VARCHAR(30) & - & - & - & NOT NULL \\
-        6 & должность & position & VARCHAR(50) & - & - & - & NOT NULL \\
+        5 & статус_id & employee\_status\_id & INT & - & FK & employee\_status & NOT NULL \\
         \hline
     \end{tabularx}
 \end{table}
 
-% --- Таблица 3: parking_zone ---
+% --- Таблица 4: parking_zone ---
 \begin{table}[H]
     \caption{Таблица зон парковки}
     \label{tab:parking_zone}
@@ -66,17 +83,56 @@
         \hline
         1 & зона\_парковки\_id & parking\_zone\_id & INT & - & PK & - & NOT NULL \\
         2 & название & name & VARCHAR(100) & - & - & - & NOT NULL \\
-        3 & тип\_зоны & zone\_type & VARCHAR(30) & - & - & - & NOT NULL \\
+        
+        3 & тип\_зоны\_id & zone\_type\_id & INT & - & FK & zone\_typ & NOT NULL \\
+        
         4 & район\_города & city\_district & VARCHAR(100) & - & - & - & NOT NULL \\
         5 & макс\_авто & max\_cars & INT & - & - & - & NOT NULL \\
-        6 & статус & active\_status & VARCHAR(30) & - & - & - & NOT NULL \\
+        
+        6 & статус\_зоны\_id & zone\_status\_id & INT & - & FK & zone\_st & NOT NULL \\
         \hline
     \end{tabularx}
 \end{table}
 
-% --- Таблица 4: parking_zone_point ---
+% --- Таблица 5: parking_zone_type ---
 \begin{table}[H]
-    \caption{Координаты зон парковки}
+    \caption{Справочник типов зон парковки}
+    \label{tab:parking_zone_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип зоны парковки -- parking\_zone\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & тип\_зоны\_id & zone\_type\_id & INT & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(50) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 6: parking_zone_status ---
+\begin{table}[H]
+    \caption{Справочник статусов зоны парковки}
+    \label{tab:parking_zone_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус зоны парковки -- parking\_zone\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_зоны\_id & zone\_status\_id & INT & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(50) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 7: parking_zone_point ---
+\begin{table}[H]
+    \caption{Таблица координат зон парковки}
     \label{tab:parking_zone_point}
     \footnotesize
     \renewcommand{\arraystretch}{1.3}
@@ -95,7 +151,7 @@
     \end{tabularx}
 \end{table}
 
-% --- Таблица 5: car ---
+% --- Таблица 8: car ---
 \begin{table}[H]
     \caption{Таблица автомобилей}
     \label{tab:car}
@@ -113,12 +169,30 @@
         4 & модель & model & VARCHAR(100) & - & - & - & NOT NULL \\
         5 & год\_выпуска & manufacture\_year & INT & - & - & - & NOT NULL \\
         6 & vin\_номер & vin & VARCHAR(17) & - & UQ & - & NOT NULL \\
-        7 & статус & current\_status & VARCHAR(30) & - & - & - & NOT NULL \\
+        7 & статус\_id & car\_status\_id & INT & - & FK & car\_status & NOT NULL \\
         \hline
     \end{tabularx}
 \end{table}
 
-% --- Таблица 6: parking_session ---
+% --- Таблица 9: car_status ---
+\begin{table}[H]
+    \caption{Таблица статусов автомобиля}
+    \label{tab:car_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус автомобиля -- car\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_id & car\_status\_id & INT & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(50) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 10: parking_session ---
 \begin{table}[H]
     \caption{Таблица парковочных сессий}
     \label{tab:parking_session}
@@ -139,7 +213,7 @@
     \end{tabularx}
 \end{table}
 
-% --- Таблица 7: movement_track ---
+% --- Таблица 11: track ---
 \begin{table}[H]
     \caption{Таблица треков движения}
     \label{tab:movement_track}
@@ -155,15 +229,51 @@
         2 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
         3 & время\_начала & start\_time & TIMESTAMP & - & - & - & NOT NULL \\
         4 & время\_конца & end\_time & TIMESTAMP & NULL & - & - & NULL \\
-        5 & статус\_трека & track\_status & VARCHAR(30) & - & - & - & NOT NULL \\
-        6 & вид\_трека & track\_kind & VARCHAR(30) & - & - & - & NOT NULL \\
+        5 & статус\_трека\_id & track\_status\_id & INT & - & FK & track\_status\_type & NOT NULL \\
+        6 & вид\_трека\_id & track\_kind\_id & INT & - & FK & track\_kind\_type & NOT NULL \\
         \hline
     \end{tabularx}
 \end{table}
 
-% --- Таблица 8: track_point ---
+% --- Таблица 12: track_status_type ---
 \begin{table}[H]
-    \caption{Точки трека движения}
+    \caption{Таблица типов статусов трека}
+    \label{tab:track_status_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип статуса трека -- track\_status\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_трека\_id & track\_status\_id & INT & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(30) & - & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 13: track_kind_type ---
+\begin{table}[H]
+    \caption{Таблица типов видов трека}
+    \label{tab:track_kind_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип вида трека -- track\_kind\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & вид\_трека\_id & track\_kind\_id & INT & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(30) & - & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 14: track_point ---
+\begin{table}[H]
+    \caption{Таблица точек трека движения}
     \label{tab:track_point}
     \footnotesize
     \renewcommand{\arraystretch}{1.3}
@@ -173,18 +283,36 @@
         \hline
         № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
         \hline
-        1 & координаты\_точки\_id & track\_point\_id & INT & - & PK & - & NOT NULL \\
-        2 & трек\_id & track\_id & INT & - & FK & mov\_track & NOT NULL \\
-		3 & авто\_id & car\_id & INT & - & FK & car & NULL \\
+        1 & id\_точки & track\_point\_id & INT & - & PK & - & NOT NULL \\
+        2 & id\_трека & track\_id & INT & - & FK & mov\_track & NOT NULL \\
+        3 & id\_авто & car\_id & INT & - & FK & car & NULL \\
         4 & широта & latitude & NUMERIC(9,6) & - & - & - & NOT NULL \\
         5 & долгота & longitude & NUMERIC(9,6) & - & - & - & NOT NULL \\
         6 & скорость & speed\_kmh & NUMERIC(6,2) & NULL & - & - & NULL \\
-        7 & источник\_данных & data\_source & VARCHAR(30) & - & - & - & NOT NULL \\
+        7 & источник\_id & data\_source\_id & INT & - & FK & data\_source\_type & NOT NULL \\
         \hline
     \end{tabularx}
 \end{table}
 
-% --- Таблица 9: alert_event ---
+% --- Таблица 15: data_source_type ---
+\begin{table}[H]
+    \caption{Таблица источников данных}
+    \label{tab:data_source_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Источник данных -- data\_source\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & источник\_id & data\_source\_id & INT & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(50) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 16: alert_event ---
 \begin{table}[H]
     \caption{Таблица тревожных событий}
     \label{tab:alert_event}
@@ -199,16 +327,53 @@
         1 & событие\_id & alert\_event\_id & INT & - & PK & - & NOT NULL \\
         2 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
         3 & сотрудник\_id & employee\_id & INT & NULL & FK & employee & NULL \\
-        4 & тип\_события & event\_type & VARCHAR(50) & - & - & - & NOT NULL \\
+        4 & тип\_события\_id & alert\_event\_type\_id & INT & - & FK & alert\_event\_type & NOT NULL \\
         5 & широта & latitude & NUMERIC(9,6) & NULL & - & - & NULL \\
         6 & долгота & longitude & NUMERIC(9,6) & NULL & - & - & NULL \\
         7 & описание & description & TEXT & NULL & - & - & NULL \\
-        8 & статус\_обработки & process\_status & VARCHAR(30) & - & - & - & NOT NULL \\
+        8 & статус\_id & status\_id & INT & - & FK & event\_process\_status & NOT NULL \\
         \hline
     \end{tabularx}
 \end{table}
 
-% --- Таблица 10: geo_request ---
+% --- Таблица 17: alert_event_process_status ---
+\begin{table}[H]
+    \caption{Таблица статусов обработки события}
+    \label{tab:alert_event_process_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус обработки события -- alert\_event\_process\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_id & status\_id & INT & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(50) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 18: alert_event_type ---
+\begin{table}[H]
+    \caption{Таблица типов тревожных событий}
+    \label{tab:alert_event_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип тревожного события -- alert\_event\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & тип\_события\_id & alert\_event\_type\_id & INT & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(30) & - & UQ & - & NOT NULL \\
+        3 & описание & description & TEXT & - & - & - & NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 19: geo_request ---
 \begin{table}[H]
     \caption{Таблица обращений}
     \label{tab:geo_request}
@@ -223,8 +388,27 @@
         1 & запрос\_id & geo\_request\_id & INT & - & PK & - & NOT NULL \\
         2 & сотрудник\_id & employee\_id & INT & - & FK & employee & NOT NULL \\
         3 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
-        4 & тип\_запроса & request\_type & VARCHAR(50) & - & - & - & NOT NULL \\
+        4 & тип\_запроса_id & geo\_request\_type\_id & INT & - & FK & geo\_request\_type & NOT NULL \\
         5 & цель\_запроса & request\_goal & TEXT & - & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 20: geo_request_type ---
+\begin{table}[H]
+    \caption{Таблица типов обращения к геомониторингу}
+    \label{tab:geo_request_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип обращения к геомониторингу -- geo\_request_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & тип\_запрос\_id & geo\_request_type\_id & INT & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(30) & - & UQ & - & NOT NULL \\
+        3 & описание & description & TEXT & - & - & - & NULL \\
         \hline
     \end{tabularx}
 \end{table}
@@ -233,25 +417,33 @@
 
 \begin{enumerate}
     \item Тип сотрудника (тип\_сотрудника\_id(INT), название\_типа(VARCHAR(50)), описание(TEXT)).
+    \item Статус сотрудника (статус\_id(INT), название(VARCHAR(50))).
+    \item Сотрудник (сотрудник\_id(INT), тип\_сотрудника\_id(INT), фио(VARCHAR(150)), логин(VARCHAR(50)), статус\_id(INT)).
     
-    \item Сотрудник (сотрудник\_id(INT), тип\_сотрудника\_id(INT), фио(VARCHAR(255)), логин(VARCHAR(50)), статус(VARCHAR(30)), должность(VARCHAR(50))).
-    
-    \item Зона парковки (зона\_парковки\_id(INT), название(VARCHAR(100)),\\ тип\_зоны(VARCHAR(30)), район\_города(VARCHAR(100)), макс\_авто(INT), статус(VARCHAR(30))).
-    
+    \item Тип зоны парковки (тип\_зоны\_id(INT), название(VARCHAR(50))).
+    \item Статус зоны парковки (статус\_зоны\_id(INT), название(VARCHAR(50))).
+    \item Зона парковки (зона\_парковки\_id(INT), название(VARCHAR(100)), тип\_зоны\_id(INT), район\_города(VARCHAR(100)), макс\_авто(INT), статус\_зоны\_id(INT)).
     \item Координаты зоны парковки (координаты\_зоны\_id(INT), зона\_парковки\_id(INT), номер\_вершины(INT), широта(NUMERIC(9,6)), долгота(NUMERIC(9,6))).
     
-    \item Автомобиль (авто\_id(INT), зона\_парковки\_id(INT), гос\_номер(VARCHAR(20)), марка(VARCHAR(100)), модель(VARCHAR(100)), год\_выпуска(INT), \\ vin\_номер(VARCHAR(17)), статус(VARCHAR(30))).
+    \item Статус автомобиля (статус\_id(INT), название(VARCHAR(50))).
+    \item Автомобиль (авто\_id(INT), гос\_номер(VARCHAR(20)), марка(VARCHAR(100)), модель(VARCHAR(100)), год\_выпуска(INT), vin\_номер(VARCHAR(17)), статус\_id(INT)).
+    \item Парковочная сессия (сессия\_id(INT), авто\_id(INT), зона\_парковки\_id(INT), время\_въезда(TIMESTAMP), время\_выезда(TIMESTAMP)).
     
-	\item Парковочная сессия (сессия\_id(INT), авто\_id(INT), зона\_парковки\_id(INT), время\_въезда(TIMESTAMP), время\_выезда(TIMESTAMP)).
+    \item Тип статуса трека (статус\_трека\_id(INT), название\_типа(VARCHAR(30))).
+    \item Тип вида трека (вид\_трека\_id(INT), название\_типа(VARCHAR(30))).
+    \item Трек движения (трек\_id(INT), авто\_id(INT), время\_начала(TIMESTAMP), время\_конца(TIMESTAMP), статус\_трека\_id(INT), вид\_трека\_id(INT)).
+    \item Источник данных (источник\_id(INT), название(VARCHAR(50))).
+    \item Координаты точки трека (id\_точки(INT), id\_трека(INT), id\_авто(INT), широта(NUMERIC(9,6)), долгота(NUMERIC(9,6)), скорость(NUMERIC(6,2)), источник\_id(INT)).
     
-    \item Трек движения (трек\_id(INT), авто\_id(INT), время\_начала(TIMESTAMP), время\_конца(TIMESTAMP), статус\_трека(VARCHAR(30)), \\вид\_трека(VARCHAR(30))).
+    \item Тип тревожного события (тип\_события\_id(INT), название\_типа(VARCHAR(30)), описание(TEXT)).
+    \item Статус обработки события (статус\_id(INT), название(VARCHAR(50))).
+    \item Тревожное событие (событие\_id(INT), авто\_id(INT), сотрудник\_id(INT), тип\_события\_id(INT), широта(NUMERIC(9,6)), долгота(NUMERIC(9,6)), описание(TEXT), статус\_id(INT)).
     
-    \item Координаты точки трека (координаты\_точки\_id(INT), трек\_id(INT), широта(NUMERIC(9,6)), долгота(NUMERIC(9,6)), скорость(NUMERIC(6,2)), источник\_данных(VARCHAR(30))).
-    
-    \item Тревожное событие (событие\_id(INT), авто\_id(INT), сотрудник\_id(INT), \\ тип\_события(VARCHAR(50)), широта(NUMERIC(9,6)), долгота(NUMERIC(9,6)), описание(TEXT), статус\_обработки(VARCHAR(30))).
-    
-    \item Обращения к геомониторингу (запрос\_id(INT), сотрудник\_id(INT), авто\_id(INT), тип\_запроса(VARCHAR(50)), цель\_запроса(TEXT)).
+    \item Тип обращения к геомониторингу (тип\_запрос\_id(INT), название\_типа(VARCHAR(30)), описание(TEXT)).
+    \item Обращение к геомониторингу (запрос\_id(INT), сотрудник\_id(INT), авто\_id(INT), тип\_запроса\_id(INT), цель\_запроса(TEXT)).
 \end{enumerate}
+
+% TODO: Добавить словарики для типов, сделать обоснование ограничений атрибутов(под каждой табличкой)
 
 \clearpage
 \newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
@@ -291,6 +483,6 @@
 
 База данных создана средствами СУБД PostgreSQL с использованием SQL-скриптов, приведенных в \hyperref[app:A]{приложении A} (схема на рис. 3).
 
-% Наполнение базы синтетическими данными (320225 записей в 9 таблицах) выполнено утилитой на языке Go 1.25.4 с использованием драйвера pgx. Таблицы-справочники заполнены статическими данными, а основные сущности сгенерированы алгоритмически с учетом логических связей в \hyperref[app:B]{приложении Б}.
+% % Наполнение базы синтетическими данными (320225 записей в 9 таблицах) выполнено утилитой на языке Go 1.25.4 с использованием драйвера pgx. Таблицы-справочники заполнены статическими данными, а основные сущности сгенерированы алгоритмически с учетом логических связей в \hyperref[app:B]{приложении Б}.
 
 \newpage

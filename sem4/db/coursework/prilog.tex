@@ -9,22 +9,36 @@ CREATE TABLE employee_type (
     description        TEXT
 );
 
+CREATE TABLE employee_status (
+    employee_status_id SERIAL PRIMARY KEY,
+    name               VARCHAR(50) NOT NULL UNIQUE
+);
+
 CREATE TABLE employee (
     employee_id        SERIAL PRIMARY KEY,
     employee_type_id   INT NOT NULL REFERENCES employee_type(employee_type_id),
-    full_name          VARCHAR(255) NOT NULL,
+    full_name          VARCHAR(150) NOT NULL,
     login              VARCHAR(50) NOT NULL UNIQUE,
-    status             VARCHAR(30)  NOT NULL,
-    position           VARCHAR(50) NOT NULL
+    employee_status_id INT NOT NULL REFERENCES employee_status(employee_status_id)
+);
+
+CREATE TABLE parking_zone_type (
+    zone_type_id       SERIAL PRIMARY KEY,
+    name               VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE parking_zone_status (
+    zone_status_id     SERIAL PRIMARY KEY,
+    name               VARCHAR(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE parking_zone (
     parking_zone_id    SERIAL PRIMARY KEY,
     name               VARCHAR(100) NOT NULL,
-    zone_type          VARCHAR(30)  NOT NULL,
+    zone_type_id       INT NOT NULL REFERENCES parking_zone_type(zone_type_id),
     city_district      VARCHAR(100) NOT NULL,
     max_cars           INT      NOT NULL,
-    active_status      VARCHAR(30)  NOT NULL
+    zone_status_id     INT NOT NULL REFERENCES parking_zone_status(zone_status_id)
 );
 
 CREATE TABLE parking_zone_point (
@@ -36,6 +50,11 @@ CREATE TABLE parking_zone_point (
     UNIQUE (parking_zone_id, vertex_number)
 );
 
+CREATE TABLE car_status (
+    car_status_id      SERIAL PRIMARY KEY,
+    name               VARCHAR(50) NOT NULL UNIQUE
+);
+
 CREATE TABLE car (
     car_id             SERIAL PRIMARY KEY,
     reg_number         VARCHAR(20)  NOT NULL UNIQUE,
@@ -43,15 +62,30 @@ CREATE TABLE car (
     model              VARCHAR(100) NOT NULL,
     manufacture_year   INT      NOT NULL,
     vin                VARCHAR(17)  NOT NULL UNIQUE,
-    current_status     VARCHAR(30)  NOT NULL
+    car_status_id      INT NOT NULL REFERENCES car_status(car_status_id)
 );
 
 CREATE TABLE parking_session (
-    parking_session_id         SERIAL PRIMARY KEY,
+    parking_session_id SERIAL PRIMARY KEY,
     car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
     parking_zone_id    INT NOT NULL REFERENCES parking_zone(parking_zone_id) ON DELETE CASCADE,
-    entry_time         TIMESTAMP NOT NULL, -- Время въезда
-    exit_time          TIMESTAMP           -- Время выезда (NULL = машина стоит там сейчас)
+    entry_time         TIMESTAMP NOT NULL,
+    exit_time          TIMESTAMP
+);
+
+CREATE TABLE track_status_type (
+    track_status_id    SERIAL PRIMARY KEY,
+    name               VARCHAR(30) NOT NULL UNIQUE
+);
+
+CREATE TABLE track_kind_type (
+    track_kind_id      SERIAL PRIMARY KEY,
+    name               VARCHAR(30) NOT NULL UNIQUE
+);
+
+CREATE TABLE data_source_type (
+    data_source_id     SERIAL PRIMARY KEY,
+    name               VARCHAR(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE track (
@@ -59,49 +93,57 @@ CREATE TABLE track (
     car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
     start_time         TIMESTAMP NOT NULL,
     end_time           TIMESTAMP,
-    track_status       VARCHAR(30) NOT NULL,
-    track_kind         VARCHAR(30) NOT NULL
+    track_status_id    INT NOT NULL REFERENCES track_status_type(track_status_id),
+    track_kind_id      INT NOT NULL REFERENCES track_kind_type(track_kind_id)
 );
 
 CREATE TABLE track_point (
     track_point_id     SERIAL PRIMARY KEY,
     track_id           INT REFERENCES track(track_id) ON DELETE CASCADE,
-    car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
+    car_id             INT REFERENCES car(car_id) ON DELETE CASCADE, -- NULL по твоей таблице
     latitude           NUMERIC(9,6)  NOT NULL,
     longitude          NUMERIC(9,6)  NOT NULL,
     speed_kmh          NUMERIC(6,2),
-    data_source        VARCHAR(30) NOT NULL
+    data_source_id     INT NOT NULL REFERENCES data_source_type(data_source_id)
+);
+
+CREATE TABLE alert_event_type (
+    alert_event_type_id SERIAL PRIMARY KEY,
+    name               VARCHAR(30) NOT NULL UNIQUE,
+    description        TEXT
+);
+
+CREATE TABLE alert_event_process_status (
+    status_id          SERIAL PRIMARY KEY,
+    name               VARCHAR(50) NOT NULL UNIQUE
 );
 
 CREATE TABLE alert_event (
     alert_event_id     SERIAL PRIMARY KEY,
     car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
     employee_id        INT REFERENCES employee(employee_id),
-    event_type         VARCHAR(50) NOT NULL,
+    alert_event_type_id INT NOT NULL REFERENCES alert_event_type(alert_event_type_id),
     latitude           NUMERIC(9,6),
     longitude          NUMERIC(9,6),
     description        TEXT,
-    process_status     VARCHAR(30) NOT NULL
+    status_id          INT NOT NULL REFERENCES alert_event_process_status(status_id)
+);
+
+CREATE TABLE geo_request_type (
+    geo_request_type_id SERIAL PRIMARY KEY,
+    name               VARCHAR(30) NOT NULL UNIQUE,
+    description        TEXT
 );
 
 CREATE TABLE geo_request (
     geo_request_id     SERIAL PRIMARY KEY,
     employee_id        INT NOT NULL REFERENCES employee(employee_id),
     car_id             INT NOT NULL REFERENCES car(car_id),
-    request_type       VARCHAR(50) NOT NULL,
+    geo_request_type_id INT NOT NULL REFERENCES geo_request_type(geo_request_type_id),
     request_goal       TEXT NOT NULL
 );
 
-DROP TABLE IF EXISTS geo_request;
-DROP TABLE IF EXISTS alert_event;
-DROP TABLE IF EXISTS track_point;
-DROP TABLE IF EXISTS track;
-DROP TABLE IF EXISTS parking_session;
-DROP TABLE IF EXISTS car;
-DROP TABLE IF EXISTS parking_zone_point;
-DROP TABLE IF EXISTS parking_zone;
-DROP TABLE IF EXISTS employee;
-DROP TABLE IF EXISTS employee_type;
+
 
 \end{lstlisting}
 \newpage
