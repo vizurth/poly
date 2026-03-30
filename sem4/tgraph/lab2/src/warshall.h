@@ -12,9 +12,9 @@ class FloydWarshall {
 	const Graph<T> &graph;
 	int n;
 
-	vector<vector<T>> distMatrix;   // матрица расстояний
-	vector<vector<int>> nextMatrix; // матрица следующих вершин (для пути)
-	int iterCount = 0;              // счётчик итераций тройного цикла
+	vector<vector<T>> distMatrix;  
+	vector<vector<int>> nextMatrix;
+	int iterCount = 0;             
 
 	static T getPosINF() { return numeric_limits<T>::max() / 2; }
 	static T getNegINF() { return -numeric_limits<T>::max() / 2; }

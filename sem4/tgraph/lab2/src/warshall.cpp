@@ -23,8 +23,8 @@ FloydWarshall<T>::FloydWarshall(const Graph<T> &g)
 template <typename T>
 void FloydWarshall<T>::initMatrices() {
 	const T INF = getPosINF();
-	auto adj = graph.getAdjMatrix();         // матрица смежности (0/1) — для проверки наличия ребра
-	auto weights = graph.getWeightMatrix();  // матрица весов — для реальных расстояний
+	auto adj = graph.getAdjMatrix();        
+	auto weights = graph.getWeightMatrix(); 
 
 	distMatrix.assign(n, vector<T>(n, INF));
 	nextMatrix.assign(n, vector<int>(n, -1));
@@ -34,7 +34,7 @@ void FloydWarshall<T>::initMatrices() {
 
 		for (int j = 0; j < n; j++) {
 			if (i != j && adj[i][j] != 0) {
-				distMatrix[i][j] = weights[i][j]; // используем реальный вес, не 1
+				distMatrix[i][j] = weights[i][j];
 				nextMatrix[i][j] = j;
 			}
 		}
@@ -57,16 +57,15 @@ void FloydWarshall<T>::compute() {
 	for (int k = 0; k < n; k++) {
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
-				iterCount++; // считаем каждую проверку тройного цикла
+				iterCount++;
 
-				// пропускаем если нет пути через k
 				if (distMatrix[i][k] == INF || distMatrix[k][j] == INF)
 					continue;
 
 				T newDist = distMatrix[i][k] + distMatrix[k][j];
 				if (newDist < distMatrix[i][j]) {
 					distMatrix[i][j] = newDist;
-					nextMatrix[i][j] = nextMatrix[i][k]; // путь идёт через k
+					nextMatrix[i][j] = nextMatrix[i][k];
 				}
 			}
 		}
@@ -81,7 +80,7 @@ void FloydWarshall<T>::compute() {
 template <typename T>
 vector<int> FloydWarshall<T>::getPath(int from, int to) const {
 	if (nextMatrix[from][to] == -1)
-		return {}; // пути нет
+		return {};
 
 	vector<int> path = {from};
 	int current = from;
@@ -90,7 +89,6 @@ vector<int> FloydWarshall<T>::getPath(int from, int to) const {
 		current = nextMatrix[current][to];
 		path.push_back(current);
 
-		// защита от зацикливания
 		if ((int)path.size() > n)
 			return {};
 	}
@@ -104,6 +102,7 @@ vector<int> FloydWarshall<T>::getPath(int from, int to) const {
 */
 template <typename T>
 void FloydWarshall<T>::printDistMatrix() const {
+	printMatrix(nextMatrix, "Матрица следующих вершин:");
 	printMatrix(distMatrix, "Матрица расстояний (Флойд-Уоршалл):");
 }
 
@@ -128,7 +127,6 @@ void FloydWarshall<T>::printPath(int from, int to) const {
 		return;
 	}
 
-	// выводим путь
 	cout << "  Путь: ";
 	for (int i = 0; i < (int)path.size(); i++) {
 		cout << path[i];
@@ -136,7 +134,6 @@ void FloydWarshall<T>::printPath(int from, int to) const {
 			cout << " -> ";
 	}
 
-	// выводим длину пути
 	cout << "\n  Длина: " << fixed << setprecision(2) << distMatrix[from][to]
 	     << "\n";
 }

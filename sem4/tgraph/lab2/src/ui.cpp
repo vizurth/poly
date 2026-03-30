@@ -7,10 +7,6 @@
 
 using namespace std;
 
-// ──────────────────────────────────────────────
-//  Вспомогательные приватные методы
-// ──────────────────────────────────────────────
-
 int UI::askNumVertices() {
 	int n;
 	while (true) {
@@ -59,7 +55,7 @@ WeightType UI::askWeightType() {
 	}
 }
 
-void UI::showGraph(Graph<double> &graph) {
+void UI::showGraph(Graph<int> &graph) {
 	cout << "\n";
 	graph.printAdjMatrix();
 	cout << "\n";
@@ -68,7 +64,7 @@ void UI::showGraph(Graph<double> &graph) {
 	graph.printEdges();
 }
 
-void UI::showAllPaths(Graph<double> &graph) {
+void UI::showAllPaths(Graph<int> &graph) {
 	int n = graph.getNumVertices();
 	int from, to;
 
@@ -109,39 +105,18 @@ void UI::showAllPaths(Graph<double> &graph) {
 	}
 }
 
-// void UI::showFulkerson(Graph<double> &graph) {
-// 	Fulkerson<double> fulkerson(graph);
-// 	vector<vector<int>> groups;
-
-// 	cout << "\n── Алгоритм Фалкерсона ────────────────────\n";
-// 	cout << "  Исходный граф:\n";
-// 	graph.printEdges();
-
-// 	Graph<double> sorted = fulkerson.sort(groups);
-
-// 	if (groups.empty())
-// 		return;
-
-// 	Fulkerson<double>::printGroups(groups);
-
-// 	cout << "\n── Переименованный граф ──────────────────\n";
-// 	sorted.printAdjMatrix();
-// 	cout << "\n";
-// 	sorted.printEdges();
-// }
-
-vector<int> UI::showFulkerson(Graph<double> &graph) {
-	Fulkerson<double> fulkerson(graph);
+vector<int> UI::showFulkerson(Graph<int> &graph) {
+	Fulkerson<int> fulkerson(graph);
 
 	vector<int> order = fulkerson.computeOrder();
 	fulkerson.printResult(order);
 	return order;
 }
 
-void UI::showWarshall(Graph<double> &graph) {
+void UI::showWarshall(Graph<int> &graph) {
 	int n = graph.getNumVertices();
 
-	FloydWarshall<double> fw(graph);
+	FloydWarshall<int> fw(graph);
 	fw.compute();
 
 	cout << "\n== Алгоритм Флойда-Уоршалла ==\n";
@@ -179,16 +154,16 @@ void UI::showWarshall(Graph<double> &graph) {
 	fw.printPath(from, to);
 }
 
-void UI::showComparison(Graph<double> &graph) {
+void UI::showComparison(Graph<int> &graph) {
 	cout << "\n== Сравнение алгоритмов по числу итераций ==\n";
 
 	// Фалкерсон
-	Fulkerson<double> fulkerson(graph);
+	Fulkerson<int> fulkerson(graph);
 	fulkerson.computeOrder();
 	int falkerIter = fulkerson.getIterCount();
 
 	// Флойд-Уоршалл
-	FloydWarshall<double> fw(graph);
+	FloydWarshall<int> fw(graph);
 	fw.compute();
 	int warshallIter = fw.getIterCount();
 
@@ -199,14 +174,10 @@ void UI::showComparison(Graph<double> &graph) {
 	     << " итераций  (= n^3 = " << n << "^3 = " << n * n * n << ")\n";
 }
 
-// ──────────────────────────────────────────────
-//  Главное меню
-// ──────────────────────────────────────────────
-
 void UI::run() {
 	cout << "== Генератор случайных графов ==\n";
 
-	Graph<double> *currentGraph = nullptr;
+	Graph<int> *currentGraph = nullptr;
 
 	int menuChoice;
 	do {
@@ -237,8 +208,8 @@ void UI::run() {
 
 			try {
 				delete currentGraph;
-				currentGraph = new Graph<double>(
-				    Generator<double>(n, directed, wt, 10.0, 2.0, 10.0, 2.0)
+				currentGraph = new Graph<int>(
+				    Generator<int>(n, directed, wt, 10.0, 2.0, 10.0, 2.0)
 				        .generateGraph());
 
 				cout << "\nГраф сгенерирован\n";
@@ -270,7 +241,7 @@ void UI::run() {
 			} else {
 				vector<int> order = showFulkerson(*currentGraph);
 				if (!order.empty()) {
-					Graph<double> *reordered = new Graph<double>(currentGraph->reorder(order));
+					Graph<int> *reordered = new Graph<int>(currentGraph->reorder(order));
 					delete currentGraph;
 					currentGraph = reordered;
 					cout << "\n  Граф переупорядочен. Матрицы теперь отражают новую нумерацию.\n";

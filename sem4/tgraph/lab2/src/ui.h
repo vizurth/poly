@@ -11,11 +11,11 @@ class UI {
 	bool askDirected();
 	WeightType askWeightType();
 
-	void showGraph(Graph<double> &graph);
-	void showAllPaths(Graph<double> &graph);
-	vector<int> showFulkerson(Graph<double> &graph);
-	void showWarshall(Graph<double> &graph);
-	void showComparison(Graph<double> &graph);
+	void showGraph(Graph<int> &graph);
+	void showAllPaths(Graph<int> &graph);
+	vector<int> showFulkerson(Graph<int> &graph);
+	void showWarshall(Graph<int> &graph);
+	void showComparison(Graph<int> &graph);
 
   public:
 	void run();

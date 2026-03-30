@@ -12,7 +12,6 @@ class Generator {
 	WeibullDistribution distributionForWeights;
 	WeibullDistribution distributionForStructure;
 
-	// Конфиг графа
 	int numVertices;
 	bool directed;
 	WeightType weightMode;

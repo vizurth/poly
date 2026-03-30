@@ -14,14 +14,13 @@ void printMatrix(const vector<vector<T>> &matrix, const string &title) {
 
 	cout << "\n" << title << "\n";
 
-	// заголовок (номера столбцов)
 	cout << "    ";
 	for (int i = 0; i < n; i++) {
 		cout << setw(8) << i;
 	}
 	cout << "\n";
 
-	// строки матрицы
+	// строки марицы
 	for (int i = 0; i < n; i++) {
 		cout << setw(3) << i << " ";
 		for (int j = 0; j < n; j++) {
@@ -48,7 +47,7 @@ void printVector(const vector<T> &vec, const string &title) {
 	cout << "\n" << title << "\n";
 	for (size_t i = 0; i < vec.size(); i++) {
 		if (vec[i] == INF<T>) {
-			cout << "  " << i << ": -\n"; // недостижимо
+			cout << "  " << i << ": -\n";
 		} else {
 			cout << "  " << i << ": " << vec[i] << "\n";
 		}

@@ -10,14 +10,13 @@ class Fulkerson {
   private:
 	const Graph<T> &graph;
 	int n;
-	mutable int iterCount = 0; // счётчик проверок входящих рёбер
+	mutable int iterCount = 0;
 
 	vector<int> findRoots(const vector<bool> &removed) const;
 
   public:
 	Fulkerson(const Graph<T> &g);
 
-	// topologicalOrder[i] = новый номер вершины i
 	vector<int> computeOrder() const;
 	int getIterCount() const { return iterCount; }
 

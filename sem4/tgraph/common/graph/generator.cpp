@@ -41,8 +41,7 @@ T Generator<T>::generateWeight(WeightType weightType) {
 
 /*
     LOOK: void weibullShuffle(vector<int>& vertices)
-    Перемешиваем вектор вершин с помощью распределения Вейбулла для генерации
-   случайных индексов
+    Перемешиваем вектор вершин с помощью распределения Вейбулла для генерации случайных индексов
 */
 template <typename T>
 void Generator<T>::weibullShuffle(vector<int> &vertices) {
@@ -70,7 +69,7 @@ Graph<T> Generator<T>::generateGraph() {
 
 	vector<int> perm(numVertices);
 	iota(perm.begin(), perm.end(), 0);
-	weibullShuffle(perm);
+	// weibullShuffle(perm);
 
 	for (int i = 1; i < numVertices; i++) {
 		int j = randomIndex(i);
@@ -80,6 +79,7 @@ Graph<T> Generator<T>::generateGraph() {
 			graph.addEdge(perm[i], perm[j], weight);
 		}
 	}
+
 
 	for (int i = 0; i < numVertices; i++) {
 		int edgesToAdd = degrees[i];
