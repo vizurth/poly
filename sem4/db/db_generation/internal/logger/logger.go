@@ -28,13 +28,10 @@ func New(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-// Get LoggerFromCtx возвращает логгер из контекста или создаёт новый
 func GetLoggerFromCtx(ctx context.Context) (*Logger, error) {
 	if l, ok := ctx.Value(KeyForLogger).(*Logger); ok {
 		return l, nil
 	}
-	//l, _ := zap.NewProduction()
-	//return &Logger{l: l}
 	return nil, fmt.Errorf("logger not found in context")
 }
 
