@@ -13,18 +13,18 @@ FloydWarshall<T>::FloydWarshall(const Graph<T> &g)
 
     distMatrix[i][j]:
         0       если i == j
-        w(i,j)  если есть ребро i → j
+        w(i,j)  если есть ребро i => j
         +INF    если ребра нет
 
     nextMatrix[i][j]:
-        j    если есть ребро i → j
+        j    если есть ребро i => j
         -1   если пути нет
 */
 template <typename T>
 void FloydWarshall<T>::initMatrices() {
 	const T INF = getPosINF();
-	auto adj = graph.getAdjMatrix();        
-	auto weights = graph.getWeightMatrix(); 
+	auto adj = graph.getAdjMatrix();
+	auto weights = graph.getWeightMatrix();
 
 	distMatrix.assign(n, vector<T>(n, INF));
 	nextMatrix.assign(n, vector<int>(n, -1));

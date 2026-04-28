@@ -1,0 +1,51 @@
+\usepackage[russian]{babel}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\newfontfamily\cyrillicfonttt{Courier New}
+\usepackage[14pt]{extsizes}
+\usepackage[left=20mm, top=20mm, right=20mm, bottom=20mm, footskip=10mm]{geometry}
+\usepackage{ragged2e}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{listings}
+\usetikzlibrary{arrows.meta}
+\usepackage{nccmath}
+\usepackage{soul}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{pdflscape}
+
+\definecolor{link_color}{HTML}{0000EE}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=link_color,
+    urlcolor=link_color,
+    citecolor=link_color
+}
+
+\lstset{
+    language=C++,
+    basicstyle=\cyrillicfonttt\small,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{red},
+    frame=single,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    keepspaces=true,
+    columns=flexible,
+    fontadjust=true,
+    basewidth={0.5em,0.45em},
+    tabsize=4,
+}

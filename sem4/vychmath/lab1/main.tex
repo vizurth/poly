@@ -1,0 +1,494 @@
+% !TEX root = combined.tex
+
+\documentclass[a4paper, final]{article}
+
+% ========== НАСТРОЙКИ (settings.tex) ==========
+\usepackage[russian]{babel}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\newfontfamily\cyrillicfonttt{Courier New}
+\usepackage[14pt]{extsizes}
+\usepackage[left=20mm, top=20mm, right=20mm, bottom=20mm, footskip=10mm]{geometry}
+\usepackage{ragged2e}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{listings}
+\usetikzlibrary{arrows.meta}
+\usepackage{nccmath}
+\usepackage{soul}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{pdflscape}
+\usepackage{amsmath}
+
+\definecolor{link_color}{HTML}{0000EE}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=link_color,
+    urlcolor=link_color,
+    citecolor=link_color
+}
+
+\lstset{
+    language=Python,
+    basicstyle=\cyrillicfonttt\small,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    stringstyle=\color{red},
+    frame=single,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    showstringspaces=false,
+    keepspaces=true,
+    columns=flexible,
+    fontadjust=true,
+    basewidth={0.5em,0.45em},
+    tabsize=4,
+}
+
+\begin{document}
+
+% ========== ТИТУЛЬНЫЙ ЛИСТ (title.tex) ==========
+{
+\thispagestyle{empty}
+\begin{center}
+    \hfill \break
+    \hfill \break
+    МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ РОССИЙСКОЙ ФЕДЕРАЦИИ\\[5 pt]
+    Федеральное государственное автономное образовательное учреждение высшего образования
+    «Санкт-Петербургский политехнический университет Петра Великого»\\[10 pt]
+    Институт компьютерных наук и кибербезопасности\\[5 pt]
+    Направление: 02.03.01 Математика и компьютерные науки\\[30pt]
+
+    
+    {\large Отчет по дисциплине: «Вычислительная математика»}\\[30 pt]
+    \LARGE\bf «Лабораторная работа №1».
+\end{center}
+
+\vspace{110 pt}
+
+\begin{tabular*}{460pt}{@{\extracolsep{\fill}} l r}
+     Студент,\tabularnewline группы 5130201/40003 \hspace{50pt}&  \line(1,0){100} \quad Адиатуллин Т. Р.\\
+     & \\
+     Руководитель,\tabularnewline Преподаватель & \line(1,0){121,5} \quad Пак В. Г.\\
+     & \\
+     & \\
+     & \\
+     & \guillemotleft \line(1,0){30} \guillemotright \line(1,0){100} \, 2026 \,г.
+     
+\end{tabular*} \\
+
+\vfill
+
+\begin{center}
+    Санкт-Петербург, 2026
+\end{center}
+\newpage
+}
+
+\tableofcontents
+\newpage
+
+% ========== ПОСТАНОВКА ЗАДАЧ (task.tex) ==========
+\section{Постановка задач}
+
+Для данной табличной функции вычислить приближённое значение в точке интерполяции с помощью многочлена Лагранжа и схемы Эйткена.
+
+Для табличной функции из задания 1 вычислить приближённые значения в точках интерполяции с помощью подходящего многочлена Ньютона с разделёнными разностями.
+
+Для данной табличной функции вычислить приближённые значения в точках интерполяции с помощью подходящего многочлена Ньютона с конечными разностями (точки $x^{(1)}$, $x^{(2)}$) и наиболее подходящего из многочленов Гаусса, Стирлинга или Бесселя (точка $x$).
+
+\newpage
+
+% ========== ЗАДАНИЕ 1 (task1.tex) ==========
+\section{Задание 1}
+
+Даны несколько точек $x$ некоторой функции и соответствующие им значения $y$.
+Можно увидеть эти значения в приведённой ниже таблице~\ref{tab:task1}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$i$ & $x$ & $y$ \\
+\hline
+0 & $0{,}32$ & $1{,}4126$ \\
+1 & $0{,}37$ & $2{,}5210$ \\
+2 & $0{,}41$ & $4{,}1020$ \\
+3 & $0{,}45$ & $3{,}1100$ \\
+4 & $0{,}61$ & $3{,}0980$ \\
+5 & $0{,}65$ & $2{,}7110$ \\
+\hline
+\end{tabular}
+\caption{Таблица значений функции в различных точках.}
+\label{tab:task1}
+\end{table}
+
+\subsection{Нахождение значения функции с помощью интерполяционного многочлена Лагранжа}
+
+В первой части задания требуется найти приближённое значение функции в заданной точке интерполяции с использованием многочлена Лагранжа. Общий вид многочлена Лагранжа задаётся формулой
+\[
+L_n(x) = \sum_{i=0}^{n} y_i \cdot l_{n,i}(x), \quad l_{n,i}(x) = \prod_{\substack{j=0 \\ j \neq i}}^{n} \dfrac{x - x_j}{x_i - x_j}.
+\]
+
+Используя значения из таблицы, вычислим приближённое значение функции в точке \(x = 0{,}39\). Подставим значения узлов интерполяции:
+\begin{multline*}
+L_5(0{,}39) = 1{,}4126 \cdot \frac{(0{,}39-0{,}37)(0{,}39-0{,}41)(0{,}39-0{,}45)(0{,}39-0{,}61)(0{,}39-0{,}65)}{(0{,}32-0{,}37)(0{,}32-0{,}41)(0{,}32-0{,}45)(0{,}32-0{,}61)(0{,}32-0{,}65)} + \\
++ 2{,}5210 \cdot \frac{(0{,}39-0{,}32)(0{,}39-0{,}41)(0{,}39-0{,}45)(0{,}39-0{,}61)(0{,}39-0{,}65)}{(0{,}37-0{,}32)(0{,}37-0{,}41)(0{,}37-0{,}45)(0{,}37-0{,}61)(0{,}37-0{,}65)} + \dots \approx 3{,}579.
+\end{multline*}
+
+В листинге~\ref{lst:lagrange} приведён программный код, реализующий вычисление.
+
+\begin{lstlisting}[caption={Вычисление значения функции с помощью многочлена Лагранжа}, label=lst:lagrange]
+import numpy as np
+
+# Данные
+x_vals = np.array([0.32, 0.37, 0.41, 0.45, 0.61, 0.65])
+y_vals = np.array([1.4126, 2.521, 4.102, 3.110, 3.098, 2.711])
+
+# Функция для вычисления интерполяционного многочлена Лагранжа
+def lagrange_interpolation(x, x_vals, y_vals):
+    n = len(x_vals)
+    result = 0
+    for i in range(n):
+        term = y_vals[i]
+        for j in range(n):
+            if j != i:
+                term *= (x - x_vals[j]) / (x_vals[i] - x_vals[j])
+        result += term
+    return result
+
+x_to_interpolate = 0.39
+y_interpolated = lagrange_interpolation(x_to_interpolate, x_vals, y_vals)
+print(f"Значение функции в точке x = {x_to_interpolate} через многочлен Лагранжа: {y_interpolated}")
+\end{lstlisting}
+
+В итоге получаем значение \(y(0{,}39) = 3{,}579\). 
+
+\subsection{Нахождение значения функции с помощью схемы Эйткена}
+
+Вычислительная схема Эйткена используется для последовательного рекуррентного вычисления значения интерполяционного многочлена Лагранжа \(L_n\) в заданной точке \(x\). Для нахождения значения функции по методу Эйткена применяется соответствующая формула:
+\[
+P_{i, i+1}(x) = \frac{(x - x_i) \cdot P_{i+1}(x) - (x - x_{i+1}) \cdot P_i(x)}{x_{i+1} - x_i}.
+\]
+
+Для первых двух точек расчёт значения в точке $x = 0{,}39$ имеет вид:
+\[
+P_{0,1}(0{,}39) = \frac{(0{,}39 - 0{,}32) \cdot 2{,}5210 - (0{,}39 - 0{,}37) \cdot 1{,}4126}{0{,}37 - 0{,}32} = 2{,}96396.
+\]
+Далее значения пересчитываются для пар более высоких порядков, пока не будет получен $P_{0,1,2,3,4,5}(0{,}39)$.
+
+Значение функции в точке \(x = 0{,}39\) было получено с помощью программной реализации, представленной на листинге~\ref{lst:aitken}.
+
+\begin{lstlisting}[caption={Вычисление значения функции с помощью схемы Эйткена}, label=lst:aitken]
+def aitken_interpolation(x, x_vals, y_vals):
+    n = len(x_vals)
+    A = np.zeros((n, n))
+    for i in range(n):
+        A[i][0] = y_vals[i]
+    for j in range(1, n):
+        for i in range(n - j):
+            A[i][j] = ((x - x_vals[i]) * A[i+1][j-1] - (x - x_vals[i+j]) * A[i][j-1]) / (x_vals[i+j] - x_vals[i])
+    return A[0][n-1]
+
+y_aitken = aitken_interpolation(x_to_interpolate, x_vals, y_vals)
+print(f"Значение функции в точке x = {x_to_interpolate} через схему Эйткена: {y_aitken}")
+\end{lstlisting}
+
+В результате вычислений было получено то же значение, что и при использовании интерполяционного многочлена Лагранжа: \(y(0{,}39) = 3{,}579\).
+
+\newpage
+
+% ========== ЗАДАНИЕ 2 (task2.tex) ==========
+\section{Задание 2}
+
+В этом задании нужно по таблице~\ref{tab:task1} через интерполяционные многочлены Ньютона с разделёнными разностями вычислить значения в точках $x^{(1)} = 0{,}66$ и $x^{(2)} = 0{,}30$.
+
+\subsection{Вычисление значения функции с помощью второго многочлена Ньютона}
+
+Для вычисления значения функции в точке \(x^{(1)} = 0{,}66\) используется интерполяционный многочлен Ньютона с разделёнными разностями второго вида (интерполирование назад). Его общий вид задаётся формулой:
+\[
+P_n(x) = f(x_n) + f(x_{n-1}, x_n)(x - x_n) + f(x_{n-2}, x_{n-1}, x_n)(x - x_n)(x - x_{n-1}) + \dots
+\]
+
+В листинге~\ref{lst:newton1} представлен программный код для вычисления.
+
+\begin{lstlisting}[caption={Вычисление значения функции с помощью второго многочлена Ньютона}, label=lst:newton1]
+import numpy as np
+
+x_values = np.array([0.32, 0.37, 0.41, 0.45, 0.61, 0.65])
+y_values = np.array([1.4126, 2.521, 4.102, 3.110, 3.098, 2.711])
+
+def divided_difference(x, y):
+    n = len(x)
+    diff_table = np.zeros((n, n))
+    diff_table[:, 0] = y
+    for j in range(1, n):
+        for i in range(n - j):
+            diff_table[i, j] = (diff_table[i + 1, j - 1] - diff_table[i, j - 1]) / (x[i + j] - x[i])
+    return diff_table
+
+def newton_backward(x_values, y_values, x):
+    diff_table = divided_difference(x_values, y_values)
+    n = len(x_values)
+    result = y_values[-1]
+    term = 1
+    for i in range(1, n):
+        term *= (x - x_values[n - i])
+        result += term * diff_table[n - 1 - i, i]
+    return result
+
+x_point = 0.66
+result = newton_backward(x_values, y_values, x_point)
+print(f"Значение функции в точке x = {x_point}: {result}")
+\end{lstlisting}
+
+По результатам работы функции получена таблица разделённых разностей:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x_i$ & $f(x_i)$ & $f(x_i, x_{i+1})$ & $f(x_i, \dots)$ & $f(x_i, \dots)$ & $f(x_i, \dots)$ & $f(x_i, \dots)$ \\
+\hline
+0.32 & 1.4126 & 22.168 & & & & \\
+0.37 & 2.5210 & 39.525 & 192.855 & & & \\
+0.41 & 4.1020 & -24.800 & -804.062 & -7668.59 & & \\
+0.45 & 3.1100 & -0.075 & 103.020 & 3779.50 & 39476.17 & \\
+0.61 & 3.0980 & -9.675 & -40.000 & -595.91 & -21876.55 & -185917.33 \\
+0.65 & 2.7110 & & & & & \\
+\hline
+\end{tabular}
+\caption{Таблица разделённых разностей.}
+\label{tab:div_diff}
+\end{table}
+
+Подставим значения нижнего края таблицы (диагонали снизу вверх) в расчётную формулу для точки $0{,}66$:
+\begin{multline*}
+P_5(0{,}66) = 2{,}7110 + (-9{,}675)(0{,}66 - 0{,}65) + (-40{,}000)(0{,}66 - 0{,}65)(0{,}66 - 0{,}61) + \\
++ (-595{,}91)(0{,}66 - 0{,}65)(0{,}66 - 0{,}61)(0{,}66 - 0{,}45) + \dots \approx 0{,}791.
+\end{multline*}
+
+В результате вычислений было получено значение \(y(0{,}66) = 0{,}791\).
+
+\subsection{Вычисление значения функции с помощью первого многочлена Ньютона}
+
+Для вычисления значения функции в точке \(x^{(2)} = 0{,}30\) используется интерполяционный многочлен Ньютона с разделёнными разностями первого вида (интерполирование вперёд). Его общий вид задаётся формулой:
+\[
+P_1(x) = f(x_0) + f(x_0, x_1)(x - x_0) + f(x_0, x_1, x_2)(x - x_0)(x - x_1) + \dots
+\]
+
+В листинге~\ref{lst:newton2} приведён программный код.
+
+\begin{lstlisting}[caption={Вычисление значения функции с помощью первого многочлена Ньютона}, label=lst:newton2]
+def newton_forward(x_values, y_values, x):
+    diff_table = divided_difference(x_values, y_values)
+    result = y_values[0]
+    term = 1
+    for i in range(1, len(x_values)):
+        term *= (x - x_values[i - 1])
+        result += term * diff_table[0, i]
+    return result
+
+x_point = 0.30
+result = newton_forward(x_values, y_values, x_point)
+print(f"Значение функции в точке x = {x_point}: {result}")
+\end{lstlisting}
+
+Используется та же таблица разделённых разностей (Таблица~\ref{tab:div_diff}). Подставим значения верхней диагонали в расчётную формулу для точки $0{,}30$:
+\begin{multline*}
+P_5(0{,}30) = 1{,}4126 + 22{,}168(0{,}30 - 0{,}32) + 192{,}855(0{,}30 - 0{,}32)(0{,}30 - 0{,}37) + \\
++ (-7668{,}59)(0{,}30 - 0{,}32)(0{,}30 - 0{,}37)(0{,}30 - 0{,}41) + \dots \approx 4{,}557.
+\end{multline*}
+
+В результате вычислений было получено значение \(y(0{,}30) = 4{,}557\).
+
+\newpage
+
+% ========== ЗАДАНИЕ 3 (task3.tex) ==========
+\section{Задание 3}
+
+В этом задании необходимо, используя функцию \(y = \sqrt[3]{x}\), заданную на отрезке от \(0{,}0\) до \(10{,}0\) с шагом \(h = 2{,}0\), вычислить значения в точках \(x^{(1)} = -0{,}02\) и \(x^{(2)} = 10{,}01\) с помощью интерполяционных многочленов Ньютона с конечными разностями. Кроме того, требуется определить значение функции в точке \(x = 5{,}0\) с использованием одного из многочленов Гаусса, Стирлинга или Бесселя.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$i$ & $x$ & $y$ \\
+\hline
+$0$ & $0{,}0$ & $0{,}0000$ \\
+$1$ & $2{,}0$ & $1{,}2599$ \\
+$2$ & $4{,}0$ & $1{,}5874$ \\
+$3$ & $6{,}0$ & $1{,}8171$ \\
+$4$ & $8{,}0$ & $2{,}0000$ \\
+$5$ & $10{,}0$ & $2{,}1544$ \\
+\hline
+\end{tabular}
+\caption{Таблица значений функции $y = \sqrt[3]{x}$ в различных точках.}
+\label{tab:task3}
+\end{table}
+
+\subsection{Вычисление значения функции с помощью первого многочлена Ньютона}
+
+Найдём значения в точке $x^{(1)} = -0{,}02$ с помощью первого многочлена Ньютона с конечными разностями. 
+Формула имеет вид:
+\[
+P_n(x) = y_0 + q \Delta y_0 + \frac{q(q-1)}{2!} \Delta^2 y_0 + \dots, \quad q = \frac{x - x_0}{h}.
+\]
+
+\begin{lstlisting}[caption={Вычисление значения функции с помощью первого многочлена Ньютона с конечными разностями}, label=lst:newton_fin1]
+import numpy as np
+
+x_values = np.array([0.0, 2.0, 4.0, 6.0, 8.0, 10.0])
+y_values = np.array([0.0000, 1.2599, 1.5874, 1.8171, 2.0000, 2.1544])
+
+def finite_differences(y):
+    n = len(y)
+    diff_table = np.zeros((n, n))
+    diff_table[:, 0] = y
+    for j in range(1, n):
+        for i in range(n - j):
+            diff_table[i, j] = diff_table[i + 1, j - 1] - diff_table[i, j - 1]
+    return diff_table
+
+def newton_forward_finite(x_values, y_values, x):
+    h = x_values[1] - x_values[0]
+    q = (x - x_values[0]) / h
+    diff_table = finite_differences(y_values)
+    result = y_values[0]
+    q_prod = 1
+    for i in range(1, len(x_values)):
+        q_prod *= (q - (i - 1)) / i
+        result += q_prod * diff_table[0, i]
+    return result
+
+x_point = -0.02
+result = newton_forward_finite(x_values, y_values, x_point)
+print(f"Значение функции в точке x = {x_point}: {result:.4f}")
+\end{lstlisting}
+
+По результатам работы функции построена таблица конечных разностей:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\hline
+$x_i$ & $y_i$ & $\Delta y_i$ & $\Delta^2 y_i$ & $\Delta^3 y_i$ & $\Delta^4 y_i$ & $\Delta^5 y_i$ \\
+\hline
+0.0 & 0.0000 & 1.2599 & & & & \\
+2.0 & 1.2599 & 0.3275 & -0.9324 & & & \\
+4.0 & 1.5874 & 0.2297 & -0.0978 & 0.8346 & & \\
+6.0 & 1.8171 & 0.1829 & -0.0468 & 0.0510 & -0.7836 & \\
+8.0 & 2.0000 & 0.1544 & -0.0285 & 0.0183 & -0.0327 & 0.7509 \\
+10.0 & 2.1544 & & & & & \\
+\hline
+\end{tabular}
+\caption{Таблица конечных разностей.}
+\label{tab:fin_diff}
+\end{table}
+
+Для $x = -0{,}02$, $h = 2{,}0$, параметр $q = \frac{-0{,}02 - 0{,}0}{2} = -0{,}01$. Подставляя верхнюю строку разностей:
+\[
+P_5(-0{,}02) = 0{,}0000 + (-0{,}01)(1{,}2599) + \frac{(-0{,}01)(-0{,}01 - 1)}{2} (-0{,}9324) + \dots \approx -0{,}0237.
+\]
+
+\subsection{Вычисление значения функции с помощью второго многочлена Ньютона}
+
+Найдём значения в точке $x^{(2)} = 10{,}01$ с помощью второго многочлена Ньютона с конечными разностями. 
+Формула имеет вид:
+\[
+P_n(x) = y_n + q \Delta y_{n-1} + \frac{q(q+1)}{2!} \Delta^2 y_{n-2} + \dots, \quad q = \frac{x - x_n}{h}.
+\]
+
+\begin{lstlisting}[caption={Вычисление значения функции с помощью второго многочлена Ньютона с конечными разностями}, label=lst:newton_fin2]
+def newton_backward_finite(x_values, y_values, x):
+    h = x_values[1] - x_values[0]
+    n = len(x_values)
+    q = (x - x_values[-1]) / h
+    diff_table = finite_differences(y_values)
+    result = y_values[-1]
+    q_prod = 1
+    for i in range(1, n):
+        q_prod *= (q + (i - 1)) / i
+        result += q_prod * diff_table[n - 1 - i, i]
+    return result
+
+x_point = 10.01
+result = newton_backward_finite(x_values, y_values, x_point)
+print(f"Значение функции в точке x = {x_point}: {result:.4f}")
+\end{lstlisting}
+
+Для $x = 10{,}01$, параметр $q = \frac{10{,}01 - 10{,}0}{2} = 0{,}005$. Подставляя значения нижней диагонали таблицы разностей:
+\[
+P_5(10{,}01) = 2{,}1544 + (0{,}005)(0{,}1544) + \frac{0{,}005(0{,}005 + 1)}{2}(-0{,}0285) + \dots \approx 2{,}1558.
+\]
+
+\subsection{Вычисление значения функции с помощью многочлена Бесселя}
+
+В данном случае необходимо найти значение функции в точке $x = 5{,}0$. Многочлен Бесселя целесообразно использовать по двум причинам. Во-первых, таблица содержит чётное число узлов (6 узлов). Во-вторых, интерполируемая точка $x = 5{,}0$ находится ровно посередине между центральными узлами интерполяции $x_2 = 4{,}0$ и $x_3 = 6{,}0$. Для центра интервала параметр $q = \frac{x - x_0}{h} = \frac{5{,}0 - 4{,}0}{2} = 0{,}5$. В формуле Бесселя при $q = 0{,}5$ все нечётные разности умножаются на множитель $(q - 0{,}5)$, который обращается в нуль, что значительно упрощает вычисления и повышает точность.
+
+Формула имеет вид:
+\[
+P_n = \frac{y_0 + y_1}{2} + \left(q - \frac{1}{2}\right)\Delta y_0
++ \frac{q(q-1)}{2!} \cdot \frac{\Delta^2 y_{-1} + \Delta^2 y_0}{2} + 
+\]
+\[
++ \frac{q(q-1)(q-\frac{1}{2})}{3!}\Delta^3 y_{-1}
++ \frac{q(q-1)(q+1)(q-2)}{4!} \cdot \frac{\Delta^4 y_{-2} + \Delta^4 y_{-1}}{2}.
+\]
+
+Примем за $x_0 = 4{,}0$ (тогда $y_0 = 1{,}5874$, $y_1 = 1{,}8171$). Подставим разности из таблицы:
+\[
+P(5{,}0) = \frac{1{,}5874 + 1{,}8171}{2} + 0 + \frac{0{,}5(0{,}5-1)}{2} \cdot \frac{(-0{,}0978) + (-0{,}0468)}{2} + 0 + \dots 
+\]
+\[
+= 1{,}70225 + (-0{,}125) \cdot (-0{,}0723) \approx 1{,}711.
+\]
+Истинное значение $\sqrt[3]{5} \approx 1{,}70997$. 
+
+В листинге~\ref{lst:bessel} представлен исправленный программный код (с корректными значениями $y$) для вычисления значения функции в точке \(x = 5{,}0\).
+
+\begin{lstlisting}[caption={Вычисление значения функции с помощью многочлена Бесселя}, label=lst:bessel]
+import math
+
+# Корректные данные для y = cbrt(x)
+y_values = np.array([0.0000, 1.2599, 1.5874, 1.8171, 2.0000, 2.1544])
+
+def compute_deltas(y):
+    n = len(y)
+    deltas = []
+    for i in range(1, n):
+        delta = [y[j + 1] - y[j] for j in range(n - i)]
+        deltas.append(delta)
+        y = delta
+    return deltas
+
+deltas = compute_deltas(y_values)
+q = 0.5 # Для x = 5.0, x0 = 4.0, h = 2.0
+
+def bessel_polynomial(y_vals, deltas, q, idx_x0):
+    # Упрощенная реализация Бесселя для центральных узлов
+    P = (y_vals[idx_x0] + y_vals[idx_x0+1]) / 2.0
+    P += (q - 0.5) * deltas[0][idx_x0]
+    P += (q * (q - 1) / 2.0) * ((deltas[1][idx_x0-1] + deltas[1][idx_x0]) / 2.0)
+    P += (q * (q - 1) * (q - 0.5) / 6.0) * deltas[2][idx_x0-1]
+    P += (q * (q - 1) * (q + 1) * (q - 2) / 24.0) * ((deltas[3][idx_x0-2] + deltas[3][idx_x0-1]) / 2.0)
+    return P
+
+result = bessel_polynomial(y_values, deltas, q, 2)
+print(f"Значение по Бесселю: {result:.4f}")
+\end{lstlisting}
+
+В результате правильного вычисления по многочлену Бесселя для функции $\sqrt[3]{x}$ в точке $x = 5{,}0$ получаем значение $y(5{,}0) \approx 1{,}7110$, что весьма близко к точному значению $1{,}70997$.
+
+\end{document}

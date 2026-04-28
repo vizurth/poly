@@ -277,9 +277,7 @@ vector<vector<int>> Graph<T>::findAllPaths(int from, int to) const {
 
 /*
     LOOK: Graph<T> reorder(const vector<int>& order) const
-    Строим новый граф где вершина v получает номер order[v].
-    Ребро old_i → old_j с весом w становится order[old_i] → order[old_j].
-    После Фалкерсона матрица нового графа будет верхнетреугольной.
+    Меняем порядок вершин в графе в соответствии с переданной перестановкой order
 */
 template <typename T>
 Graph<T> Graph<T>::reorder(const vector<int> &order) const {

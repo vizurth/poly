@@ -55,10 +55,10 @@ void Generator<T>::weibullShuffle(vector<int> &vertices) {
 /*
     LOOK: Graph<T> generateGraph()
     Генерируем граф на основе переданных параметров в config
-*/
+*/ 
 template <typename T>
 Graph<T> Generator<T>::generateGraph() {
-	Graph<T> graph(numVertices);
+	Graph<T>  graph(numVertices);
 
 	int maxDeg = max(1, static_cast<int>(log(numVertices)));
 	vector<int> degrees(numVertices);
@@ -69,7 +69,7 @@ Graph<T> Generator<T>::generateGraph() {
 
 	vector<int> perm(numVertices);
 	iota(perm.begin(), perm.end(), 0);
-	// weibullShuffle(perm);
+	// weibullShuffle(perm); // нужно чтобы работала топологическая сортировка
 
 	for (int i = 1; i < numVertices; i++) {
 		int j = randomIndex(i);

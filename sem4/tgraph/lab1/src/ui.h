@@ -2,21 +2,15 @@
 
 #include "../../common/graph/generator.h"
 #include "shimbel.h"
-#include <string>
 
-class UI {
+class Lab1UI {
   private:
-	int askNumVertices();
-	bool askDirected();
-	WeightType askWeightType();
-
-	void showGraph(Graph<double> &graph);
-	void showEccentricities(Graph<double> &graph);
-	void showCenter(Graph<double> &graph);
-	void showDiameter(Graph<double> &graph);
-	void showShimbell(Graph<double> &graph);
-	void showAllPaths(Graph<double> &graph);
+	void showEccentricities(Graph<int> &graph);
+	void showCenter(Graph<int> &graph);
+	void showDiameter(Graph<int> &graph);
+	void showShimbell(Graph<int> &graph);
+	void showAllPaths(Graph<int> &graph);
 
   public:
-	void run();
+	void processChoice(int choice, Graph<int> *graph);
 };

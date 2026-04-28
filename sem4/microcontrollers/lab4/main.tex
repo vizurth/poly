@@ -1,0 +1,455 @@
+\documentclass[a4paper, final]{article}
+
+% ============================================================
+% НАСТРОЙКИ
+% ============================================================
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Courier New}
+\usepackage[14pt]{extsizes}
+
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+
+\usepackage[left=20mm, top=20mm, right=20mm, bottom=20mm, footskip=10mm]{geometry}
+\usepackage{ragged2e}
+\usepackage{indentfirst}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{soul}
+\usepackage{float}
+
+\definecolor{codegray}{gray}{0.95}
+\definecolor{codered}{rgb}{0.6,0,0}
+\definecolor{codeblue}{rgb}{0,0,0.6}
+\definecolor{codegreen}{rgb}{0,0.5,0}
+
+\lstdefinestyle{common}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codegray},
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=6pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+  breaklines=true,
+  breakatwhitespace=true,
+  captionpos=b,
+  keywordstyle=\color{codeblue}\bfseries,
+  commentstyle=\color{codegreen}\itshape,
+  stringstyle=\color{codered}
+}
+
+\lstdefinestyle{cstyle}{
+    style=common,
+    language=C++,
+    inputencoding=utf8,
+    extendedchars=true,
+    keepspaces=true,
+    columns=fullflexible,
+    literate={а}{{\selectfont\char224}}1
+             {б}{{\selectfont\char225}}1
+             {в}{{\selectfont\char226}}1
+             {г}{{\selectfont\char227}}1
+             {д}{{\selectfont\char228}}1
+             {е}{{\selectfont\char229}}1
+             {ё}{{\"e}}1
+             {ж}{{\selectfont\char230}}1
+             {з}{{\selectfont\char231}}1
+             {и}{{\selectfont\char232}}1
+             {й}{{\selectfont\char233}}1
+             {к}{{\selectfont\char234}}1
+             {л}{{\selectfont\char235}}1
+             {м}{{\selectfont\char236}}1
+             {н}{{\selectfont\char237}}1
+             {о}{{\selectfont\char238}}1
+             {п}{{\selectfont\char239}}1
+             {р}{{\selectfont\char240}}1
+             {с}{{\selectfont\char241}}1
+             {т}{{\selectfont\char242}}1
+             {у}{{\selectfont\char243}}1
+             {ф}{{\selectfont\char244}}1
+             {х}{{\selectfont\char245}}1
+             {ц}{{\selectfont\char246}}1
+             {ч}{{\selectfont\char247}}1
+             {ш}{{\selectfont\char248}}1
+             {щ}{{\selectfont\char249}}1
+             {ъ}{{\selectfont\char250}}1
+             {ы}{{\selectfont\char251}}1
+             {ь}{{\selectfont\char252}}1
+             {э}{{\selectfont\char253}}1
+             {ю}{{\selectfont\char254}}1
+             {я}{{\selectfont\char255}}1
+             {А}{{\selectfont\char192}}1
+             {Б}{{\selectfont\char193}}1
+             {В}{{\selectfont\char194}}1
+             {Г}{{\selectfont\char195}}1
+             {Д}{{\selectfont\char196}}1
+             {Е}{{\selectfont\char197}}1
+             {Ё}{{\"E}}1
+             {Ж}{{\selectfont\char198}}1
+             {З}{{\selectfont\char199}}1
+             {И}{{\selectfont\char200}}1
+             {Й}{{\selectfont\char201}}1
+             {К}{{\selectfont\char202}}1
+             {Л}{{\selectfont\char203}}1
+             {М}{{\selectfont\char204}}1
+             {Н}{{\selectfont\char205}}1
+             {О}{{\selectfont\char206}}1
+             {П}{{\selectfont\char207}}1
+             {Р}{{\selectfont\char208}}1
+             {С}{{\selectfont\char209}}1
+             {Т}{{\selectfont\char210}}1
+             {У}{{\selectfont\char211}}1
+             {Ф}{{\selectfont\char212}}1
+             {Х}{{\selectfont\char213}}1
+             {Ц}{{\selectfont\char214}}1
+             {Ч}{{\selectfont\char215}}1
+             {Ш}{{\selectfont\char216}}1
+             {Щ}{{\selectfont\char217}}1
+             {Ъ}{{\selectfont\char218}}1
+             {Ы}{{\selectfont\char219}}1
+             {Ь}{{\selectfont\char220}}1
+             {Э}{{\selectfont\char221}}1
+             {Ю}{{\selectfont\char222}}1
+             {Я}{{\selectfont\char223}}1,
+}
+
+\linespread{0.98}
+
+\definecolor{link_color}{HTML}{0000EE}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=link_color,
+    urlcolor=link_color,
+    citecolor=link_color
+}
+
+% ============================================================
+% ДОКУМЕНТ
+% ============================================================
+\begin{document}
+
+% ============================================================
+% ТИТУЛЬНЫЙ ЛИСТ
+% ============================================================
+{
+\thispagestyle{empty}
+\begin{center}
+    \hfill \break
+    \hfill \break
+    МИНИСТЕРСТВО НАУКИ И ВЫСШЕГО ОБРАЗОВАНИЯ РОССИЙСКОЙ ФЕДЕРАЦИИ\\[5 pt]
+    Федеральное государственное автономное образовательное учреждение высшего образования
+    «Санкт-Петербургский политехнический университет Петра Великого»\\[10 pt]
+    Институт компьютерных наук и кибербезопасности\\ [5 pt]
+    Высшая школа технологий искусственного интеллекта \\ [5 pt]
+    Направление: 02.03.01 Математика и компьютерные науки\\[30pt]
+
+    {\large ОТЧЕТ ПО Лабораторной работе №4}\\[10 pt]
+    {\large по дисциплине Программирование микроконтроллеров}\\[40 pt]
+    {\large\bf Использование таймера и аппаратных прерываний.}
+\end{center}
+
+\vspace{110 pt}
+
+\begin{tabular*}{460pt}{@{\extracolsep{\fill}} l r}
+     Студент,\tabularnewline группы 5130201/40003 &  \line(1,0){100} \quad Адиатуллин Т.Р\\
+     & \\
+     Руководитель,\tabularnewline Преподаватель &  \line(1,0){100} \quad Вербова Н. М.\\
+     & \\
+     & \\
+     & \\
+     & \guillemotleft \line(1,0){30} \guillemotright \line(1,0){100} \, 2026 \,г.
+
+\end{tabular*} \\
+
+\vfill
+
+\begin{center}
+    Санкт-Петербург, 2026
+\end{center}
+\newpage
+}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+% ОСНОВНОЕ СОДЕРЖАНИЕ
+% ============================================================
+
+\section{Тема}
+Использование таймера для формирования заданного временного интервала и аппаратного прерывания для перевода микроконтроллера в режим пониженного энергопотребления.
+
+\section{Цель работы}
+Ознакомиться с основными методами формирования заданных интервалов времени и перевода микроконтроллера в режим пониженного энергопотребления. Закрепить навыки работы с осциллографом и оценочной платой MCBSTM32F200 в качестве измерительного генератора.
+
+\section{Постановка задачи}
+Используя библиотеки Keil~µVision5, разработать программу для микроконтроллера (МК) STM32F200, которая при помощи таймера формирует периодическое попеременное включение и выключение светодиодов PG6 и PG7 с заданными временными характеристиками. При нажатии на кнопку «WAKEUP» программа должна переводить МК в спящий режим, а при её отпускании~--- пробуждать МК.
+
+\section{Теоретические данные}
+
+Для формирования и измерения временных интервалов в МК применяется аппаратная подсистема~--- таймер. Таймер автоматически отсчитывает начало и конец заданного процесса или его отдельных этапов.
+
+МК STM32F200 оснащён восемью периферийными программируемыми 16-разрядными таймерами TIM1–TIM8 с перезагружаемыми счётчиками и программируемыми предделителями. Они применяются для измерения длительности входных импульсов и генерации прямоугольных сигналов. С помощью предделителей и контроллера тактирования RCC длительность импульсов и период их следования можно регулировать от нескольких микросекунд до нескольких миллисекунд. Таймеры работают независимо друг от друга и не потребляют общих ресурсов, но при необходимости могут синхронизироваться.
+
+Помимо периферийных таймеров, в ядре микроконтроллера имеется системный таймер SysTick, изначально предназначенный для формирования временной базы ОСРВ. Тем не менее его периодические прерывания допускается использовать и в других целях. В микроконтроллерах на ядре Cortex время реакции на прерывание строго фиксировано.
+
+Для настройки SysTick в файле \texttt{core\_cm3.h} предусмотрена функция \texttt{SysTick\_Config(uint32\_t ticks)}, принимающая коэффициент деления тактовой частоты. По умолчанию тактовая частота ядра составляет 12~МГц.
+
+При переходе в режим сна или глубокого сна тактирование процессора Cortex-M3 останавливается; в режиме глубокого сна дополнительно отключаются флэш-память и основной тактовый генератор. Управление этими режимами осуществляется через регистр \texttt{SCB\_SCR}, а конфигурация режима сна задаётся с помощью маски \texttt{SCB\_SCR\_SLEEPONEXIT\_Msk} из файла \texttt{core\_cm3.h}.
+
+\section{Алгоритм программы}
+
+\subsection{Инициализация периферии}
+\begin{itemize}
+    \item Включение тактирования портов GPIOG и GPIOA через регистр \texttt{RCC->AHB1ENR}.
+    \item Включение тактирования контроллера конфигурации системы SYSCFG через регистр \texttt{RCC->APB2ENR}.
+    \item Настройка выводов PG6, PG7 как цифровых выходов; PA0~--- как цифрового входа.
+\end{itemize}
+
+\subsection{Настройка внешних прерываний (EXTI)}
+\begin{itemize}
+    \item Разрешение прерываний по линии EXTI0 через регистр \texttt{EXTI->IMR}.
+    \item Настройка срабатывания по нарастающему фронту (\texttt{EXTI->RTSR}).
+    \item Привязка вывода PA0 к линии прерывания через \texttt{SYSCFG->EXTICR[0]}.
+\end{itemize}
+
+\subsection{Настройка системного таймера SysTick}
+\begin{itemize}
+    \item Вызов \texttt{SystemCoreClockUpdate()} для получения актуальной тактовой частоты.
+    \item Конфигурация SysTick с периодом прерывания 1~мс через \texttt{SysTick\_Config}.
+\end{itemize}
+
+\subsection{Режим пониженного энергопотребления}
+\begin{itemize}
+    \item Установка бита \texttt{SLEEPDEEP} в \texttt{SCB->SCR} для выбора режима глубокого сна.
+    \item Настройка регистров \texttt{PWR->CR} для выбора режима standby.
+\end{itemize}
+
+\subsection{Управление прерываниями (NVIC)}
+\begin{itemize}
+    \item Задание групп и приоритетов прерываний от EXTI0 и SysTick.
+    \item Активация обработчиков прерываний.
+\end{itemize}
+
+\subsection{Основной цикл}
+В бесконечном цикле поочерёдно вызываются функции управления светодиодами: включается PG6, затем PG7, после чего цикл повторяется.
+
+\subsection{Обработчик прерывания EXTI0}
+При нажатии кнопки «WAKEUP» выполняется программная задержка для устранения дребезга, затем инвертируется бит \texttt{SLEEPONEXIT}~--- МК переходит в спящий режим или пробуждается. Фронт срабатывания прерывания переключается на противоположный.
+
+\newpage
+
+\section{Код программы}
+
+\begin{lstlisting}[style=cstyle, caption={MyBlinky.c}]
+#include "stm32f207xx.h"
+#include "stdbool.h"
+#include "stdio.h"
+
+// Программная задержка на основе пустого цикла
+void delay(unsigned long cycles)
+{
+    unsigned long i = 0;
+    for (i = 0; i < cycles; i++)
+    { }
+}
+
+// Счётчик миллисекунд, обновляемый системным таймером
+volatile uint32_t msTicks = 0;
+
+// Задержка в миллисекундах на основе аппаратного таймера
+void delay_ms(uint32_t ms)
+{
+    uint32_t t = msTicks + ms;
+    while (t > msTicks);
+}
+
+// Обработчик прерывания системного таймера SysTick — увеличивает счётчик на 1
+void SysTick_Handler()
+{
+    msTicks++;
+}
+
+// Обработчик внешнего прерывания по линии EXTI0 (кнопка WAKEUP)
+void EXTI0_IRQHandler(void)
+{
+    // Программная задержка для подавления дребезга контактов
+    delay(5000);
+
+    // Переключение бита SLEEPONEXIT: переход в сон или пробуждение МК
+    SCB->SCR ^= SCB_SCR_SLEEPONEXIT_Msk;
+
+    // Инверсия фронта срабатывания прерывания
+    EXTI->RTSR ^= EXTI_RTSR_TR0;
+    EXTI->FTSR ^= EXTI_FTSR_TR0;
+
+    // Сброс флага ожидающего прерывания
+    EXTI->PR |= EXTI_PR_PR0;
+}
+
+// Попеременное включение светодиодов PG6 и PG7
+void DiodPG6(void)
+{
+    // Включить светодиод на PG6
+    GPIOG->ODR |= 1ul << 6;
+    delay(500000);
+    // Выключить светодиод на PG6
+    GPIOG->ODR &= ~1ul << 6;
+
+    // Включить светодиод на PG7
+    GPIOG->ODR |= 1ul << 7;
+    delay(500000);
+    // Выключить светодиод на PG7
+    GPIOG->ODR &= ~1ul << 7;
+}
+
+// Заготовка для дополнительного управления светодиодом PG7
+void DiodPG7(void)
+{
+
+}
+
+int main()
+{
+    // Включить тактирование порта GPIOG
+    RCC->AHB1ENR |= 1ul << 6;
+    // Включить тактирование порта GPIOA
+    RCC->AHB1ENR |= 1ul << 0;
+    // Включить тактирование контроллера конфигурации системы SYSCFG
+    RCC->APB2ENR |= 1ul << 14;
+
+    // Настроить PG6 как цифровой выход
+    GPIOG->MODER = (GPIOG->MODER & ~(1ul << 13)) | 1ul << 12;
+    // Настроить PG7 как цифровой выход
+    GPIOG->MODER = (GPIOG->MODER & ~(1ul << 15)) | 1ul << 14;
+    // Настроить PG8 как цифровой выход
+    GPIOG->MODER = (GPIOG->MODER & ~(1ul << 17)) | 1ul << 16;
+    // Настроить PA0 как цифровой вход (кнопка WAKEUP)
+    GPIOG->MODER &= ~GPIO_MODER_MODER0;
+
+    // Разрешить прерывания по внешней линии EXTI0
+    EXTI->IMR |= EXTI_IMR_MR0_Msk;
+    // Настроить срабатывание по нарастающему фронту (нажатие кнопки)
+    EXTI->RTSR |= EXTI_RTSR_TR0;
+    // Отключить срабатывание по спадающему фронту
+    EXTI->FTSR &= ~EXTI_RTSR_TR0;
+
+    // Привязать вывод PA0 к линии прерывания EXTI0
+    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI0_PA;
+
+    // Обновить значение системной тактовой частоты
+    SystemCoreClockUpdate();
+    // Настроить SysTick с периодом прерывания 1 мс
+    if (SysTick_Config(SystemCoreClock / 1000))
+    {
+    }
+
+    // Активировать режим глубокого сна через бит SLEEPDEEP
+    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+    // Настроить регистр питания: сбросить бит PDDS
+    PWR->CR &= PWR_CR_PDDS;
+    // Выбрать режим пониженного потребления standby
+    PWR->CR |= PWR_CR_LPDS;
+
+    // Задать схему группировки приоритетов прерываний
+    NVIC_SetPriorityGrouping(5);
+    // Установить наивысший приоритет для EXTI0
+    NVIC_SetPriority(EXTI0_IRQn, 0);
+    // Установить приоритет для SysTick (ниже, чем у EXTI0)
+    NVIC_SetPriority(SysTick_IRQn, 4);
+
+    // Активировать прерывание от SysTick
+    NVIC_EnableIRQ(SysTick_IRQn);
+    // Активировать прерывание от внешней линии EXTI0
+    NVIC_EnableIRQ(EXTI0_IRQn);
+
+    // Основной цикл: циклическое мигание светодиодов
+    while (1)
+    {
+        DiodPG6();
+        DiodPG7();
+    }
+}
+\end{lstlisting}
+
+\newpage
+
+\section{Работа с осциллографом}
+
+Программное измерение периода, частоты сигнала, ширины положительного и отрицательного уровней.
+
+\begin{figure}[H]
+\centering
+% ВСТАВИТЬ ФОТО 1: программное измерение характеристик сигнала
+\includegraphics[width=0.5\textwidth]{Photo/1.jpg}
+\caption{Программное измерение характеристик сигнала}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+% ВСТАВИТЬ ФОТО 2: осциллограммы двух каналов с измеренными параметрами
+\includegraphics[width=0.5\textwidth]{Photo/2.jpg}
+\caption{Осциллограммы двух каналов с измеренными параметрами}
+\end{figure}
+
+\newpage
+
+\begin{figure}[H]
+\centering
+% ВСТАВИТЬ ФОТО 3: попеременное переключение сигналов на двух каналах
+\includegraphics[width=0.5\textwidth]{Photo/3.jpg}
+\caption{Попеременное переключение сигналов на двух каналах}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+% ВСТАВИТЬ ФОТО 4: спад первого сигнала и нарастание второго
+\includegraphics[width=0.5\textwidth]{Photo/4.jpg}
+\caption{Спад первого сигнала и нарастание второго}
+\end{figure}
+
+\newpage
+
+\section{Результаты работы с осциллографом}
+
+По результатам измерений на осциллографе Tektronix TBS 1052B-EDU получены следующие характеристики сигнала:
+
+\begin{itemize}
+    \item Период: 250.6~мс
+    \item Частота: 3.990~Гц
+    \item Размах: 3.44~В
+    \item Амплитуда: 3.28~В
+    \item Длительность положительного уровня: 125.2~мс
+    \item Длительность отрицательного уровня: 125.3~мс
+    \item Скважность: 49.9\%
+    \item Время нарастания: 156.0~мкс
+    \item Время спада: 152.3~мкс
+\end{itemize}
+
+\newpage
+
+% ============================================================
+% ЗАКЛЮЧЕНИЕ
+% ============================================================
+\addcontentsline{toc}{section}{Заключение}
+\section*{Заключение}
+
+В ходе выполнения лабораторной работы освоены основные методы формирования временных интервалов с использованием системного таймера SysTick, а также методы перевода микроконтроллера в режим пониженного энергопотребления. Разработана программа на языке C в среде Keil~µVision5, обеспечивающая попеременное включение светодиодов PG6 и PG7 с заданными характеристиками, а также обработку нажатия кнопки «WAKEUP» для перехода МК в спящий режим и его пробуждения. Закреплены навыки работы с осциллографом и оценочной платой MCBSTM32F200 в качестве измерительного генератора.
+
+\newpage
+
+\end{document}
