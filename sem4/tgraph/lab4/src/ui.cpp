@@ -3,8 +3,6 @@
 #include <limits>
 using namespace std;
 
-// ── вспомогательные функции ──────────────────────────────────────────────────
-
 Graph<int> Lab4UI::buildMSTGraph(const vector<Edge> &edges, int n) {
 	Graph<int> g(n);
 	for (auto &e : edges) {
@@ -13,8 +11,6 @@ Graph<int> Lab4UI::buildMSTGraph(const vector<Edge> &edges, int n) {
 	}
 	return g;
 }
-
-// ── обработчики пунктов ──────────────────────────────────────────────────────
 
 void Lab4UI::showKirchhoff(Graph<int> *g) {
 	int n = g->getNumVertices();
@@ -95,16 +91,14 @@ void Lab4UI::showMIS(Graph<int> *g) {
 		int n = (int)mstEdges.size() + 1;
 		Graph<int> mstGraph = buildMSTGraph(mstEdges, n);
 		cout << "\n  Запуск на минимальном остове...\n";
-		MIS mis(mstGraph);
+		MIS mis(mstGraph.getAdjMatrix());
 		MIS::printResult(mis.compute());
 	} else {
 		cout << "\n  Запуск на исходном графе...\n";
-		MIS mis(*g);
+		MIS mis(g->getAdjMatrix());
 		MIS::printResult(mis.compute());
 	}
 }
-
-// ── главный диспетчер ────────────────────────────────────────────────────────
 
 void Lab4UI::onNewGraph(bool directed) {
 	isDirected = directed;

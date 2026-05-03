@@ -2,6 +2,7 @@
 #include "lab2/src/ui.h"
 #include "lab3/src/ui.h"
 #include "lab4/src/ui.h"
+#include "lab5/src/ui.h"
 #include <iostream>
 #include <limits>
 
@@ -60,6 +61,7 @@ int main() {
 	Lab2UI lab2;
 	Lab3UI lab3;
 	Lab4UI lab4;
+	Lab5UI lab5;
 
 	Graph<int> *graph = nullptr;
 
@@ -97,6 +99,9 @@ int main() {
 		cout << "    19. Декодировать код Прюфера\n";
 		cout << "    20. Максимальное независимое множество\n";
 
+		cout << "\n  ЛАБОРАТОРНАЯ РАБОТА № 5\n";
+		cout << "    21. Проверить эйлеровость, модифицировать и построить цикл\n";
+
 		cout << "\n     0. Выход\n";
 		cout << "  Ваш выбор: ";
 
@@ -120,6 +125,7 @@ int main() {
 				        .generateGraph());
 				lab3.onNewGraph(*graph, n);
 				lab4.onNewGraph(directed);
+				lab5.onNewGraph(directed);
 				cout << "\n  Граф сгенерирован (" << n << " вершин).\n";
 			} catch (const exception &e) {
 				cout << "  Ошибка генерации: " << e.what() << "\n";
@@ -144,6 +150,8 @@ int main() {
 			lab3.processChoice(choice - 11, graph);
 		} else if (choice >= 16 && choice <= 20) {
 			lab4.processChoice(choice - 15, graph);
+		} else if (choice == 21) {
+			lab5.processChoice(1, graph);
 		} else {
 			cout << "  Неверный выбор.\n";
 		}

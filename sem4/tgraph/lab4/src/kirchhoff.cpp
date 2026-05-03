@@ -4,9 +4,8 @@
 using namespace std;
 
 /*
-    Матрица Лапласа (для неориентированного графа):
-      L[i][i] = степень вершины i
-      L[i][j] = -1 если ребро (i,j) есть, иначе 0
+	LOOK: count(const Graph<int> &g)
+	Реализуем алгоритм Барейсса для подсчёта детерминанта целочисленной матрицы Лапласа. Возвращаем абсолютное значение детерминанта, которое равно числу остовных деревьев. Сложность: O(n^3).
 */
 long long Kirchhoff::count(const Graph<int> &g) {
 	int n = g.getNumVertices();
@@ -52,6 +51,10 @@ long long Kirchhoff::count(const Graph<int> &g) {
 	return abs(mat[m - 1][m - 1]);
 }
 
+/*
+	LOOK: printLaplacian(const vector<vector<int>> &L, int n)
+	Вывод матрицы Лапласа на экран.
+*/
 void Kirchhoff::printLaplacian(const vector<vector<int>> &L, int n) {
 	const int W = 4;
 	cout << "\n  Матрица Лапласа:\n";
@@ -65,6 +68,10 @@ void Kirchhoff::printLaplacian(const vector<vector<int>> &L, int n) {
 	}
 }
 
+/*
+	LOOK: printResult(long long cnt)
+	Выводим итоговое число остовных деревьев.
+*/
 void Kirchhoff::printResult(long long cnt) {
 	cout << "\n  Число остовных деревьев: " << cnt << "\n";
 }

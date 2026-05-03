@@ -18,10 +18,9 @@ class Kruskal {
   private:
 	int n;
 	vector<Edge> edges;
-	vector<int> parent, rnk;
 
-	int find(int x);
-	bool unite(int u, int v);
+	// Вспомогательная функция для проверки наличия пути (используем BFS)
+	bool hasPath(int start, int target, const vector<vector<int>> &adjT) const;
 
   public:
 	explicit Kruskal(const Graph<int> &g);
