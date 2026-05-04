@@ -10,14 +10,19 @@ PruferCode Prufer::encode(const vector<Edge> &mst, int p) {
 	PruferCode code;
 	code.n = p;
 
-	vector<vector<pair<int, int>>> adj(p);
-	vector<int> d(p, 0);
+	Graph<int> tree(p);
 	for (auto &e : mst) {
-		adj[e.u].push_back({e.v, e.w});
-		adj[e.v].push_back({e.u, e.w});
-		d[e.u]++;
-		d[e.v]++;
+		tree.addEdge(e.u, e.v, e.w);
+		tree.addEdge(e.v, e.u, e.w);
 	}
+
+	auto adj = tree.getAdjMatrix();
+	auto wgt = tree.getWeightMatrix();
+	vector<int> d(p, 0);
+	for (int i = 0; i < p; i++)
+		for (int j = 0; j < p; j++)
+			if (adj[i][j] != 0)
+				d[i]++;
 
 	vector<bool> V(p, true);
 
@@ -32,10 +37,10 @@ PruferCode Prufer::encode(const vector<Edge> &mst, int p) {
 
 		int neighbor = -1;
 		int weight = 0;
-		for (auto &edge : adj[v]) {
-			if (V[edge.first]) {
-				neighbor = edge.first;
-				weight = edge.second;
+		for (int to = 0; to < p; to++) {
+			if (V[to] && adj[v][to] != 0) {
+				neighbor = to;
+				weight = wgt[v][to];
 				break;
 			}
 		}

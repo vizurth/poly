@@ -1,7 +1,7 @@
 #include "euler.h"
+#include "traversal.h"
 #include <algorithm>
 #include <iostream>
-#include <queue>
 #include <stack>
 
 using namespace std;
@@ -22,61 +22,28 @@ EulerCycle::EulerCycle(const Graph<int> &g) : graph(g.getNumVertices()) {
 			addEdge(i, j, w);
 		}
 	}
+
+	initialAdj = graph.getAdjMatrix();
 }
 
 int EulerCycle::degree(int v) const {
 	auto adj = graph.getAdjMatrix();
-	int d = 0;
-	int n = graph.getNumVertices();
-	for (int to = 0; to < n; to++) {
-		if (to != v && adj[v][to] != 0)
-			d++;
-	}
-	return d;
+	return Lab5Traversal::degree(adj, v);
 }
 
 vector<int> EulerCycle::oddVertices() const {
 	vector<int> odd;
-	int n = graph.getNumVertices();
+	auto adj = graph.getAdjMatrix();
+	int n = (int)adj.size();
 	for (int v = 0; v < n; v++) {
-		if (degree(v) % 2 != 0)
+		if (Lab5Traversal::degree(adj, v) % 2 != 0)
 			odd.push_back(v);
 	}
 	return odd;
 }
 
 vector<vector<int>> EulerCycle::connectedComponents() const {
-	int n = graph.getNumVertices();
-	auto adj = graph.getAdjMatrix();
-	vector<bool> visited(n, false);
-	vector<vector<int>> components;
-
-	for (int start = 0; start < n; start++) {
-		if (visited[start] || degree(start) == 0)
-			continue;
-
-		queue<int> q;
-		vector<int> component;
-		q.push(start);
-		visited[start] = true;
-
-		while (!q.empty()) {
-			int v = q.front();
-			q.pop();
-			component.push_back(v);
-
-			for (int to = 0; to < n; to++) {
-				if (adj[v][to] != 0 && !visited[to]) {
-					visited[to] = true;
-					q.push(to);
-				}
-			}
-		}
-
-		components.push_back(component);
-	}
-
-	return components;
+	return Lab5Traversal::components(graph.getAdjMatrix(), true);
 }
 
 bool EulerCycle::isEulerian() const {
@@ -84,7 +51,8 @@ bool EulerCycle::isEulerian() const {
 }
 
 bool EulerCycle::hasEdge(int u, int v) const {
-	return graph.hasEdge(u, v);
+	auto adj = graph.getAdjMatrix();
+	return adj[u][v] != 0 || adj[v][u] != 0;
 }
 
 void EulerCycle::addEdge(int u, int v, int w) {
@@ -92,7 +60,10 @@ void EulerCycle::addEdge(int u, int v, int w) {
 	graph.addEdge(v, u, w);
 }
 
-void EulerCycle::removeEdge(int u, int v) {
+bool EulerCycle::removeEdge(int u, int v) {
+	if (!hasEdge(u, v))
+		return false;
+
 	int n = graph.getNumVertices();
 	auto adj = graph.getAdjMatrix();
 	auto wgt = graph.getWeightMatrix();
@@ -114,6 +85,11 @@ void EulerCycle::removeEdge(int u, int v) {
 	}
 
 	graph = rebuilt;
+	return true;
+}
+
+bool EulerCycle::isInitialEdge(int u, int v) const {
+	return initialAdj[u][v] != 0 || initialAdj[v][u] != 0;
 }
 
 void EulerCycle::connectComponents(vector<EulerChange> &changes) {
@@ -140,7 +116,8 @@ void EulerCycle::makeEvenDegrees(vector<EulerChange> &changes) {
 
 		if (!hasEdge(u, v)) {
 			addEdge(u, v, 1);
-			changes.push_back({u, v, true, "добавлено ребро для чётных степеней"});
+			changes.push_back(
+			    {u, v, true, "добавлено ребро для чётных степеней"});
 			continue;
 		}
 
@@ -158,55 +135,51 @@ void EulerCycle::makeEvenDegrees(vector<EulerChange> &changes) {
 			addEdge(u, helper, 1);
 			addEdge(v, helper, 1);
 			changes.push_back(
-			    {u, helper, true, "добавлено ребро через вспомогательную вершину"});
+			    {u, helper, true,
+			     "добавлено ребро через вспомогательную вершину"});
 			changes.push_back(
-			    {v, helper, true, "добавлено ребро через вспомогательную вершину"});
-		} else {
-			removeEdge(u, v);
-			changes.push_back({u, v, false, "удалено ребро для чётных степеней"});
+			    {v, helper, true,
+			     "добавлено ребро через вспомогательную вершину"});
+		} else if (removeEdge(u, v)) {
+			changes.push_back(
+			    {u, v, false,
+			     isInitialEdge(u, v)
+			         ? "удалено ребро из исходного графа для чётных степеней"
+			         : "удалено ранее добавленное ребро для чётных степеней"});
 		}
 	}
 }
 
 vector<int> EulerCycle::buildEulerCycle() const {
+	int n = graph.getNumVertices();
 	auto work = graph.getAdjMatrix();
 	vector<int> cycle;
-	int n = graph.getNumVertices();
+	stack<int> st;
 
 	int start = 0;
-	for (int i = 0; i < n; i++) {
-		int d = 0;
-		for (int to = 0; to < n; to++) {
-			if (work[i][to] != 0)
-				d++;
-		}
-		if (d > 0) {
-			start = i;
-			break;
-		}
-	}
-
-	stack<int> st;
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++)
+			if (work[i][j])
+				start = i;
 	st.push(start);
 
 	while (!st.empty()) {
 		int v = st.top();
-		int to = -1;
+		int u = -1;
 
 		for (int i = 0; i < n; i++) {
-			if (work[v][i] != 0) {
-				to = i;
+			if (work[v][i]) {
+				u = i;
 				break;
 			}
 		}
 
-		if (to == -1) {
+		if (u == -1) {
 			cycle.push_back(v);
 			st.pop();
 		} else {
-			work[v][to] = 0;
-			work[to][v] = 0;
-			st.push(to);
+			st.push(u);
+			work[v][u] = work[u][v] = 0;
 		}
 	}
 
@@ -230,9 +203,7 @@ EulerResult EulerCycle::process() {
 	return result;
 }
 
-Graph<int> EulerCycle::getGraph() const {
-	return graph;
-}
+Graph<int> EulerCycle::getGraph() const { return graph; }
 
 void EulerCycle::printReport(const EulerResult &result) {
 	cout << "\n== Эйлеров цикл ==\n";
@@ -246,9 +217,8 @@ void EulerCycle::printReport(const EulerResult &result) {
 		cout << "    не выполнена\n";
 	} else {
 		for (auto &change : result.changes) {
-			cout << "    " << (change.added ? "+ " : "- ")
-			     << change.u << " -- " << change.v
-			     << " (" << change.reason << ")\n";
+			cout << "    " << (change.added ? "+ " : "- ") << change.u << " -- "
+			     << change.v << " (" << change.reason << ")\n";
 		}
 	}
 

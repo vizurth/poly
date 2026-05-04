@@ -23,6 +23,7 @@ struct EulerResult {
 class EulerCycle {
   private:
 	Graph<int> graph;
+	vector<vector<int>> initialAdj;
 
 	int degree(int v) const;
 	vector<int> oddVertices() const;
@@ -31,7 +32,8 @@ class EulerCycle {
 
 	bool hasEdge(int u, int v) const;
 	void addEdge(int u, int v, int w);
-	void removeEdge(int u, int v);
+	bool removeEdge(int u, int v);
+	bool isInitialEdge(int u, int v) const;
 
 	void connectComponents(vector<EulerChange> &changes);
 	void makeEvenDegrees(vector<EulerChange> &changes);

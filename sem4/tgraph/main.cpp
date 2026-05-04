@@ -101,6 +101,7 @@ int main() {
 
 		cout << "\n  ЛАБОРАТОРНАЯ РАБОТА № 5\n";
 		cout << "    21. Проверить эйлеровость, модифицировать и построить цикл\n";
+		cout << "    22. Фундаментальные циклы и симметрическая разность\n";
 
 		cout << "\n     0. Выход\n";
 		cout << "  Ваш выбор: ";
@@ -152,6 +153,8 @@ int main() {
 			lab4.processChoice(choice - 15, graph);
 		} else if (choice == 21) {
 			lab5.processChoice(1, graph);
+		} else if (choice == 22) {
+			lab5.processChoice(2, graph);
 		} else {
 			cout << "  Неверный выбор.\n";
 		}

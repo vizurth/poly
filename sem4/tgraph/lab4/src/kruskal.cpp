@@ -18,14 +18,14 @@ Kruskal::Kruskal(const Graph<int> &g) : n(g.getNumVertices()) {
 }
 
 /*
-	LOOK: hasPath(int start, int target, const vector<vector<int>> &adjT)
-	Вспомогательная функция для проверки наличия пути между двумя вершинами в текущем остове. Используем алгоритм BFS для обхода графа. Сложность: O(n + m), n - количество вершин, m - количество рёбер в остове.
+	LOOK: hasPath(int start, int target, const Graph<int> &tree)
+	Проверяем наличие пути между двумя вершинами в текущем остове с помощью BFS по матрице смежности.
 */
-bool Kruskal::hasPath(int start, int target,
-                      const vector<vector<int>> &adjT) const {
+bool Kruskal::hasPath(int start, int target, const Graph<int> &tree) const {
 	if (start == target)
 		return true;
 
+	auto adj = tree.getAdjMatrix();
 	vector<bool> visited(n, false);
 	queue<int> q;
 
@@ -36,7 +36,9 @@ bool Kruskal::hasPath(int start, int target,
 		int curr = q.front();
 		q.pop();
 
-		for (int neighbor : adjT[curr]) {
+		for (int neighbor = 0; neighbor < n; neighbor++) {
+			if (adj[curr][neighbor] == 0)
+				continue;
 			if (neighbor == target)
 				return true;
 			if (!visited[neighbor]) {
@@ -56,29 +58,20 @@ vector<Edge> Kruskal::compute() {
 	sort(edges.begin(), edges.end());
 
 	vector<Edge> T; // T - множество рёбер остова
-	vector<vector<int>> adjT(n);
+	Graph<int> tree(n);
 
-	int k = 0;
-	int total_edges = edges.size();
-
-	for (int i = 0; i < n - 1 && k < total_edges;) {
-
-		while (k < total_edges && hasPath(edges[k].u, edges[k].v, adjT)) {
-			k++; // ищем следующее ребро, которое не создаёт цикл
-		}
-
-		if (k >= total_edges)
-			break; // рёбра закончились
-
-		T.push_back(edges[k]);
-
-		adjT[edges[k].u].push_back(edges[k].v);
-		adjT[edges[k].v].push_back(edges[k].u);
-
-		k++;
-
-		i++;
+	for (auto &e : edges) {
+		if ((int)T.size() == n - 1)
+			break;
+		if (hasPath(e.u, e.v, tree))
+			continue;
+		T.push_back(e);
+		tree.addEdge(e.u, e.v, e.w);
+		tree.addEdge(e.v, e.u, e.w);
 	}
+
+	if ((int)T.size() != n - 1)
+		return {};
 
 	return T;
 }
