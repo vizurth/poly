@@ -1,5 +1,10 @@
-SELECT pz.parking_zone_id, pz.name 
+-- Запрос 7
+-- Найти зоны парковки, в которых никогда не парковался автомобиль "А001АА77"
+SELECT pz.parking_zone_id, pz.name
 FROM parking_zone pz
-LEFT JOIN parking_session ps ON pz.parking_zone_id = ps.parking_zone_id AND ps.car_id = 1
-WHERE ps.car_id IS NULL
-ORDER BY pz.parking_zone_id;
+WHERE pz.parking_zone_id NOT IN (
+    SELECT ps.parking_zone_id
+    FROM parking_session ps
+    JOIN car c ON c.car_id = ps.car_id
+    WHERE c.reg_number = 'А001АА77'
+);

@@ -2,7 +2,7 @@
 \addcontentsline{toc}{section}{Приложение А}
 \section*{Приложение A «Исходный код программы генерации схемы базы данных»}\label{app:A}
 
-\begin{lstlisting}[style=cstyle, caption={SQL-скрипт для создания схемы базы данных}, label={lst:schema}]
+\begin{lstlisting}[style=sqlstyle, caption={SQL-скрипт для создания схемы базы данных}, label={lst:schema}]
 CREATE TABLE employee_type (
     employee_type_id   SERIAL PRIMARY KEY,
     name               VARCHAR(30) NOT NULL UNIQUE,

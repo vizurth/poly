@@ -1,6 +1,9 @@
-SELECT e.full_name, COUNT(ae.alert_event_id) AS total_alert_events,
-COUNT(DISTINCT ae.car_id) AS total_unique_cars
+-- Запрос 3
+-- Для каждого сотрудника посчитать число тревожных событий и количество автомобилей
+SELECT e.employee_id, e.full_name,
+       COUNT(DISTINCT ae.alert_event_id) AS alert_count,
+       COUNT(DISTINCT ae.car_id) AS car_count
 FROM employee e
-LEFT JOIN alert_event ae ON e.employee_id = ae.employee_id
-GROUP BY e.employee_id, e.full_name, 
-ORDER BY total_alert_events DESC;
+LEFT JOIN alert_event ae ON ae.employee_id = e.employee_id
+GROUP BY e.employee_id, e.full_name
+ORDER BY e.employee_id;

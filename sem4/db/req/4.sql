@@ -1,19 +1,29 @@
-WITH CarCount AS (
-	SELECT pz.parking_zone_id, pz.name, COUNT(DISTINCT ps.car_id) AS total_cars
+-- Запрос 4 MAX
+-- Найти зоны парковки, в которых парковалось максимальное количество автомобилей
+SELECT pz.parking_zone_id, pz.name, COUNT(DISTINCT ps.car_id) AS cnt
 FROM parking_zone pz
-JOIN parking_session ps ON pz.parking_zone_id = ps.parking_zone_id
+JOIN parking_session ps ON ps.parking_zone_id = pz.parking_zone_id
 GROUP BY pz.parking_zone_id, pz.name
-)
-SELECT parking_zone_id, name, total_cars
-FROM CarCount
-WHERE total_cars = (SELECT MAX(total_cars) FROM CarCount);
+HAVING COUNT(DISTINCT ps.car_id) = (
+    SELECT MAX(sub.car_count)
+    FROM (
+        SELECT COUNT(DISTINCT ps2.car_id) AS car_count
+        FROM parking_session ps2
+        GROUP BY ps2.parking_zone_id
+    ) sub
+);
 
-WITH CarCount AS (
-	SELECT pz.parking_zone_id, pz.name, COUNT(DISTINCT ps.car_id) AS total_cars
+-- Запрос 4 MIN
+-- Найти зоны парковки, в которых парковалось минимальное количество автомобилей
+SELECT pz.parking_zone_id, pz.name, COUNT(DISTINCT ps.car_id) AS cnt
 FROM parking_zone pz
-JOIN parking_session ps ON pz.parking_zone_id = ps.parking_zone_id
+JOIN parking_session ps ON ps.parking_zone_id = pz.parking_zone_id
 GROUP BY pz.parking_zone_id, pz.name
-)
-SELECT parking_zone_id, name, total_cars
-FROM CarCount
-WHERE total_cars = (SELECT MIN(total_cars) FROM CarCount);
+HAVING COUNT(DISTINCT ps.car_id) = (
+    SELECT MIN(sub.car_count)
+    FROM (
+        SELECT COUNT(DISTINCT ps2.car_id) AS car_count
+        FROM parking_session ps2
+        GROUP BY ps2.parking_zone_id
+    ) sub
+);

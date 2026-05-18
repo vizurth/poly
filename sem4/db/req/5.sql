@@ -1,11 +1,12 @@
-WITH CarCount AS (
-	SELECT pz.parking_zone_id, pz.name, COUNT(DISTINCT ps.car_id) AS total_cars
-FROM parking_zone pz
-JOIN parking_session ps ON pz.parking_zone_id = ps.parking_zone_id
-GROUP BY pz.parking_zone_id, pz.name
-)
-
-SELECT COUNT(DISTINCT parking_zone_id) AS total_parking_zones, total_cars
-FROM CarCount
-GROUP BY total_cars
-ORDER BY total_cars DESC;
+-- Запрос 5
+-- Найти число зон парковок с одинаковым числом паркавшихся автомобилей для каждого сотрудника
+SELECT e.full_name, sub.car_count, COUNT(*) AS zone_count
+FROM employee e
+JOIN (
+    SELECT ae.employee_id, ps.parking_zone_id, COUNT(DISTINCT ae.car_id) AS car_count
+    FROM alert_event ae
+    JOIN parking_session ps ON ps.car_id = ae.car_id
+    GROUP BY ae.employee_id, ps.parking_zone_id
+) sub ON sub.employee_id = e.employee_id
+GROUP BY e.full_name, sub.car_count
+ORDER BY e.full_name, sub.car_count;
