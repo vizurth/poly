@@ -1,37 +1,23 @@
 #pragma once
 
-#include "common/graph/graph.h"
 #include "lab4/src/kruskal.h"
-#include <utility>
+#include <set>
 #include <vector>
-
 using namespace std;
 
-struct SymDiffResult {
-	vector<pair<int, int>> edges;
-	vector<vector<int>>    contours;
-};
+using EdgeSet = set<pair<int, int>>;
 
 class CycleBasis {
   private:
-	Graph<int> graph;
-	vector<vector<int>> mstAdj;
-	vector<Edge> mstEdges;
-	vector<vector<int>> fundamentalCycles;
+	vector<EdgeSet> basis;
+	int n = 0;
 
-	static pair<int, int> normalizeEdge(int u, int v);
-	vector<int> buildEulerCycle(vector<vector<int>> &adj, int start) const;
+	vector<int> pathInMST(int src, int dst, const vector<Edge> &mst) const;
+	static EdgeSet symDiff(const EdgeSet &a, const EdgeSet &b);
+	static void printEdgeSet(const EdgeSet &es, const string &title);
 
   public:
-	explicit CycleBasis(const Graph<int> &g);
-
-	bool build();
-
-	const vector<Edge> &getMSTEdges() const;
-	const vector<vector<int>> &getFundamentalCycles() const;
-
-	SymDiffResult symmetricDifference(const vector<int> &indices1Based) const;
-
-	static void printFundamentalCycles(const vector<vector<int>> &cycles);
-	static void printSymDiffResult(const SymDiffResult &result);
+	void compute(const vector<Edge> &mst, const Graph<int> &g);
+	void printBasis() const;
+	void interactiveSymDiff() const;
 };

@@ -1,165 +1,182 @@
 #include "cycle_basis.h"
-#include "traversal.h"
 #include <algorithm>
 #include <iostream>
-#include <map>
-#include <stack>
-
+#include <limits>
+#include <queue>
+#include <sstream>
 using namespace std;
 
-CycleBasis::CycleBasis(const Graph<int> &g) : graph(g) {}
+/*
+    LOOK: pathInMST(int src, int dst, const vector<Edge> &mst) const
+    BFS-поиск пути от src до dst в остовном дереве.
+    Возвращает последовательность вершин или пустой вектор, если пути нет.
+*/
+vector<int> CycleBasis::pathInMST(int src, int dst,
+                                   const vector<Edge> &mst) const {
+	vector<vector<int>> adj(n);
+	for (auto &e : mst) {
+		adj[e.u].push_back(e.v);
+		adj[e.v].push_back(e.u);
+	}
 
-pair<int, int> CycleBasis::normalizeEdge(int u, int v) {
-	if (u > v)
-		swap(u, v);
-	return {u, v};
-}
+	vector<int> parent(n, -1);
+	vector<bool> visited(n, false);
+	queue<int> q;
+	q.push(src);
+	visited[src] = true;
 
-vector<int> CycleBasis::buildEulerCycle(vector<vector<int>> &adj,
-                                        int start) const {
-	vector<int> cycle;
-	stack<int> st;
-	st.push(start);
-
-	while (!st.empty()) {
-		int v = st.top();
-		int to = -1;
-
-		for (int i = 0; i < (int)adj.size(); i++) {
-			if (adj[v][i] != 0) {
-				to = i;
-				break;
+	while (!q.empty()) {
+		int u = q.front();
+		q.pop();
+		if (u == dst)
+			break;
+		for (int v : adj[u]) {
+			if (!visited[v]) {
+				visited[v] = true;
+				parent[v] = u;
+				q.push(v);
 			}
 		}
-
-		if (to == -1) {
-			cycle.push_back(v);
-			st.pop();
-		} else {
-			adj[v][to] = adj[to][v] = 0;
-			st.push(to);
-		}
 	}
 
-	reverse(cycle.begin(), cycle.end());
-	return cycle;
+	if (!visited[dst])
+		return {};
+
+	vector<int> path;
+	for (int v = dst; v != -1; v = parent[v])
+		path.push_back(v);
+	reverse(path.begin(), path.end());
+	return path;
 }
 
-bool CycleBasis::build() {
-	Kruskal kr(graph);
-	mstEdges = kr.compute();
-	if (mstEdges.empty())
-		return false;
-
-	int n = graph.getNumVertices();
-	mstAdj.assign(n, vector<int>(n, 0));
-	for (auto &e : mstEdges)
-		mstAdj[e.u][e.v] = mstAdj[e.v][e.u] = 1;
-
-	fundamentalCycles.clear();
-	auto adj = graph.getAdjMatrix();
-
-	for (int u = 0; u < n; u++) {
-		for (int v = u + 1; v < n; v++) {
-			if (adj[u][v] == 0 && adj[v][u] == 0)
-				continue;
-			if (mstAdj[u][v] != 0 || mstAdj[v][u] != 0)
-				continue;
-
-			vector<int> path = Lab5Traversal::bfsPath(mstAdj, u, v);
-			if (path.empty())
-				continue;
-			path.push_back(u);
-			fundamentalCycles.push_back(path);
-		}
-	}
-
-	return true;
-}
-
-const vector<Edge> &CycleBasis::getMSTEdges() const {
-	return mstEdges;
-}
-
-const vector<vector<int>> &CycleBasis::getFundamentalCycles() const {
-	return fundamentalCycles;
-}
-
-SymDiffResult CycleBasis::symmetricDifference(
-    const vector<int> &indices1Based) const {
-	map<pair<int, int>, int> parity;
-
-	for (int idx1 : indices1Based) {
-		int idx = idx1 - 1;
-		if (idx < 0 || idx >= (int)fundamentalCycles.size())
-			continue;
-
-		const auto &cycle = fundamentalCycles[idx];
-		for (int i = 0; i + 1 < (int)cycle.size(); i++)
-			parity[normalizeEdge(cycle[i], cycle[i + 1])] ^= 1;
-	}
-
-	SymDiffResult result;
-	for (auto &kv : parity)
-		if (kv.second)
-			result.edges.push_back(kv.first);
-
-	vector<vector<int>> adj(graph.getNumVertices(),
-	                        vector<int>(graph.getNumVertices(), 0));
-	for (auto &e : result.edges)
-		adj[e.first][e.second] = adj[e.second][e.first] = 1;
-
-	auto comps = Lab5Traversal::components(adj, true);
-	for (auto &c : comps) {
-		vector<int> cycle = buildEulerCycle(adj, c[0]);
-		if (cycle.size() > 1)
-			result.contours.push_back(cycle);
-	}
-
+/*
+    LOOK: symDiff(const EdgeSet &a, const EdgeSet &b)
+    Симметрическая разность: рёбра, принадлежащие ровно одному из множеств.
+*/
+EdgeSet CycleBasis::symDiff(const EdgeSet &a, const EdgeSet &b) {
+	EdgeSet result;
+	for (auto &e : a)
+		if (!b.count(e))
+			result.insert(e);
+	for (auto &e : b)
+		if (!a.count(e))
+			result.insert(e);
 	return result;
 }
 
-void CycleBasis::printFundamentalCycles(const vector<vector<int>> &cycles) {
-	cout << "\n  Фундаментальная система циклов:\n";
-	if (cycles.empty()) {
-		cout << "    отсутствует (граф совпадает с остовом)\n";
+/*
+    LOOK: printEdgeSet(const EdgeSet &es, const string &title)
+    Выводит множество рёбер на экран.
+*/
+void CycleBasis::printEdgeSet(const EdgeSet &es, const string &title) {
+	cout << "\n  " << title << "\n";
+	if (es.empty()) {
+		cout << "    (пустое множество)\n";
 		return;
 	}
+	for (auto &[u, v] : es)
+		cout << "    " << u << " -- " << v << "\n";
+}
 
-	for (int i = 0; i < (int)cycles.size(); i++) {
-		cout << "    C" << i + 1 << ": ";
-		for (int j = 0; j < (int)cycles[i].size(); j++) {
-			if (j > 0)
-				cout << " -> ";
-			cout << cycles[i][j];
+/*
+    LOOK: compute(const vector<Edge> &mst, const Graph<int> &g)
+    Строит фундаментальную систему циклов.
+    Для каждого нетребового ребра (не входящего в MST) находит единственный
+    фундаментальный цикл: путь в MST между концами ребра + само это ребро.
+*/
+void CycleBasis::compute(const vector<Edge> &mst, const Graph<int> &g) {
+	n = g.getNumVertices();
+	basis.clear();
+
+	set<pair<int, int>> treeEdges;
+	for (auto &e : mst)
+		treeEdges.insert({min(e.u, e.v), max(e.u, e.v)});
+
+	auto adj = g.getAdjMatrix();
+
+	for (int i = 0; i < n; i++) {
+		for (int j = i + 1; j < n; j++) {
+			if (adj[i][j] == 0)
+				continue;
+			if (treeEdges.count({i, j}))
+				continue;
+
+			// нетребовое ребро (i,j) — строим фундаментальный цикл
+			auto path = pathInMST(i, j, mst);
+			if (path.empty())
+				continue;
+
+			EdgeSet cycle;
+			for (int k = 0; k + 1 < (int)path.size(); k++) {
+				int u = min(path[k], path[k + 1]);
+				int v = max(path[k], path[k + 1]);
+				cycle.insert({u, v});
+			}
+			cycle.insert({i, j});
+			basis.push_back(cycle);
 		}
-		cout << "\n";
 	}
 }
 
-void CycleBasis::printSymDiffResult(const SymDiffResult &result) {
-	cout << "\n  Результат симметрической разности:\n";
-	if (result.edges.empty()) {
-		cout << "    пустое множество рёбер\n";
+/*
+    LOOK: printBasis() const
+    Выводит фундаментальную систему циклов.
+*/
+void CycleBasis::printBasis() const {
+	cout << "\n  Фундаментальная система циклов (" << basis.size()
+	     << " цикл(ов)):\n";
+	if (basis.empty()) {
+		cout << "  (граф является деревом)\n";
+		return;
+	}
+	for (size_t i = 0; i < basis.size(); i++) {
+		cout << "  [" << i + 1 << "] { ";
+		for (auto &[u, v] : basis[i])
+			cout << u << "-" << v << " ";
+		cout << "}\n";
+	}
+}
+
+/*
+    LOOK: interactiveSymDiff() const
+    Пользователь вводит номера фундаментальных циклов, программа
+    вычисляет их симметрическую разность и выводит результат.
+*/
+void CycleBasis::interactiveSymDiff() const {
+	if (basis.empty()) {
+		cout << "  Фундаментальная система циклов пуста.\n";
 		return;
 	}
 
-	cout << "    Рёбра: ";
-	for (int i = 0; i < (int)result.edges.size(); i++) {
-		if (i > 0)
-			cout << ", ";
-		cout << "(" << result.edges[i].first << "-" << result.edges[i].second
-		     << ")";
-	}
-	cout << "\n";
+	printBasis();
+	cout << "\n  Введите номера циклов через пробел (например: 1 3), затем Enter:\n  > ";
 
-	for (int i = 0; i < (int)result.contours.size(); i++) {
-		cout << "    Контур " << i + 1 << ": ";
-		for (int j = 0; j < (int)result.contours[i].size(); j++) {
-			if (j > 0)
-				cout << " -> ";
-			cout << result.contours[i][j];
-		}
-		cout << "\n";
+	string line;
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	getline(cin, line);
+
+	istringstream iss(line);
+	vector<int> indices;
+	int idx;
+	while (iss >> idx) {
+		idx--;
+		if (idx >= 0 && idx < (int)basis.size())
+			indices.push_back(idx);
+		else
+			cout << "  Индекс " << idx + 1 << " вне диапазона — пропущен.\n";
 	}
+
+	if ((int)indices.size() < 2) {
+		cout << "  Нужно выбрать хотя бы 2 цикла.\n";
+		return;
+	}
+
+	EdgeSet result = basis[indices[0]];
+	cout << "\n  Операция: C" << indices[0] + 1;
+	for (size_t i = 1; i < indices.size(); i++) {
+		result = symDiff(result, basis[indices[i]]);
+		cout << " △ C" << indices[i] + 1;
+	}
+
+	printEdgeSet(result, "Результат симметрической разности:");
 }

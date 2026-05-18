@@ -1,0 +1,107 @@
+\subsection{Модуль lab2}
+
+\subsubsection{Fulkerson\textless T\textgreater: алгоритм Фалкерсона}
+
+\textbf{Вход:} \texttt{Graph<T> const\&} (конструктор).
+
+\textbf{Выход:} \texttt{vector<int>}~--- новые номера вершин после
+топологической сортировки.
+
+\textbf{Описание:} На каждой итерации метод \texttt{findRoots} смотрит
+матрицу смежности и собирает все ещё не удалённые вершины без входящих дуг.
+Каждой такой вершине присваивается очередной номер, затем она помечается
+удалённой. Шаги повторяются, пока не упорядочены все вершины.
+Счётчик итераций растёт при каждом просмотре ячейки матрицы~---
+это нужно для сравнения трудоёмкости алгоритмов.
+
+Если вершин без входящих дуг нет, а вершины ещё остались~--- значит в графе
+есть цикл и сортировка невозможна.
+
+\begin{lstlisting}[style=cstyle, caption={Поиск корней и вычисление порядка (fulkerson.cpp)}]
+template <typename T>
+vector<int> Fulkerson<T>::findRoots(
+    const vector<bool>& removed) const
+{
+    auto adj = graph.getAdjMatrix();
+    vector<int> roots;
+    for (int v = 0; v < n; v++) {
+        if (removed[v]) continue;
+        bool hasIncoming = false;
+        for (int from = 0; from < n; from++) {
+            iterCount++;
+            if (!removed[from] && from != v
+                && adj[from][v] != 0) {
+                hasIncoming = true;
+                break;
+            }
+        }
+        if (!hasIncoming) roots.push_back(v);
+    }
+    return roots;
+}
+
+template <typename T>
+vector<int> Fulkerson<T>::computeOrder() const {
+    iterCount = 0;
+    vector<bool> removed(n, false);
+    vector<int> order(n, -1);
+    int counter = 0;
+    while (counter < n) {
+        vector<int> roots = findRoots(removed);
+        if (roots.empty()) { /* цикл в графе */ return {}; }
+        for (int v : roots) {
+            order[v] = counter++;
+            removed[v] = true;
+        }
+    }
+    return order;
+}
+\end{lstlisting}
+
+После сортировки вызывается \texttt{Graph<T>::reorder(order)},
+и выводятся перенумерованные матрицы смежности и весов.
+Сложность: $O(V^2)$, пространственная: $O(V)$.
+
+\subsubsection{FloydWarshall\textless T\textgreater: алгоритм Флойда-Уоршалла}
+
+\textbf{Вход:} \texttt{Graph<T> const\&} (конструктор).
+
+\textbf{Выход:} матрица расстояний \texttt{distMatrix} и матрица
+следующих вершин \texttt{nextMatrix} для восстановления пути.
+
+\textbf{Описание:} Инициализация:
+$d[i][i] = 0$, $d[i][j] = w(i,j)$ если ребро есть, иначе $+\infty$;
+$\texttt{next}[i][j] = j$ при наличии ребра, $-1$~--- иначе.
+
+Главный тройной цикл перебирает промежуточные вершины $k$:
+
+\begin{lstlisting}[style=cstyle, caption={Основной цикл Флойда-Уоршалла (warshall.cpp)}]
+template <typename T>
+void FloydWarshall<T>::compute() {
+    const T INF = getPosINF();
+    iterCount = 0;
+    for (int k = 0; k < n; k++)
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++) {
+                iterCount++;
+                if (distMatrix[i][k] == INF
+                    || distMatrix[k][j] == INF) continue;
+                T newDist = distMatrix[i][k] + distMatrix[k][j];
+                if (newDist < distMatrix[i][j]) {
+                    distMatrix[i][j] = newDist;
+                    nextMatrix[i][j] = nextMatrix[i][k];
+                }
+            }
+}
+\end{lstlisting}
+
+Путь восстанавливается методом \texttt{getPath(from, to)}: идём по
+\texttt{nextMatrix} от \texttt{from} до \texttt{to}.
+Сложность: $O(n^3)$, пространственная: $O(n^2)$.
+
+\subsubsection{Сравнение алгоритмов по числу итераций}
+
+Пункт меню~11 запускает Фалкерсона и Флойда-Уоршалла на одном графе
+и сравнивает счётчики \texttt{iterCount}~--- каждый из них растёт
+при каждом просмотре ячейки матрицы. Так можно честно сравнить
+трудоёмкость без привязки к железу.

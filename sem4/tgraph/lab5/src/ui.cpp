@@ -1,97 +1,73 @@
 #include "ui.h"
+#include "lab4/src/kruskal.h"
 #include <iostream>
-#include <limits>
-
 using namespace std;
 
-void Lab5UI::showEulerCycle(Graph<int> *graph) {
-	EulerCycle solver(*graph);
-	EulerResult result = solver.process();
+/*
+    LOOK: showEuler(Graph<int> *g)
+    Проверяет эйлеровость графа, при необходимости модифицирует его
+    и строит эйлеров цикл/путь алгоритмом Хирхольцера.
+*/
+void Lab5UI::showEuler(Graph<int> *g) {
+	EulerianCycle euler(*g);
 
-	EulerCycle::printReport(result);
-
-	if (!result.changes.empty()) {
-		*graph = solver.getGraph();
-		cout << "\n  Граф обновлён в памяти с учётом модификаций.\n";
+	if (euler.isEulerian()) {
+		cout << "\n  Граф является эйлеровым.\n";
+	} else if (euler.isSemiEulerian()) {
+		cout << "\n  Граф является полуэйлеровым (найдём эйлеров путь).\n";
+	} else {
+		cout << "\n  Граф не является эйлеровым. Модификация:\n";
+		euler.makeEulerian();
+		EulerianCycle::printAddedEdges(euler.getAddedEdges());
 	}
+
+	auto cycle = euler.findCycle();
+	if (cycle)
+		EulerianCycle::printCycle(*cycle);
+	else
+		cout << "\n  Не удалось построить эйлеров цикл.\n";
 }
 
-vector<int> Lab5UI::askCycleIndices(int totalCycles) {
-	vector<int> indices;
-	vector<bool> used(totalCycles + 1, false);
+/*
+    LOOK: showCycleBasis(Graph<int> *g)
+    Строит MST алгоритмом Краскала и выводит фундаментальную систему циклов.
+*/
+void Lab5UI::showCycleBasis(Graph<int> *g) {
+	Kruskal kr(*g);
+	mstEdges = kr.compute();
 
-	cout << "\n  Введите номера фундаментальных циклов для симметрической разности.\n";
-	cout << "  Завершение ввода: 0\n";
-
-	while (true) {
-		int idx;
-		cout << "  Номер цикла [1-" << totalCycles << "] или 0: ";
-		if (!(cin >> idx)) {
-			cout << "  Ошибка: введите целое число.\n";
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-			continue;
-		}
-		if (idx == 0)
-			break;
-		if (idx < 1 || idx > totalCycles) {
-			cout << "  Ошибка: номер вне диапазона.\n";
-			continue;
-		}
-		if (!used[idx]) {
-			used[idx] = true;
-			indices.push_back(idx);
-		}
+	if (mstEdges.empty()) {
+		cout << "  Граф несвязный — MST не существует.\n";
+		hasMST = false;
+		return;
 	}
 
-	return indices;
+	hasMST = true;
+	Kruskal::printMST(mstEdges);
+
+	cycleBasis.compute(mstEdges, *g);
+	cycleBasis.printBasis();
 }
 
-void Lab5UI::showCycleBasis(Graph<int> *graph) {
-	CycleBasis solver(*graph);
-	if (!solver.build()) {
-		cout << "  Не удалось построить остов. Граф может быть несвязным.\n";
+/*
+    LOOK: showSymDiff()
+    Запускает интерактивный расчёт симметрической разности циклов.
+*/
+void Lab5UI::showSymDiff() {
+	if (!hasMST) {
+		cout << "  Сначала постройте MST и систему циклов (пункт 22).\n";
 		return;
 	}
-
-	cout << "\n== Циклы через остов и симметрическую разность ==\n";
-	Kruskal::printMST(solver.getMSTEdges());
-	CycleBasis::printFundamentalCycles(solver.getFundamentalCycles());
-
-	const auto &basis = solver.getFundamentalCycles();
-	if (basis.empty())
-		return;
-
-	cout << "\n  Построить цикл(ы) симметрической разностью?\n";
-	cout << "    1. Да\n";
-	cout << "    2. Нет\n";
-	cout << "  Ваш выбор [1/2]: ";
-
-	int ch = 2;
-	if (!(cin >> ch)) {
-		cin.clear();
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		return;
-	}
-	if (ch != 1)
-		return;
-
-	vector<int> indices = askCycleIndices((int)basis.size());
-	if (indices.empty()) {
-		cout << "  Циклы не выбраны.\n";
-		return;
-	}
-
-	SymDiffResult result = solver.symmetricDifference(indices);
-	CycleBasis::printSymDiffResult(result);
+	cycleBasis.interactiveSymDiff();
 }
 
 void Lab5UI::onNewGraph(bool directed) {
 	isDirected = directed;
+	hasMST = false;
 }
 
-void Lab5UI::processChoice(int menuChoice, Graph<int> *graph) {
-	if (!graph) {
+void Lab5UI::processChoice(int choice, Graph<int> *g) {
+	if (!g) {
 		cout << "  Сначала сгенерируйте граф (пункт 1).\n";
 		return;
 	}
@@ -101,8 +77,10 @@ void Lab5UI::processChoice(int menuChoice, Graph<int> *graph) {
 		return;
 	}
 
-	if (menuChoice == 1)
-		showEulerCycle(graph);
-	else if (menuChoice == 2)
-		showCycleBasis(graph);
+	if (choice == 1)
+		showEuler(g);
+	else if (choice == 2)
+		showCycleBasis(g);
+	else if (choice == 3)
+		showSymDiff();
 }

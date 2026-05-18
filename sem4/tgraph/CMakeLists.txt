@@ -16,13 +16,13 @@ add_executable(tgraph
     lab2/src/ui.cpp
     lab3/src/ui.cpp
     lab4/src/ui.cpp
-    lab5/src/ui.cpp
-    lab5/src/euler.cpp
-    lab5/src/cycle_basis.cpp
     lab4/src/kruskal.cpp
     lab4/src/kirchhoff.cpp
     lab4/src/prufer.cpp
     lab4/src/mis.cpp
+    lab5/src/euler.cpp
+    lab5/src/cycle_basis.cpp
+    lab5/src/ui.cpp
     ${COMMON_SOURCES}
 )
 

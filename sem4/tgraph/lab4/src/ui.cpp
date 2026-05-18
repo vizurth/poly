@@ -24,7 +24,8 @@ void Lab4UI::showKirchhoff(Graph<int> *g) {
 				L[i][j] = -1;
 	for (int i = 0; i < n; i++)
 		for (int j = 0; j < n; j++)
-			if (L[i][j] == -1) L[i][i]++;
+			if (L[i][j] == -1)
+				L[i][i]++;
 
 	Kirchhoff::printLaplacian(L, n);
 	long long cnt = Kirchhoff::count(*g);
@@ -41,7 +42,7 @@ void Lab4UI::showKruskal(Graph<int> *g) {
 		return;
 	}
 
-	hasMST    = true;
+	hasMST = true;
 	hasPrufer = false;
 	Kruskal::printMST(mstEdges);
 }
@@ -52,7 +53,7 @@ void Lab4UI::showPruferEncode() {
 		return;
 	}
 	pruferCode = Prufer::encode(mstEdges, (int)mstEdges.size() + 1);
-	hasPrufer  = true;
+	hasPrufer = true;
 	Prufer::printEdges(mstEdges, "Исходный остов:");
 	Prufer::printCode(pruferCode);
 }
@@ -72,7 +73,8 @@ void Lab4UI::showMIS(Graph<int> *g) {
 	cout << "    1. Исходный граф\n";
 	cout << "    2. Минимальный остов (MST)\n";
 
-	if (!hasMST) cout << "    (MST ещё не построен)\n";
+	if (!hasMST)
+		cout << "    (MST ещё не построен)\n";
 
 	int ch;
 	cout << "  Ваш выбор [1/2]: ";
@@ -102,8 +104,8 @@ void Lab4UI::showMIS(Graph<int> *g) {
 
 void Lab4UI::onNewGraph(bool directed) {
 	isDirected = directed;
-	hasMST     = false;
-	hasPrufer  = false;
+	hasMST = false;
+	hasPrufer = false;
 }
 
 void Lab4UI::processChoice(int menuChoice, Graph<int> *g) {
@@ -117,9 +119,14 @@ void Lab4UI::processChoice(int menuChoice, Graph<int> *g) {
 		return;
 	}
 
-	if      (menuChoice == 1) showKirchhoff(g);
-	else if (menuChoice == 2) showKruskal(g);
-	else if (menuChoice == 3) showPruferEncode();
-	else if (menuChoice == 4) showPruferDecode();
-	else if (menuChoice == 5) showMIS(g);
+	if (menuChoice == 1)
+		showKirchhoff(g);
+	else if (menuChoice == 2)
+		showKruskal(g);
+	else if (menuChoice == 3)
+		showPruferEncode();
+	else if (menuChoice == 4)
+		showPruferDecode();
+	else if (menuChoice == 5)
+		showMIS(g);
 }

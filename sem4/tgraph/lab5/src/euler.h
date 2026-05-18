@@ -1,49 +1,31 @@
 #pragma once
 
 #include "common/graph/graph.h"
-#include <string>
+#include <optional>
 #include <vector>
-
 using namespace std;
 
-struct EulerChange {
-	int    u;
-	int    v;
-	bool   added;
-	string reason;
-};
-
-struct EulerResult {
-	bool initiallyEulerian = false;
-	bool finalEulerian     = false;
-	vector<EulerChange> changes;
-	vector<int> cycle;
-};
-
-class EulerCycle {
+class EulerianCycle {
   private:
-	Graph<int> graph;
-	vector<vector<int>> initialAdj;
+	Graph<int> g;
+	int n;
+	vector<pair<int, int>> addedEdges;
 
 	int degree(int v) const;
-	vector<int> oddVertices() const;
-	vector<vector<int>> connectedComponents() const;
-	bool isEulerian() const;
-
-	bool hasEdge(int u, int v) const;
-	void addEdge(int u, int v, int w);
-	bool removeEdge(int u, int v);
-	bool isInitialEdge(int u, int v) const;
-
-	void connectComponents(vector<EulerChange> &changes);
-	void makeEvenDegrees(vector<EulerChange> &changes);
-	vector<int> buildEulerCycle() const;
+	vector<int> oddDegreeVertices() const;
+	vector<vector<int>> nonZeroComponents() const;
+	optional<vector<int>> hierholzer(int start) const;
 
   public:
-	explicit EulerCycle(const Graph<int> &g);
+	explicit EulerianCycle(const Graph<int> &graph);
 
-	EulerResult process();
-	Graph<int>  getGraph() const;
+	bool isEulerian() const;
+	bool isSemiEulerian() const;
+	void makeEulerian();
+	optional<vector<int>> findCycle();
 
-	static void printReport(const EulerResult &result);
+	const vector<pair<int, int>> &getAddedEdges() const;
+
+	static void printCycle(const vector<int> &cycle);
+	static void printAddedEdges(const vector<pair<int, int>> &added);
 };

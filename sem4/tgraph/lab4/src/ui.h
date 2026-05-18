@@ -9,11 +9,11 @@
 
 class Lab4UI {
   private:
-	vector<Edge>  mstEdges;
-	PruferCode    pruferCode;
-	bool          hasMST       = false;
-	bool          hasPrufer    = false;
-	bool          isDirected   = false;
+	vector<Edge> mstEdges;
+	PruferCode pruferCode;
+	bool hasMST = false;
+	bool hasPrufer = false;
+	bool isDirected = false;
 
 	void showKirchhoff(Graph<int> *g);
 	void showKruskal(Graph<int> *g);

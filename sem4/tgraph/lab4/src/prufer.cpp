@@ -3,8 +3,8 @@
 using namespace std;
 
 /*
-	LOOK: encode(const vector<Edge> &mst, int p)
-	Преобразуем минимальное остовное дерево в код Прюфера.
+    LOOK: encode(const vector<Edge> &mst, int p)
+    Преобразуем минимальное остовное дерево в код Прюфера.
 */
 PruferCode Prufer::encode(const vector<Edge> &mst, int p) {
 	PruferCode code;
@@ -45,7 +45,7 @@ PruferCode Prufer::encode(const vector<Edge> &mst, int p) {
 			}
 		}
 
-		code.seq.push_back(neighbor);  
+		code.seq.push_back(neighbor);
 		code.weights.push_back(weight);
 
 		V[v] = false;
@@ -57,8 +57,8 @@ PruferCode Prufer::encode(const vector<Edge> &mst, int p) {
 }
 
 /*
-	LOOK: decode(const PruferCode &code)
-	Преобразуем код Прюфера обратно в множество рёбер.
+    LOOK: decode(const PruferCode &code)
+    Преобразуем код Прюфера обратно в множество рёбер.
 */
 vector<Edge> Prufer::decode(const PruferCode &code) {
 	int p = code.n;
@@ -79,7 +79,8 @@ vector<Edge> Prufer::decode(const PruferCode &code) {
 						break;
 					}
 				}
-				if (!in_rest_of_code) { // если не нашли в остатке, добавляем в код
+				if (!in_rest_of_code) { // если не нашли в остатке, добавляем в
+					                    // код
 					v = k;
 					break;
 				}
@@ -95,8 +96,9 @@ vector<Edge> Prufer::decode(const PruferCode &code) {
 }
 
 /*
-	LOOK: printCode(const PruferCode &code)
-	Выводим код Прюфера на экран. Показываем как последовательность вершин, так и соответствующие веса рёбер для удобства.
+    LOOK: printCode(const PruferCode &code)
+    Выводим код Прюфера на экран. Показываем как последовательность вершин, так
+   и соответствующие веса рёбер для удобства.
 */
 void Prufer::printCode(const PruferCode &code) {
 	cout << "\n  Код Прюфера (" << code.seq.size() << " элементов):\n";
@@ -111,8 +113,9 @@ void Prufer::printCode(const PruferCode &code) {
 }
 
 /*
-	LOOK: printEdges(const vector<Edge> &edges, const string &title)
-	Выводим множество рёбер на экран. Также выводим суммарный вес рёбер для удобства.
+    LOOK: printEdges(const vector<Edge> &edges, const string &title)
+    Выводим множество рёбер на экран. Также выводим суммарный вес рёбер для
+   удобства.
 */
 void Prufer::printEdges(const vector<Edge> &edges, const string &title) {
 	cout << "\n  " << title << "\n";

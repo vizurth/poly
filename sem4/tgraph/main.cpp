@@ -97,11 +97,12 @@ int main() {
 		cout << "    17. Минимальный остов (алгоритм Краскала)\n";
 		cout << "    18. Кодировать остов кодом Прюфера\n";
 		cout << "    19. Декодировать код Прюфера\n";
-		cout << "    20. Максимальное независимое множество\n";
+		cout << "    20. Максимальное независимое множество вершин\n";
 
 		cout << "\n  ЛАБОРАТОРНАЯ РАБОТА № 5\n";
-		cout << "    21. Проверить эйлеровость, модифицировать и построить цикл\n";
-		cout << "    22. Фундаментальные циклы и симметрическая разность\n";
+		cout << "    21. Эйлеров цикл\n";
+		cout << "    22. Фундаментальная система циклов (MST + циклы)\n";
+		cout << "    23. Симметрическая разность циклов\n";
 
 		cout << "\n     0. Выход\n";
 		cout << "  Ваш выбор: ";
@@ -151,10 +152,8 @@ int main() {
 			lab3.processChoice(choice - 11, graph);
 		} else if (choice >= 16 && choice <= 20) {
 			lab4.processChoice(choice - 15, graph);
-		} else if (choice == 21) {
-			lab5.processChoice(1, graph);
-		} else if (choice == 22) {
-			lab5.processChoice(2, graph);
+		} else if (choice >= 21 && choice <= 23) {
+			lab5.processChoice(choice - 20, graph);
 		} else {
 			cout << "  Неверный выбор.\n";
 		}

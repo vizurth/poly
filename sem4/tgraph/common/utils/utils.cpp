@@ -12,19 +12,28 @@ void printMatrix(const vector<vector<T>> &matrix, const string &title) {
 	const T NEG_INF = -INF<T> / 2;
 	int n = matrix.size();
 
-	cout << "\n" << title << "\n";
+	cout << "\n" << title << "\n\n";
 
-	cout << "    ";
-	for (int i = 0; i < n; i++) {
-		cout << setw(8) << i;
+	// заголовок столбцов
+	cout << "    |";
+	for (int j = 0; j < n; j++) {
+		cout << setw(8) << j;
 	}
 	cout << "\n";
 
-	// строки марицы
+	// разделительная линия
+	cout << "----+";
+	for (int j = 0; j < n; j++) {
+		cout << "--------";
+	}
+	cout << "\n";
+
+	// строки матрицы
 	for (int i = 0; i < n; i++) {
-		cout << setw(3) << i << " ";
+		cout << setw(3) << i << " |";
 		for (int j = 0; j < n; j++) {
 			T val = matrix[i][j];
+
 			if (i == j) {
 				cout << setw(8) << "0";
 			} else if (val >= POS_INF || val <= NEG_INF || val == T{} ||

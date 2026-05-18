@@ -1,0 +1,127 @@
+\section{Особенности реализации}
+
+\subsection{Общий поток выполнения}
+
+Проект собирается через CMake. Точка входа~--- единый исполняемый файл
+с консольным меню. Все модули лабораторных зависят только от \texttt{common};
+\texttt{common} ничего не знает про лабораторные.
+
+Пользователь выбирает пункт меню, \texttt{main.cpp} вызывает нужный метод
+\texttt{LabXUI}, который читает параметры, запускает алгоритм и выводит
+результат в консоль.
+
+\begin{figure}[h]
+\centering
+\begin{verbatim}
+main.cpp -> LabXUI -> Graph<T> / Generator<T> ->
+    -> Algorithms (Shimbel, Fulkerson, Floyd, ...) -> stdout
+\end{verbatim}
+\caption{Поток выполнения}
+\end{figure}
+
+\subsection{Модуль common}
+
+Модуль содержит весь код, который используется в нескольких лабораторных:
+граф, генератор, распределение и утилиты.
+
+\subsubsection{Graph\textless T\textgreater: шаблонный граф}
+
+\texttt{Graph<T>}~--- шаблонный класс для хранения графа; тип весов рёбер
+задаётся параметром \texttt{T}.
+
+\begin{lstlisting}[style=cstyle, caption={Объявление Graph (graph.h)}]
+template <typename T>
+class Graph {
+  private:
+    int numVertices;
+    vector<vector<int>> adjMatrix;
+    vector<vector<T>> weightMatrix;
+  public:
+    Graph(int n);
+    void addEdge(int from, int to, T weight);
+    bool hasEdge(int from, int to) const;
+    T getEdge(int from, int to) const;
+    int getNumVertices() const;
+    vector<vector<int>> getAdjMatrix() const;
+    vector<vector<T>> getWeightMatrix() const;
+    Graph<T> reorder(const vector<int>& order) const;
+    // ...
+};
+\end{lstlisting}
+
+\paragraph{Хранение данных.} Граф хранится в двух матрицах размера $n \times n$.
+\texttt{adjMatrix[i][j] = 1} означает, что ребро $(i, j)$ есть;
+\texttt{weightMatrix[i][j]} хранит его вес.
+Проверка наличия ребра и доступ к весу работают за $O(1)$, но памяти
+уходит $O(n^2)$ независимо от числа рёбер.
+
+\paragraph{BFS.} Метод \texttt{bfs(int start)} обходит граф в ширину
+по матрице весов: ребро $(v, to)$ считается существующим, если вес не равен
+нулевому значению типа \texttt{T}. Возвращает вектор расстояний (в рёбрах)
+от источника до всех вершин.
+
+\paragraph{DFS и поиск всех путей.} Методы \texttt{dfs} и
+\texttt{findAllPaths} ищут пути перебором с возвратом (backtracking).
+\texttt{dfs} идёт по графу рекурсивно; когда доходит до нужной вершины~---
+сохраняет текущий путь.
+
+\paragraph{Метрики.} Методы \texttt{eccentricity}, \texttt{allEccentricities},
+\texttt{findCenter} и \texttt{findDiametral} считают характеристики графа
+прямо внутри класса через BFS.
+
+\paragraph{Перенумерация.} Метод \texttt{reorder(order)} строит новый граф,
+переставляя вершины по заданному порядку $\pi$~--- нужен для вывода матрицы
+смежности после алгоритма Фалкерсона.
+
+\subsubsection{WeibullDistribution: генерация случайных чисел}
+
+Класс хранит параметры распределения Вейбулла: масштаб $a$ и форму $c$;
+по умолчанию $a = 1, c = 0.2$.
+
+\begin{lstlisting}[style=cstyle, caption={Генерация числа по распределению Вейбулла (weibull.cpp)}]
+double WeibullDistribution::generate() {
+    double u = distribution(generator);
+    double raw = a * std::pow(-std::log(1 - u), 1.0 / c);
+    return (raw > 0) ? raw : -raw;
+}
+\end{lstlisting}
+
+Метод берёт равномерное $u \in (0,1)$ из \texttt{std::mt19937}
+и считает $X = a(-\ln(1 - u))^{1/c}$. Модуль нужен, чтобы результат
+всегда был положительным.
+
+\subsubsection{Generator\textless T\textgreater: генерация графов}
+
+\texttt{Generator<T>} держит два объекта \texttt{WeibullDistribution}:
+один для структуры графа (\texttt{distributionForStructure}), другой
+для весов (\texttt{distributionForWeights}).
+
+\begin{lstlisting}[style=cstyle, caption={Генератор весов и Вейбуллово перемешивание (generator.cpp)}]
+template <typename T>
+T Generator<T>::generateWeight(WeightType weightType) {
+    double weight = distributionForWeights.generate();
+    if (weightType == WeightType::NEGATIVE)
+        return static_cast<T>(-weight);
+    else if (weightType == WeightType::MIXED)
+        return isNegative() ? static_cast<T>(-weight)
+                            : static_cast<T>(weight);
+    return static_cast<T>(weight);
+}
+
+template <typename T>
+void Generator<T>::weibullShuffle(vector<int>& vertices) {
+    int n = vertices.size();
+    for (int i = n - 1; i > 0; i--) {
+        int j = randomIndex(i + 1);
+        swap(vertices[i], vertices[j]);
+    }
+}
+\end{lstlisting}
+
+Метод \texttt{generateGraph()} строит граф в два прохода.
+В первом проходе строится остовное дерево: для вершины $i \geq 1$
+предок выбирается случайно из $\{0, \ldots, i-1\}$~--- это гарантирует
+связность и отсутствие циклов.
+Во втором проходе для каждой вершины с оставшимся бюджетом степени
+берутся все вершины $j > i$, у которых ещё нет ребра от $i$. Список
+перемешивается через \texttt{weibullShuffle} и добавляются первые $d_i$ рёбер.

@@ -1,0 +1,132 @@
+\subsection{Модуль lab1}
+
+\subsubsection{Эксцентриситеты, центр и диаметральные вершины}
+
+Все метрики считаются внутри класса \texttt{Graph<T>}.
+
+\textbf{Вход:} \texttt{Graph<T>}~--- связный граф.
+
+\textbf{Выход:} вектор эксцентриситетов, списки центральных и диаметральных вершин.
+
+\textbf{Описание:} Для каждой вершины запускается BFS (\texttt{bfs(int start)})
+по матрице весов~--- ребро считается существующим, если вес ненулевой.
+BFS возвращает вектор расстояний \texttt{distances} в рёбрах.
+Эксцентриситет вершины~--- наибольшее расстояние до других вершин:
+
+\begin{lstlisting}[style=cstyle, caption={BFS и вычисление эксцентриситета (graph.cpp)}]
+template <typename T>
+int Graph<T>::eccentricity(int vertex) const {
+    vector<int> dist = bfs(vertex);
+    const int INF = std::numeric_limits<int>::max();
+    int maxDist = 0;
+    for (int i = 0; i < numVertices; i++) {
+        if (i == vertex || dist[i] == INF) continue;
+        maxDist = std::max(maxDist, dist[i]);
+    }
+    return maxDist;
+}
+\end{lstlisting}
+
+Центр~--- вершины с наименьшим эксцентриситетом (радиус графа),
+диаметральные~--- с наибольшим (диаметр графа):
+
+\begin{lstlisting}[style=cstyle, caption={Поиск центра и диаметральных вершин (graph.cpp)}]
+template <typename T>
+vector<int> Graph<T>::findCenter() const {
+    vector<int> eccs = allEccentricities();
+    int radius = *std::min_element(eccs.begin(), eccs.end());
+    vector<int> centers;
+    for (int i = 0; i < numVertices; i++)
+        if (eccs[i] == radius) centers.push_back(i);
+    return centers;
+}
+
+template <typename T>
+vector<int> Graph<T>::findDiametral() const {
+    vector<int> eccs = allEccentricities();
+    int diameter = 0;
+    for (int ecc : eccs)
+        if (ecc != std::numeric_limits<int>::max() && ecc > diameter)
+            diameter = ecc;
+    vector<int> diametral;
+    for (int i = 0; i < numVertices; i++)
+        if (eccs[i] == diameter) diametral.push_back(i);
+    return diametral;
+}
+\end{lstlisting}
+
+Сложность: $O(V(V + E))$ при матричном представлении, где один BFS
+стоит $O(V^2)$.
+
+\subsubsection{ShimbelSolver\textless T\textgreater: метод Шимбелла}
+
+\textbf{Вход:} \texttt{Graph<T> const\&} (конструктор), \texttt{int k}~---
+длина пути в рёбрах.
+
+\textbf{Выход:} матрица кратчайших и матрица наидлиннейших путей
+ровно из $k$ рёбер для всех пар вершин.
+
+\textbf{Описание:} Начальная матрица заполняется по весам графа:
+$\texttt{currentMatrix}[i][j] = w(i,j)$, если ребро есть, иначе
+ставится сторожевое значение ($+\infty$ или $-\infty$).
+Матрица умножается $k - 1$ раз методом \texttt{multiplyMatrix(bool findMin)}.
+При каждом умножении для пары $(i, j)$ перебираются все промежуточные вершины $m$:
+если значения не сторожевые и ребро $(m, j)$ есть, считается кандидат
+$\texttt{currentMatrix}[i][m] + w[m][j]$, затем берётся минимум или максимум:
+
+\begin{lstlisting}[style=cstyle, caption={Матричное умножение для метода Шимбелла (shimbel.cpp)}]
+template <typename T>
+void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
+    const T INF = getINF();
+    const T empty = findMin ? INF : -INF;
+    auto weight = graph.getWeightMatrix();
+    vector<vector<T>> next(n, vector<T>(n, empty));
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            for (int m = 0; m < n; m++) {
+                if (currentMatrix[i][m] == empty
+                    || weight[m][j] == T{}) continue;
+                T candidate = currentMatrix[i][m] + weight[m][j];
+                if (findMin) next[i][j] = std::min(next[i][j], candidate);
+                else         next[i][j] = std::max(next[i][j], candidate);
+            }
+    currentMatrix = next;
+}
+\end{lstlisting}
+
+При $k = 0$ возвращается единичная матрица.
+Временная сложность: $O(k \cdot n^3)$, пространственная: $O(n^2)$.
+
+\subsubsection{Поиск всех маршрутов (DFS с возвратом)}
+
+\textbf{Вход:} \texttt{Graph<T> const\&}, \texttt{int from}, \texttt{int to}.
+
+\textbf{Выход:} \texttt{vector<vector<int>>}~--- все простые пути.
+
+\textbf{Описание:} \texttt{findAllPaths} запускает рекурсивный \texttt{dfs}.
+Когда доходим до \texttt{target}~--- сохраняем текущий путь \texttt{currentPath}.
+При выходе из рекурсии вершина снимается с отметки (\textit{backtracking}):
+
+\begin{lstlisting}[style=cstyle, caption={Поиск всех путей DFS (graph.cpp)}]
+template <typename T>
+void Graph<T>::dfs(int current, int target,
+                   vector<bool>& visited,
+                   vector<int>& currentPath,
+                   vector<vector<int>>& allPaths) const {
+    if (current == target) {
+        allPaths.push_back(currentPath);
+        return;
+    }
+    for (int next = 0; next < numVertices; next++) {
+        if (weightMatrix[current][next] != T{} && !visited[next]) {
+            visited[next] = true;
+            currentPath.push_back(next);
+            dfs(next, target, visited, currentPath, allPaths);
+            currentPath.pop_back();
+            visited[next] = false;
+        }
+    }
+}
+\end{lstlisting}
+
+Сложность: $O(n!)$ в худшем случае, пространственная: $O(V)$.

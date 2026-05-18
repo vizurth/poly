@@ -1,0 +1,154 @@
+\subsection{Модуль lab4}
+
+\subsubsection{Kirchhoff: число остовных деревьев}
+
+\textbf{Вход:} \texttt{Graph<int> const\&}~--- неориентированный граф.
+
+\textbf{Выход:} \texttt{long long}~--- число различных остовных деревьев.
+
+\textbf{Описание:} Метод \texttt{count} строит матрицу Лапласа $B$
+размера $n \times n$: $B[i][j] = -1$ для смежных вершин $i \neq j$,
+$B[i][i]$~--- степень вершины $i$. Смежность определяется так:
+ребро есть, если $\texttt{adj}[i][j] \neq 0$ или $\texttt{adj}[j][i] \neq 0$.
+
+Затем берётся минор $L_{00}$ размера $(n-1) \times (n-1)$~--- матрица $B$
+без нулевой строки и нулевого столбца. Определитель считается методом
+Гаусса с целочисленной арифметикой~--- это позволяет избежать ошибок
+округления при работе с целыми числами:
+
+\begin{lstlisting}[style=cstyle, caption={Метод Гаусса с целочисленной арифметикой (kirchhoff.cpp)}]
+for (int k = 0; k < m; k++) {
+    // поиск ненулевого опорного элемента
+    int pivot = -1;
+    for (int i = k; i < m; i++)
+        if (mat[i][k] != 0) { pivot = i; break; }
+    if (pivot == -1) return 0;
+    if (pivot != k) swap(mat[k], mat[pivot]);
+
+    for (int i = k + 1; i < m; i++) {
+        for (int j = k + 1; j < m; j++) {
+            mat[i][j] = mat[k][k] * mat[i][j]
+                      - mat[i][k] * mat[k][j];
+            if (k > 0)
+                mat[i][j] /= mat[k-1][k-1];
+        }
+        mat[i][k] = 0;
+    }
+}
+return abs(mat[m-1][m-1]);
+\end{lstlisting}
+
+На каждом шаге $k$ элементы делятся на $\texttt{mat}[k-1][k-1]$,
+что сохраняет целочисленность промежуточных значений.
+Сложность: $O(n^3)$, пространственная: $O(n^2)$.
+
+\subsubsection{Kruskal: алгоритм Краскала}
+
+\textbf{Вход:} \texttt{Graph<int> const\&}~--- связный неориентированный взвешенный граф.
+
+\textbf{Выход:} \texttt{vector<Edge>}~--- рёбра минимального остова;
+пустой вектор, если граф несвязен.
+
+\textbf{Описание:} Конструктор собирает все рёбра (каждое один раз,
+условие $i < j$) в вектор \texttt{edges}; веса берутся по модулю.
+
+Метод \texttt{compute()} сортирует рёбра по весу и добавляет их в остов,
+если они не создают цикла. Цикл проверяется через BFS по уже построенному
+остову: если вершины $u$ и $v$ уже связаны~--- ребро пропускается.
+
+\begin{lstlisting}[style=cstyle, caption={Основной цикл алгоритма Краскала (kruskal.cpp)}]
+vector<Edge> Kruskal::compute() {
+    sort(edges.begin(), edges.end());
+    vector<Edge> T;
+    Graph<int> tree(n);
+    for (auto& e : edges) {
+        if ((int)T.size() == n - 1) break;
+        if (hasPath(e.u, e.v, tree)) continue;
+        T.push_back(e);
+        tree.addEdge(e.u, e.v, e.w);
+        tree.addEdge(e.v, e.u, e.w);
+    }
+    return ((int)T.size() == n - 1) ? T : vector<Edge>{};
+}
+\end{lstlisting}
+
+\texttt{hasPath} делает BFS по матрице смежности текущего остова.
+Сложность: $O(E^2)$ в худшем случае, пространственная: $O(V + E)$.
+
+\subsubsection{Prufer: код Прюфера}
+
+\textbf{Вход (encode):} \texttt{vector<Edge> const\&}~--- рёбра МОД, \texttt{int n}.
+
+\textbf{Выход (encode):} \texttt{PruferCode}~--- поля:
+\texttt{seq} (последовательность длины $n-2$), \texttt{weights} (веса рёбер),
+\texttt{n} (число вершин).
+
+\textbf{Описание (encode):} Строится временный граф \texttt{tree} из рёбер МОД.
+Хранится вектор степеней \texttt{d} и вектор активных вершин \texttt{V}.
+На каждом из $n - 1$ шагов ищется активная висячая вершина с минимальным
+номером ($d[v] = 1$); её единственный сосед записывается в \texttt{seq},
+вес соответствующего ребра~--- в \texttt{weights}.
+Оба конца уменьшают степень, вершина $v$ деактивируется.
+
+\begin{lstlisting}[style=cstyle, caption={Кодирование в код Прюфера с сохранением весов (prufer.cpp)}]
+PruferCode Prufer::encode(const vector<Edge>& mst, int p) {
+    // строим дерево, считаем степени
+    for (int i = 0; i < p - 1; i++) {
+        int v = -1;
+        for (int k = 0; k < p; k++)
+            if (V[k] && d[k] == 1) { v = k; break; }
+        int neighbor = -1, weight = 0;
+        for (int to = 0; to < p; to++)
+            if (V[to] && adj[v][to] != 0)
+                { neighbor = to; weight = wgt[v][to]; break; }
+        code.seq.push_back(neighbor);
+        code.weights.push_back(weight);
+        V[v] = false; d[v]--; d[neighbor]--;
+    }
+    return code;
+}
+\end{lstlisting}
+
+\textbf{Описание (decode):} Для каждого элемента \texttt{seq[i]} ищется
+наименьшая активная вершина, которой нет в остатке кода \texttt{seq[i..n-2]}.
+Между ней и \texttt{seq[i]} добавляется ребро с весом \texttt{weights[i]}.
+После $n - 2$ шагов последние две активные вершины соединяются последним ребром.
+Сложность: $O(n^2)$, пространственная: $O(n)$.
+
+\subsubsection{MIS: максимальное независимое множество}
+
+\textbf{Вход:} \texttt{vector<vector<int>> const\&}~--- матрица смежности
+(исходного графа или МОД~--- по выбору пользователя).
+
+\textbf{Выход:} \texttt{vector<int>}~--- вершины МНМ.
+
+\textbf{Описание:} Метод \texttt{compute()} запускает рекурсивный
+\texttt{backtrack(S, T)}, где $S$~--- текущее независимое множество,
+$T$~--- кандидаты. Для каждой вершины $v \in T$ проверяется, не смежна
+ли она с вершинами из $S$. Если нет~--- добавляем $v$ в множество
+и убираем из кандидатов всех соседей $v$. Если новое множество больше
+текущего максимума~--- сохраняем его.
+
+\begin{lstlisting}[style=cstyle, caption={Backtracking для нахождения MIS (mis.cpp)}]
+void MIS::backtrack(vector<int> S, vector<int> T) {
+    for (int v : T) {
+        if (isIndependent(S, v)) {
+            vector<int> S_plus_v = S;
+            S_plus_v.push_back(v);
+            if ((int)S_plus_v.size() > m) {
+                X = S_plus_v;
+                m = S_plus_v.size();
+            }
+            vector<int> newT;
+            for (int u : T)
+                if (u != v && adj[v][u] == 0 && adj[u][v] == 0)
+                    newT.push_back(u);
+            backtrack(S_plus_v, newT);
+        }
+    }
+}
+\end{lstlisting}
+
+\texttt{isIndependent(S, v)} проверяет, что ни одна вершина из $S$
+не смежна с $v$ ни в каком направлении.
+Сложность: $O(2^n)$ в худшем случае, пространственная: $O(n)$.

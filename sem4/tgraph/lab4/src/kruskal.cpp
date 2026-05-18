@@ -5,8 +5,10 @@
 using namespace std;
 
 /*
-	LOOK: Kruskal(const Graph<int> &g)
-	Конструктор класса Kruskal, который инициализирует список рёбер на основе входного графа. Рёбра хранятся в виде структуры Edge, которая содержит две вершины и вес ребра. Сложность: O(n^2) для полного графа.
+    LOOK: Kruskal(const Graph<int> &g)
+    Конструктор класса Kruskal, который инициализирует список рёбер на основе
+   входного графа. Рёбра хранятся в виде структуры Edge, которая содержит две
+   вершины и вес ребра. Сложность: O(n^2) для полного графа.
 */
 Kruskal::Kruskal(const Graph<int> &g) : n(g.getNumVertices()) {
 	auto adj = g.getAdjMatrix();
@@ -18,8 +20,9 @@ Kruskal::Kruskal(const Graph<int> &g) : n(g.getNumVertices()) {
 }
 
 /*
-	LOOK: hasPath(int start, int target, const Graph<int> &tree)
-	Проверяем наличие пути между двумя вершинами в текущем остове с помощью BFS по матрице смежности.
+    LOOK: hasPath(int start, int target, const Graph<int> &tree)
+    Проверяем наличие пути между двумя вершинами в текущем остове с помощью BFS
+   по матрице смежности.
 */
 bool Kruskal::hasPath(int start, int target, const Graph<int> &tree) const {
 	if (start == target)
@@ -43,7 +46,7 @@ bool Kruskal::hasPath(int start, int target, const Graph<int> &tree) const {
 				return true;
 			if (!visited[neighbor]) {
 				visited[neighbor] = true;
-				q.push(neighbor);
+				q.push(neighbor); 
 			}
 		}
 	}
@@ -51,20 +54,23 @@ bool Kruskal::hasPath(int start, int target, const Graph<int> &tree) const {
 }
 
 /*
-	LOOK: compute()
-	Основная функция для вычисления минимального остовного дерева. Сначала сортируем рёбра по весу, затем проходим по отсортированному списку рёбер и добавляем ребро в остов, если оно не создаёт цикл (проверяем с помощью hasPath). Сложность: O(E log E) из-за сортировки, где E - количество рёбер.
+    LOOK: compute()
+    Основная функция для вычисления минимального остовного дерева. Сначала
+   сортируем рёбра по весу, затем проходим по отсортированному списку рёбер и
+   добавляем ребро в остов, если оно не создаёт цикл (проверяем с помощью
+   hasPath)
 */
 vector<Edge> Kruskal::compute() {
 	sort(edges.begin(), edges.end());
 
-	vector<Edge> T; // T - множество рёбер остова
+	vector<Edge> T;
 	Graph<int> tree(n);
 
 	for (auto &e : edges) {
 		if ((int)T.size() == n - 1)
 			break;
 		if (hasPath(e.u, e.v, tree))
-			continue;
+			continue;	
 		T.push_back(e);
 		tree.addEdge(e.u, e.v, e.w);
 		tree.addEdge(e.v, e.u, e.w);
@@ -77,8 +83,9 @@ vector<Edge> Kruskal::compute() {
 }
 
 /*
-	LOOK: printMST(const vector<Edge> &mst)
-	Вывод рёбер минимального остовного дерева на экран. Также выводим суммарный вес остова.
+    LOOK: printMST(const vector<Edge> &mst)
+    Вывод рёбер минимального остовного дерева на экран. Также выводим суммарный
+   вес остова.
 */
 void Kruskal::printMST(const vector<Edge> &mst) {
 	int total = 0;
