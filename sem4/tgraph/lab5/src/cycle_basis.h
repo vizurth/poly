@@ -13,11 +13,10 @@ class CycleBasis {
 	int n = 0;
 
 	vector<int> pathInMST(int src, int dst, const vector<Edge> &mst) const;
-	static EdgeSet symDiff(const EdgeSet &a, const EdgeSet &b);
-	static void printEdgeSet(const EdgeSet &es, const string &title);
 
   public:
 	void compute(const vector<Edge> &mst, const Graph<int> &g);
 	void printBasis() const;
-	void interactiveSymDiff() const;
+	const vector<EdgeSet> &getBasis() const;
+	static EdgeSet symDiff(const EdgeSet &a, const EdgeSet &b);
 };

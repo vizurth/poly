@@ -28,6 +28,14 @@ void Graph<T>::addEdge(int from, int to, T weight) {
 	}
 }
 
+template <typename T>
+void Graph<T>::removeEdge(int from, int to) {
+	if (from >= 0 && from < numVertices && to >= 0 && to < numVertices) {
+		adjMatrix[from][to] = 0;
+		weightMatrix[from][to] = 0;
+	}
+}
+
 /*
     LOOK: bool hasEdge(int from, int to) const
     Проверяем есть ли рёбра между вершинами
@@ -118,6 +126,20 @@ vector<vector<T>> Graph<T>::getWeightMatrix() const {
 }
 
 /*
+    LOOK: int getEdgeCount() const;
+    Получаем количество рёбер в графе
+*/
+template <typename T>
+int Graph<T>::getEdgeCount() const {
+	int totalEdges = 0;
+	for (int i = 0; i < numVertices; i++)
+		for (int j = i + 1; j < numVertices; j++)
+			if (adjMatrix[i][j])
+				totalEdges++;
+	return totalEdges;
+}
+
+/*
     LOOK: vector<int> bfs(int start) const;
     BFS для поиска кратчайших путей от вершины start
 */
@@ -153,7 +175,6 @@ template <typename T>
 int Graph<T>::eccentricity(int vertex) const {
 	vector<int> dist = bfs(vertex);
 	const int INF = std::numeric_limits<int>::max();
-	
 
 	int maxDist = 0;
 	for (int i = 0; i < numVertices; i++) {
@@ -239,7 +260,7 @@ template <typename T>
 void Graph<T>::dfs(int current, int target, vector<bool> &visited,
                    vector<int> &currentPath,
                    vector<vector<int>> &allPaths) const {
-	// достигли цели — сохраняем путь
+	// достигли цели - сохраняем путь
 	if (current == target) {
 		allPaths.push_back(currentPath);
 		return;
@@ -277,7 +298,8 @@ vector<vector<int>> Graph<T>::findAllPaths(int from, int to) const {
 
 /*
     LOOK: Graph<T> reorder(const vector<int>& order) const
-    Меняем порядок вершин в графе в соответствии с переданной перестановкой order
+    Меняем порядок вершин в графе в соответствии с переданной перестановкой
+   order
 */
 template <typename T>
 Graph<T> Graph<T>::reorder(const vector<int> &order) const {

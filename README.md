@@ -78,15 +78,14 @@ The repository is organized by semesters and courses and may include:
 | 2          | ✅      | ✅    |
 | 3          | ✅      | ✅    |
 | 4          | ✅      | ✅    |
-| 5          | ✅      | 🔄    |
-| 6          | ⬜      | ⬜    |
+| 5          | ✅      | ✅    |
 | CourseWork | ✅      | 🔄    |
 
 ### Базы данных (DB)
 
 | Работа     | Сделано | Сдана |
 | ---------- | ------- | ----- |
-| CourseWork | 🔄      | ⬜    |
+| CourseWork | ✅      | ✅    |
 
 ### Микроконтроллеры (Microcontrollers)
 

@@ -109,29 +109,26 @@ GroupAggregate  (cost=137.20..137.24 rows=1 width=36) (actual time=101.074..113.
 **Execution Time:** 0.166 ms
 
 ```
-Aggregate  (cost=33.40..33.41 rows=1 width=8) (actual time=0.124..0.125 rows=1 loops=1)
-  ->  Hash Join  (cost=16.77..33.39 rows=3 width=4) (actual time=0.094..0.113 rows=2 loops=1)
-        Hash Cond: (ps.parking_zone_id = pz.parking_zone_id)
-        ->  Nested Loop  (cost=11.23..27.36 rows=183 width=8) (actual time=0.044..0.086 rows=223 loops=1)
-              ->  HashAggregate  (cost=10.95..11.08 rows=13 width=4) (actual time=0.035..0.036 rows=15 loops=1)
-                    Group Key: ae.car_id
-                    Batches: 1  Memory Usage: 24kB
-                    ->  Nested Loop  (cost=4.25..10.92 rows=13 width=4) (actual time=0.025..0.031 rows=15 loops=1)
-                          ->  Seq Scan on employee e  (cost=0.00..1.38 rows=1 width=4) (actual time=0.001..0.003 rows=1 loops=1)
-                                Filter: ((full_name)::text = 'Иванов Игорь Николаевич'::text)
-                                Rows Removed by Filter: 29
-                          ->  Bitmap Heap Scan on alert_event ae  (cost=4.25..9.41 rows=13 width=8) (actual time=0.023..0.026 rows=15 loops=1)
-                                Recheck Cond: (employee_id = e.employee_id)
-                                Heap Blocks: exact=4
-                                ->  Bitmap Index Scan on idx_alert_event_employee_id  (cost=0.00..4.25 rows=13 width=0) (actual time=0.021..0.021 rows=15 loops=1)
-                                      Index Cond: (employee_id = e.employee_id)
-              ->  Index Scan using idx_parking_session_car_id on parking_session ps  (cost=0.28..1.10 rows=15 width=8) (actual time=0.001..0.002 rows=15 loops=15)
-                    Index Cond: (car_id = ae.car_id)
-        ->  Hash  (cost=5.50..5.50 rows=3 width=4) (actual time=0.013..0.013 rows=3 loops=1)
-              Buckets: 1024  Batches: 1  Memory Usage: 9kB
-              ->  Seq Scan on parking_zone pz  (cost=0.00..5.50 rows=3 width=4) (actual time=0.003..0.011 rows=3 loops=1)
-                    Filter: ((name)::text = 'ТЦ Мега — парковка В'::text)
-                    Rows Removed by Filter: 197
+Aggregate  (cost=29.66..29.67 rows=1 width=8) (actual time=0.296..0.300 rows=1 loops=1)
+   ->  Hash Join  (cost=10.07..29.65 rows=3 width=4) (actual time=0.193..0.259 rows=2 loops=1)
+         Hash Cond: (ps.parking_zone_id = pz.parking_zone_id)
+         ->  Nested Loop  (cost=4.53..23.62 rows=184 width=8) (actual time=0.040..0.193 rows=223 loops=1)
+               ->  Nested Loop  (cost=4.25..10.92 rows=13 width=4) (actual time=0.020..0.040 rows=15 loops=1)
+                     ->  Seq Scan on employee e  (cost=0.00..1.38 rows=1 width=4) (actual time=0.008..0.013 rows=1 loops=1)
+                           Filter: ((full_name)::text = 'Иванов Игорь Николаевич'::text)
+                           Rows Removed by Filter: 29
+                     ->  Bitmap Heap Scan on alert_event ae  (cost=4.25..9.41 rows=13 width=8) (actual time=0.010..0.022 rows=15 loops=1)
+                           Recheck Cond: (employee_id = e.employee_id)
+                           Heap Blocks: exact=4
+                           ->  Bitmap Index Scan on idx_alert_event_employee_id  (cost=0.00..4.25 rows=13 width=0) (actual time=0.007..0.007 rows=15 loops=1)
+                                 Index Cond: (employee_id = e.employee_id)
+               ->  Index Scan using idx_parking_session_car_id on parking_session ps  (cost=0.28..0.83 rows=15 width=8) (actual time=0.005..0.008 rows=15 loops=15)
+                     Index Cond: (car_id = ae.car_id)
+         ->  Hash  (cost=5.50..5.50 rows=3 width=4) (actual time=0.028..0.028 rows=3 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               ->  Seq Scan on parking_zone pz  (cost=0.00..5.50 rows=3 width=4) (actual time=0.003..0.022 rows=3 loops=1)
+                     Filter: ((name)::text = 'ТЦ Мега — парковка В'::text)
+                     Rows Removed by Filter: 197
 ```
 
 ---

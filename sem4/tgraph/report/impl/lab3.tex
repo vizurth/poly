@@ -1,0 +1,91 @@
+\subsection{Модуль lab3}
+
+\subsubsection{MaxFlow\textless T\textgreater: алгоритм Форда--Фалкерсона (Эдмондс--Карп)}
+
+\textbf{Вход:} \texttt{Graph<T> const\&} (конструктор), \texttt{int s}, \texttt{int t}.
+
+\textbf{Выход:} \texttt{T}~-- значение максимального потока.
+
+\textbf{Описание:} Конструктор строит остаточный граф \texttt{cap}
+из весовой матрицы входного графа; отрицательные веса берутся по модулю,
+потому что пропускные способности должны быть неотрицательными.
+
+Метод \texttt{bfs(s, t)} ищет кратчайший увеличивающий путь в остаточной
+сети~-- ребро $(v, u)$ берётся только при $\texttt{cap}[v][u] > 0$.
+Возвращает путь от $s$ до $t$ или пустой вектор, если пути нет.
+
+Главный цикл \texttt{compute(s, t)} делает следующее:
+\begin{enumerate}
+    \item ищет увеличивающий путь через BFS;
+    \item находит узкое место~-- минимальную пропускную способность на пути;
+    \item обновляет остаточный граф: прямые рёбра уменьшает, обратные увеличивает;
+    \item прибавляет найденный поток к итогу.
+\end{enumerate}
+
+\begin{lstlisting}[style=cstyle, caption={Алгоритм Эдмондса--Карпа (maxflow.cpp)}]
+template <typename T>
+T MaxFlow<T>::compute(int s, int t) {
+    T maxFlow = T{};
+    while (true) {
+        vector<int> path = bfs(s, t);
+        if (path.empty()) break;
+
+        T push = numeric_limits<T>::max();
+        for (int i = 0; i + 1 < (int)path.size(); i++)
+            push = min(push, cap[path[i]][path[i+1]]);
+
+        for (int i = 0; i + 1 < (int)path.size(); i++) {
+            cap[path[i]][path[i+1]] -= push;
+            cap[path[i+1]][path[i]] += push;
+        }
+        maxFlow += push;
+    }
+    return maxFlow;
+}
+\end{lstlisting}
+
+\subsubsection{MinCostFlow\textless T\textgreater: поток минимальной стоимости}
+
+\textbf{Вход:} \texttt{Graph<T>}, \texttt{vector<vector<T>> costMatrix},
+\texttt{int s}, \texttt{int t}, \texttt{T targetFlow}.
+
+\textbf{Выход:} пара $(\text{достигнутый поток},\; \text{минимальная стоимость})$.
+
+\textbf{Описание:} Конструктор заполняет остаточные пропускные способности
+\texttt{cap} и матрицу стоимостей \texttt{cost}; обратные рёбра получают
+противоположный знак стоимости.
+
+На каждой итерации метод \texttt{findMinCostPath(s, t)}:
+\begin{enumerate}
+    \item строит вспомогательный граф \texttt{residual} из рёбер с ненулевой
+          остаточной пропускной способностью;
+    \item запускает \texttt{FloydWarshall<T>} для поиска пути минимальной стоимости;
+    \item возвращает путь и его стоимость.
+\end{enumerate}
+
+\begin{lstlisting}[style=cstyle, caption={Поиск пути минимальной стоимости (mincost.cpp)}]
+template <typename T>
+pair<vector<int>, T> MinCostFlow<T>::findMinCostPath(
+    int s, int t) const
+{
+    Graph<T> residual(n);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            if (cap[i][j] > T{})
+                residual.addEdge(i, j, cost[i][j]);
+
+    FloydWarshall<T> fw(residual);
+    fw.compute();
+    const auto& dist = fw.getDistMatrix();
+    const T INF_VAL = numeric_limits<T>::max() / 2;
+    if (dist[s][t] >= INF_VAL) return {{}, T{}};
+    return {fw.getPath(s, t), dist[s][t]};
+}
+\end{lstlisting}
+
+По найденному пути определяется узкое место, поток направляется по пути,
+остаточный граф обновляется. Итерации продолжаются до достижения
+\texttt{targetFlow} или пока путь есть.
+
+По условию задания целевой поток~-- $\lfloor 2/3 \cdot F_{\max} \rfloor$.
+Сложность одной итерации: $O(n^3)$ (Флойд-Уоршалл).

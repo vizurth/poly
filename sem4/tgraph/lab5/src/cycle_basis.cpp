@@ -4,15 +4,15 @@
 #include <limits>
 #include <queue>
 #include <sstream>
+#include <string>
 using namespace std;
 
 /*
     LOOK: pathInMST(int src, int dst, const vector<Edge> &mst) const
-    BFS-поиск пути от src до dst в остовном дереве.
-    Возвращает последовательность вершин или пустой вектор, если пути нет.
+    Через BFS находим путь от src до dst в MST. Если пути нет, возвращаем пустой вектор.
 */
 vector<int> CycleBasis::pathInMST(int src, int dst,
-                                   const vector<Edge> &mst) const {
+                                  const vector<Edge> &mst) const {
 	vector<vector<int>> adj(n);
 	for (auto &e : mst) {
 		adj[e.u].push_back(e.v);
@@ -51,60 +51,56 @@ vector<int> CycleBasis::pathInMST(int src, int dst,
 
 /*
     LOOK: symDiff(const EdgeSet &a, const EdgeSet &b)
-    Симметрическая разность: рёбра, принадлежащие ровно одному из множеств.
+	Считаем симметрическую разность множеств рёбер a и b. Результат - множество рёбер, которые есть в одном из множеств, но нет в другом.
 */
 EdgeSet CycleBasis::symDiff(const EdgeSet &a, const EdgeSet &b) {
 	EdgeSet result;
-	for (auto &e : a)
-		if (!b.count(e))
+	for (auto &e : a) {
+		if (!b.count(e)) {
 			result.insert(e);
-	for (auto &e : b)
-		if (!a.count(e))
+		}
+	}
+
+	for (auto &e : b) {
+		if (!a.count(e)) {
 			result.insert(e);
+		}
+	}
 	return result;
 }
 
 /*
-    LOOK: printEdgeSet(const EdgeSet &es, const string &title)
-    Выводит множество рёбер на экран.
+    LOOK: getBasis() const
+    Получаем фундаментальную систему циклов.
 */
-void CycleBasis::printEdgeSet(const EdgeSet &es, const string &title) {
-	cout << "\n  " << title << "\n";
-	if (es.empty()) {
-		cout << "    (пустое множество)\n";
-		return;
-	}
-	for (auto &[u, v] : es)
-		cout << "    " << u << " -- " << v << "\n";
-}
+const vector<EdgeSet> &CycleBasis::getBasis() const { return basis; }
 
 /*
     LOOK: compute(const vector<Edge> &mst, const Graph<int> &g)
-    Строит фундаментальную систему циклов.
-    Для каждого нетребового ребра (не входящего в MST) находит единственный
-    фундаментальный цикл: путь в MST между концами ребра + само это ребро.
+    Строим ФСЦ на основе MST. Ищем хорды (рёбра, не входящие в MST) и для каждой хорды находим путь в MST между её концами. Этот путь + хорда образуют цикл.
 */
 void CycleBasis::compute(const vector<Edge> &mst, const Graph<int> &g) {
 	n = g.getNumVertices();
 	basis.clear();
 
-	set<pair<int, int>> treeEdges;
-	for (auto &e : mst)
-		treeEdges.insert({min(e.u, e.v), max(e.u, e.v)});
+	vector<vector<bool>> inTree(n, vector<bool>(n, false));
+	for (auto &e : mst) {
+		inTree[e.u][e.v] = true;
+		inTree[e.v][e.u] = true;
+	}
 
 	auto adj = g.getAdjMatrix();
 
 	for (int i = 0; i < n; i++) {
 		for (int j = i + 1; j < n; j++) {
-			if (adj[i][j] == 0)
+			if (adj[i][j] == 0 || inTree[i][j]) {
 				continue;
-			if (treeEdges.count({i, j}))
-				continue;
+			}
 
-			// нетребовое ребро (i,j) — строим фундаментальный цикл
 			auto path = pathInMST(i, j, mst);
-			if (path.empty())
+			if (path.empty()) {
 				continue;
+			}
 
 			EdgeSet cycle;
 			for (int k = 0; k + 1 < (int)path.size(); k++) {
@@ -131,52 +127,9 @@ void CycleBasis::printBasis() const {
 	}
 	for (size_t i = 0; i < basis.size(); i++) {
 		cout << "  [" << i + 1 << "] { ";
-		for (auto &[u, v] : basis[i])
+		for (auto &[u, v] : basis[i]) {
 			cout << u << "-" << v << " ";
+		}
 		cout << "}\n";
 	}
-}
-
-/*
-    LOOK: interactiveSymDiff() const
-    Пользователь вводит номера фундаментальных циклов, программа
-    вычисляет их симметрическую разность и выводит результат.
-*/
-void CycleBasis::interactiveSymDiff() const {
-	if (basis.empty()) {
-		cout << "  Фундаментальная система циклов пуста.\n";
-		return;
-	}
-
-	printBasis();
-	cout << "\n  Введите номера циклов через пробел (например: 1 3), затем Enter:\n  > ";
-
-	string line;
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
-	getline(cin, line);
-
-	istringstream iss(line);
-	vector<int> indices;
-	int idx;
-	while (iss >> idx) {
-		idx--;
-		if (idx >= 0 && idx < (int)basis.size())
-			indices.push_back(idx);
-		else
-			cout << "  Индекс " << idx + 1 << " вне диапазона — пропущен.\n";
-	}
-
-	if ((int)indices.size() < 2) {
-		cout << "  Нужно выбрать хотя бы 2 цикла.\n";
-		return;
-	}
-
-	EdgeSet result = basis[indices[0]];
-	cout << "\n  Операция: C" << indices[0] + 1;
-	for (size_t i = 1; i < indices.size(); i++) {
-		result = symDiff(result, basis[indices[i]]);
-		cout << " △ C" << indices[i] + 1;
-	}
-
-	printEdgeSet(result, "Результат симметрической разности:");
 }

@@ -1,0 +1,137 @@
+\section{Результаты работы программы}
+
+\subsection{Общее меню и генерация графа}
+
+При запуске программы пользователю предлагается консольное меню,
+разбитое на пять разделов по лабораторным работам. Для начала работы
+необходимо выбрать пункт~1, ввести количество вершин, тип ориентированности
+и тип весов рёбер.
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab0_menu.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: главное меню программы]\vspace{2cm}}}
+    \caption{Главное меню программы}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab0_gen.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: генерация графа, матрица смежности и весов]\vspace{2cm}}}
+    \caption{Генерация графа, матрица смежности и матрица весов}
+\end{figure}
+
+\subsection{Лабораторная работа~1}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab1_eccentricity.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: эксцентриситеты, центр, диаметр]\vspace{2cm}}}
+    \caption{Эксцентриситеты вершин, центр и диаметральные вершины}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab1_shimbel.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: матрица Шимбелла (мин/макс пути)]\vspace{2cm}}}
+    \caption{Матрица Шимбелла: кратчайшие и наидлиннейшие пути длиной $k$}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab1_paths.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: все пути от A до B]\vspace{2cm}}}
+    \caption{Все простые маршруты от вершины $A$ до вершины $B$}
+\end{figure}
+
+\subsection{Лабораторная работа~2}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab2_fulkerson.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: алгоритм Фалкерсона, группы вершин, новая матрица]\vspace{2cm}}}
+    \caption{Топологическая сортировка алгоритмом Фалкерсона}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab2_floyd.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: матрица расстояний, кратчайший путь]\vspace{2cm}}}
+    \caption{Алгоритм Флойда-Уоршалла: матрица расстояний и кратчайший путь}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab2_compare.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: сравнение числа итераций Фалкерсона и Флойда]\vspace{2cm}}}
+    \caption{Сравнение алгоритмов по числу итераций}
+\end{figure}
+
+\subsection{Лабораторная работа~3}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab3_maxflow.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: пошаговое нахождение максимального потока]\vspace{2cm}}}
+    \caption{Нахождение максимального потока алгоритмом Форда--Фалкерсона}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab3_mincost.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: поток минимальной стоимости, итерации]\vspace{2cm}}}
+    \caption{Поток минимальной стоимости ($\lfloor 2/3 \cdot F_{\max} \rfloor$)}
+\end{figure}
+
+\subsection{Лабораторная работа~4}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab4_kirchhoff.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: матрица Лапласа, число остовных деревьев]\vspace{2cm}}}
+    \caption{Матрица Лапласа и число остовных деревьев (теорема Кирхгофа)}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab4_kruskal.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: рёбра МОД и суммарный вес]\vspace{2cm}}}
+    \caption{Минимальный остов алгоритмом Краскала}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab4_prufer.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: код Прюфера и декодированный остов]\vspace{2cm}}}
+    \caption{Кодирование и декодирование кода Прюфера}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab4_mis.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: максимальное независимое множество]\vspace{2cm}}}
+    \caption{Максимальное независимое множество вершин}
+\end{figure}
+
+\subsection{Лабораторная работа~5}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab5_euler.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: проверка эйлеровости, лог достройки (добавление/удаление рёбер), вывод цикла]\vspace{2cm}}}
+    \caption{Проверка и достройка до эйлерового графа, эйлеров цикл (пункт~21)}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab5_basis.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: рёбра МОД, фундаментальная система циклов]\vspace{2cm}}}
+    \caption{МОД алгоритмом Краскала и фундаментальная система циклов (пункт~22)}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    % \includegraphics[width=0.8\linewidth]{images/lab5_symdiff.png}
+    \fbox{\parbox{0.8\linewidth}{\centering\vspace{2cm}[Скриншот: ввод номеров циклов, результат симметрической разности]\vspace{2cm}}}
+    \caption{Симметрическая разность выбранных фундаментальных циклов (пункт~23)}
+\end{figure}

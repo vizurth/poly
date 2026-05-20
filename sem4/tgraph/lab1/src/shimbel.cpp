@@ -2,7 +2,7 @@
 
 /*
     LOOK: ShimbelSolver(const Graph<T>& g)
-    Конструктор — инициализируем единичную матрицу
+    Конструктор - инициализируем единичную матрицу
 */
 template <typename T>
 ShimbelSolver<T>::ShimbelSolver(const Graph<T> &g)
@@ -58,7 +58,7 @@ void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
 
 /*
     LOOK: compute(int k, bool findMin)
-    Основная логика — вычисляем матрицу путей длиной ровно k рёбер
+    Основная логика - вычисляем матрицу путей длиной ровно k рёбер
 */
 template <typename T>
 vector<vector<T>> ShimbelSolver<T>::compute(int k, bool findMin) {
@@ -107,7 +107,7 @@ vector<vector<T>> ShimbelSolver<T>::computeLongestPaths(int k) {
 
 /*
     LOOK: printShimbelMatrix()
-    Статический метод — выводим матрицу
+    Статический метод - выводим матрицу
 */
 template <typename T>
 void ShimbelSolver<T>::printShimbelMatrix(const vector<vector<T>> &matrix,

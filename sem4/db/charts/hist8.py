@@ -11,21 +11,26 @@ cur = conn.cursor()
 
 cur.execute("""
     SELECT c.car_id, c.reg_number, dst.name AS data_source,
-           COUNT(tp.track_point_id) AS coord_count
-    FROM data_source_type dst
-    JOIN track_point tp ON tp.data_source_id = dst.data_source_id
-    JOIN car c ON c.car_id = tp.car_id
-    GROUP BY c.car_id, c.reg_number, dst.data_source_id, dst.name
-    ORDER BY c.car_id, dst.name
+       COUNT(tp.track_point_id) AS coord_count
+FROM (
+    SELECT car_id, reg_number
+    FROM car
+) c
+CROSS JOIN data_source_type dst
+LEFT JOIN track_point tp
+    ON tp.car_id = c.car_id
+    AND tp.data_source_id = dst.data_source_id
+GROUP BY c.car_id, c.reg_number, dst.data_source_id, dst.name
+ORDER BY c.car_id, dst.name;
 """)
 rows = cur.fetchall()
 cur.close()
 conn.close()
 
-car_ids  = sorted(set(r[0] for r in rows))
+car_ids  = sorted(set(r[0] for r in rows))[:10]
 sources  = sorted(set(r[2] for r in rows))
 
-data = {(r[0], r[2]): r[3] for r in rows}
+data = {(r[0], r[2]): r[3] for r in rows if r[0] in car_ids}
 
 xpos = np.arange(len(car_ids))
 ypos = np.arange(len(sources))

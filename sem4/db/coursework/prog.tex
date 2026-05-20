@@ -1,7 +1,7 @@
 \section{Программирование}
 \subsection{Запрос 1.1}
 Найти все автомобили, которые парковались в типе зоны парковки "A", у которого тревожное событие "B" и источник координат "C".
-\begin{lstlisting}[style=sqlstyle, caption={Запрос 1.1}, label={lst:schema}]
+\begin{lstlisting}[style=sqlstyle, caption={Запрос 1.1}, label={lst:req1}]
 SELECT DISTINCT c.car_id, c.reg_number, c.brand, c.model
 FROM car c
 JOIN parking_session ps ON ps.car_id = c.car_id
@@ -24,16 +24,73 @@ WHERE pzt.name = 'Бесплатная'
     \label{fig:req11}
 \end{figure}
 
+Время выполнения запроса: \\
+Planning Time: 3.444 ms \\
+Execution Time: 148.770 ms \\
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/1.1.query.jpg}
-    \caption{План выполнения запроса 1.1}
+    \includegraphics[width=0.9\linewidth]{myPhoto/1.1.query.jpg}
+    \caption{Последовательность выполнения запроса 1.1}
     \label{fig:query11}
 \end{figure}
 
-Время выполнения запроса: \\
-Planning Time: 3.444 ms \\
-Execution Time: 248.770 ms \\
+\noindent Сначала база данных последовательно читает таблицу \textbf{parking\_zone} и для каждой зоны через кэшированный поиск по индексу проверяет её тип, оставляя только тип «Бесплатная». По найденным зонам с помощью индекса находятся парковочные сессии. Для каждой сессии по \textbf{car\_id} ищутся тревожные события, и тип каждого события проверяется — остаются только «Потеря связи». Затем по индексу достаются данные автомобиля, после чего находятся его треки и все точки этих треков. Точки трека соединяются с источниками данных через Hash Join, и остаются только точки с источником «GPS». В самом конце результат сортируется и убираются дубликаты.
+
+\noindent Реляционная формула запроса:
+\[
+\begin{aligned}
+&\pi_{
+  \text{car\_id},\;
+  \text{reg\_number},\;
+  \text{brand},\;
+  \text{model}
+}\Bigl( \\
+&\quad\sigma_{
+  \;\text{pzt.name}=A
+  \;\wedge\;
+  \text{aet.name}=B
+  \;\wedge\;
+  \text{dst.name}=C
+}\Bigl( \\
+&\qquad\text{car} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{parking\_session} \\
+&\qquad\bowtie_{\,\text{parking\_zone\_id}}\;\text{parking\_zone} \\
+&\qquad\bowtie_{\,\text{zone\_type\_id}}\;\text{parking\_zone\_type} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{alert\_event} \\
+&\qquad\bowtie_{\,\text{alert\_event\_type\_id}}\;\text{alert\_event\_type} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{track} \\
+&\qquad\bowtie_{\,\text{track\_id}}\;\text{track\_point} \\
+&\qquad\bowtie_{\,\text{data\_source\_id}}\;\text{data\_source\_type} \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 1.1}
+%    \label{tab:plan11}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Seq Scan (\textbf{parking\_zone})                      & Последовательное чтение зон парковки, cost~5.00 \\
+%        2 & Memoize + Index Scan (\textbf{parking\_zone\_type\_pkey}) & Кэшированный поиск типа зоны, фильтр \textbf{name='Бесплатная'}, cost~0.41 \\
+%        3 & Index Scan (\textbf{idx\_parking\_session\_parking\_zone\_id}) & Сессии парковки по зоне, cost~1.10 \\
+%        4 & Index Scan (\textbf{idx\_alert\_event\_car\_id})        & Тревожные события по \textbf{car\_id}, cost~0.19 \\
+%        5 & Index Scan (\textbf{alert\_event\_type\_pkey})          & Тип события, фильтр \textbf{name='Потеря связи'}, cost~0.29 \\
+%        6 & Index Scan (\textbf{car\_pkey})                         & Данные автомобиля по первичному ключу, cost~0.17 \\
+%        7 & Index Scan (\textbf{idx\_track\_car\_id})               & Треки автомобиля, cost~0.68 \\
+%        8 & Index Scan (\textbf{idx\_track\_point\_track\_id})      & Точки трека, cost~4.55 \\
+%        9 & Index Scan (\textbf{data\_source\_type\_name\_key})     & Источник данных \textbf{GPS}, cost~8.17 \\
+%        10 & Hash Join                                               & Соединение \textbf{track\_point} с \textbf{data\_source\_type}, cost~137.19 \\
+%        11 & Sort                                                    & Сортировка для \textbf{DISTINCT}, cost~137.20 \\
+%        12 & Unique                                                  & Устранение дубликатов, cost~137.23 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 
 \newpage
@@ -67,16 +124,76 @@ HAVING COUNT(DISTINCT ps.parking_session_id) >= 3;
     \label{fig:req12}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/1.2.query.jpg}
-    \caption{План выполнения запроса 1.2}
-    \label{fig:query12}
-\end{figure}
-
 Время выполнения запроса: \\
 Planning Time: 2.730 ms \\
 Execution Time: 113.795 ms \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{myPhoto/1.2.query.jpg}
+    \caption{Последовательность выполнения запроса 1.2}
+    \label{fig:query12}
+\end{figure}
+
+\noindent Последовательность выполнения полностью совпадает с запросом~1.1. Единственное отличие: после соединения всех таблиц из-за механики \textbf{DISTINCT} данные сортируются по \textbf{car\_id}, а затем GroupAggregate считает количество уникальных парковочных сессий для каждого автомобиля. Автомобили, у которых таких сессий меньше трёх, отфильтровываются.
+
+\noindent Реляционная формула запроса:
+\[
+\begin{aligned}
+&\gamma_{
+  \text{car\_id},\;
+  \text{reg\_number},\;
+  \text{brand},\;
+  \text{model},\;
+  \text{cnt}
+}\Bigl( \\
+&\quad\sigma_{
+  \;\text{pzt.name}=A
+  \;\wedge\;
+  \text{aet.name}=B
+  \;\wedge\;
+  \text{dst.name}=C
+  \;\wedge\;
+  \text{COUNT}(\text{parking\_session\_id}) \ge 3
+}\Bigl( \\
+&\qquad\text{car} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{parking\_session} \\
+&\qquad\bowtie_{\,\text{parking\_zone\_id}}\;\text{parking\_zone} \\
+&\qquad\bowtie_{\,\text{zone\_type\_id}}\;\text{parking\_zone\_type} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{alert\_event} \\
+&\qquad\bowtie_{\,\text{alert\_event\_type\_id}}\;\text{alert\_event\_type} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{track} \\
+&\qquad\bowtie_{\,\text{track\_id}}\;\text{track\_point} \\
+&\qquad\bowtie_{\,\text{data\_source\_id}}\;\text{data\_source\_type} \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 1.2}
+%    \label{tab:plan12}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1  & Seq Scan (\textbf{parking\_zone})                      & Последовательное чтение зон парковки, cost~5.00 \\
+%        2  & Memoize + Index Scan (\textbf{parking\_zone\_type\_pkey}) & Кэшированный поиск типа зоны, фильтр \textbf{name='Бесплатная'}, cost~0.41 \\
+%        3  & Index Scan (\textbf{idx\_parking\_session\_parking\_zone\_id}) & Сессии парковки по зоне, cost~1.10 \\
+%        4  & Index Scan (\textbf{idx\_alert\_event\_car\_id})        & Тревожные события по \textbf{car\_id}, cost~0.19 \\
+%        5  & Index Scan (\textbf{alert\_event\_type\_pkey})          & Тип события, фильтр \textbf{name='Потеря связи'}, cost~0.29 \\
+%        6  & Index Scan (\textbf{car\_pkey})                         & Данные автомобиля, cost~0.17 \\
+%        7  & Index Scan (\textbf{idx\_track\_car\_id})               & Треки автомобиля, cost~0.68 \\
+%        8  & Index Scan (\textbf{idx\_track\_point\_track\_id})      & Точки трека, cost~4.55 \\
+%        9  & Index Scan (\textbf{data\_source\_type\_name\_key})     & Источник данных \textbf{GPS}, cost~8.17 \\
+%        10 & Hash Join                                               & Соединение \textbf{track\_point} с \textbf{data\_source\_type}, cost~137.19 \\
+%        11 & Sort                                                    & Сортировка для \textbf{GROUP BY}, cost~137.20 \\
+%        12 & GroupAggregate + Filter                                 & \textbf{COUNT(DISTINCT)} с фильтром $\ge 3$, cost~137.24 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 
 \newpage
@@ -88,32 +205,66 @@ Execution Time: 113.795 ms \\
 SELECT COUNT(DISTINCT ps.car_id) AS car_count
 FROM parking_session ps
 JOIN parking_zone pz ON pz.parking_zone_id = ps.parking_zone_id
+JOIN alert_event ae ON ae.car_id = ps.car_id
+JOIN employee e ON e.employee_id = ae.employee_id
 WHERE pz.name = 'ТЦ Мега — парковка В'
-  AND ps.car_id IN (
-      SELECT ae.car_id
-      FROM alert_event ae
-      JOIN employee e ON e.employee_id = ae.employee_id
-      WHERE e.full_name = 'Иванов Игорь Николаевич'
-  );
+  AND e.full_name = 'Иванов Игорь Николаевич';
 \end{lstlisting}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/2.jpg}
+    \includegraphics[width=0.3\linewidth]{myPhoto/2.jpg}
     \caption{Результат выполнения запроса 2}
     \label{fig:req2}
 \end{figure}
 
+Время выполнения запроса: \\
+Planning Time: 0.553 ms \\
+Execution Time: 0.919 ms \\
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.69\linewidth]{myPhoto/2.query.jpg}
-    \caption{План выполнения запроса 2}
+    \caption{Последовательность выполнения запроса 2}
     \label{fig:query2}
 \end{figure}
 
-Время выполнения запроса: \\
-Planning Time: 0.427 ms \\
-Execution Time: 0.166 ms \\
+\noindent Сначала последовательно читается таблица \textbf{employee} и находится нужный сотрудник. По его \textbf{employee\_id} через битовый индекс находятся все тревожные события, которые он обработал. Для каждого события по индексу ищутся парковочные сессии того же автомобиля. Затем через Hash Join проверяется, относится ли сессия к нужной зоне парковки. В конце агрегат считает количество уникальных автомобилей.
+
+\noindent Реляционная формула запроса:
+\[
+\begin{aligned}
+&\pi_{\;\text{COUNT}(\text{car\_id}) \to \text{car\_count}}\Bigl( \\
+&\quad\sigma_{\;\text{pz.name}=B \;\wedge\; \text{full\_name}=A}\Bigl( \\
+&\qquad\text{parking\_session} \\
+&\qquad\bowtie_{\,\text{parking\_zone\_id}}\;\text{parking\_zone} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{alert\_event} \\
+&\qquad\bowtie_{\,\text{employee\_id}}\;\text{employee} \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 2}
+%    \label{tab:plan2}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Seq Scan (\textbf{employee})                            & Поиск сотрудника по \textbf{full\_name}, cost~1.38 \\
+%        2 & Bitmap Index Scan (\textbf{idx\_alert\_event\_employee\_id}) & Индексный поиск событий по \textbf{employee\_id}, cost~4.25 \\
+%        3 & Bitmap Heap Scan (\textbf{alert\_event})                & Чтение тревожных событий с проверкой, cost~9.41 \\
+%        4 & Index Scan (\textbf{idx\_parking\_session\_car\_id})    & Сессии парковки по \textbf{car\_id}, cost~0.83 \\
+%        5 & Nested Loop                                             & Соединение \textbf{alert\_event} с \textbf{parking\_session}, cost~23.62 \\
+%        6 & Seq Scan (\textbf{parking\_zone})                       & Фильтрация зон по \textbf{name}, cost~5.50 \\
+%        7 & Hash Join                                               & Соединение \textbf{parking\_session} с \textbf{parking\_zone}, cost~29.65 \\
+%        8 & Aggregate                                               & \textbf{COUNT(DISTINCT car\_id)}, cost~29.67 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \newpage
 
@@ -137,12 +288,55 @@ ORDER BY e.employee_id;
     \label{fig:req3}
 \end{figure}
 
+Время выполнения запроса: \\
+Planning Time: 0.288 ms \\
+Execution Time: 0.297 ms \\
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.69\linewidth]{myPhoto/3.query.jpg}
-    \caption{План выполнения запроса 3}
+    \caption{Последовательность выполнения запроса 3}
     \label{fig:query3}
 \end{figure}
+
+\noindent Обе таблицы — \textbf{employee} и \textbf{alert\_event} — читаются последовательно, после чего соединяются через Hash Right Join. Такой тип соединения нужен, чтобы в результат попали даже те сотрудники, у которых нет ни одного тревожного события. Затем данные сортируются по \textbf{employee\_id}, и GroupAggregate считает для каждого сотрудника количество уникальных событий и уникальных автомобилей.
+
+\noindent Реляционная формула запроса:
+\[
+\begin{aligned}
+&\pi_{
+  \text{employee\_id},\;\text{full\_name},\;\text{alert\_count},\;\text{car\_count}
+}\Bigl( \\
+&\quad\gamma_{
+  \text{employee\_id},\;\text{full\_name};\;
+  \text{COUNT}(\text{alert\_event\_id}) \to \text{alert\_count},\;
+  \text{COUNT}(\text{car\_id}) \to \text{car\_count}
+}\Bigl( \\
+&\qquad\text{employee}
+\;\bowtie(left)_{\,\text{employee\_id}}\;
+\text{alert\_event} \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 3}
+%    \label{tab:plan3}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Seq Scan (\textbf{employee})       & Последовательное чтение всех сотрудников, cost~1.30 \\
+%        2 & Seq Scan (\textbf{alert\_event})   & Последовательное чтение всех тревожных событий, cost~8.93 \\
+%        3 & Hash Right Join                    & LEFT JOIN \textbf{alert\_event} к \textbf{employee} по \textbf{employee\_id}, cost~11.78 \\
+%        4 & Sort                               & Сортировка по \textbf{employee\_id} для GROUP BY, cost~29.70 \\
+%        5 & GroupAggregate                     & COUNT(DISTINCT alert\_event\_id) и COUNT(DISTINCT car\_id), cost~32.95 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \begin{figure}[H]
     \centering
@@ -150,10 +344,6 @@ ORDER BY e.employee_id;
     \caption{Гистограмма запроса 3 — число тревожных событий и автомобилей по каждому сотруднику}
     \label{fig:hist3}
 \end{figure}
-
-Время выполнения запроса: \\
-Planning Time: 0.288 ms \\
-Execution Time: 0.297 ms \\
 
 \newpage
 
@@ -200,16 +390,64 @@ HAVING COUNT(DISTINCT ps.car_id) = (
     \label{fig:req4max}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/4_max.query.jpg}
-    \caption{План выполнения запроса 4 (макс)}
-    \label{fig:query4max}
-\end{figure}
-
 Время выполнения запроса (макс): \\
 Planning Time: 0.419 ms \\
 Execution Time: 1.743 ms \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.69\linewidth]{myPhoto/4_max.query.jpg}
+    \caption{Последовательность выполнения запроса 4 (макс)}
+    \label{fig:query4max}
+\end{figure}
+
+\noindent Сначала выполняется подзапрос: по индексу читаются все парковочные сессии, группируются по зоне парковки, и для каждой зоны считается количество уникальных автомобилей. Из этих чисел берётся максимум. Затем основной запрос соединяет \textbf{parking\_session} и \textbf{parking\_zone} через Merge Join, группирует результат по зоне и оставляет только те зоны, где количество автомобилей равно найденному максимуму.
+
+\noindent Реляционная формула запроса (MAX).
+
+\noindent Пусть $M = \gamma_{\;\text{MAX}(\text{car\_count})}\Bigl(
+  \gamma_{\;\text{parking\_zone\_id};\;\text{COUNT}(\text{car\_id}) \to \text{car\_count}}\bigl(\text{parking\_session}\bigr)
+\Bigr)$.
+
+\[
+\begin{aligned}
+&\pi_{
+  \text{parking\_zone\_id},\;\text{name},\;\text{cnt}
+}\Bigl( \\
+&\quad\sigma_{\;\text{cnt} = M}\Bigl( \\
+&\qquad\gamma_{
+  \text{parking\_zone\_id},\;\text{name};\;
+  \text{COUNT}(\text{car\_id}) \to \text{cnt}
+}\Bigl( \\
+&\quad\qquad\text{parking\_zone}
+  \bowtie_{\,\text{parking\_zone\_id}}
+  \text{parking\_session} \\
+&\qquad\Bigr) \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 4 (макс)}
+%    \label{tab:plan4max}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Index Scan (\textbf{idx\_parking\_session\_parking\_zone\_id}) & Сессии по зоне для подзапроса \textbf{ps2}, cost~156.46 \\
+%        2 & GroupAggregate (подзапрос)  & COUNT(DISTINCT car\_id) по каждой зоне, cost~173.19 \\
+%        3 & Aggregate (InitPlan 1)      & MAX(car\_count) из подзапроса, cost~175.70 \\
+%        4 & Index Scan (\textbf{idx\_parking\_session\_parking\_zone\_id}) & Основные сессии \textbf{ps}, cost~156.46 \\
+%        5 & Seq Scan (\textbf{parking\_zone}) & Все зоны парковки, cost~5.00 \\
+%        6 & Sort                        & Сортировка зон по \textbf{parking\_zone\_id} для Merge Join, cost~13.14 \\
+%        7 & Merge Join                  & Соединение \textbf{parking\_session} с \textbf{parking\_zone}, cost~206.93 \\
+%        8 & GroupAggregate + Filter     & COUNT(DISTINCT car\_id) = MAX, отбор зон, cost~399.87 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \begin{figure}[H]
     \centering
@@ -218,16 +456,64 @@ Execution Time: 1.743 ms \\
     \label{fig:req4min}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/4_min.query.jpg}
-    \caption{План выполнения запроса 4 (мин)}
-    \label{fig:query4min}
-\end{figure}
-
 Время выполнения запроса (мин): \\
 Planning Time: 0.335 ms \\
 Execution Time: 1.449 ms \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.69\linewidth]{myPhoto/4_min.query.jpg}
+    \caption{Последовательность выполнения запроса 4 (мин)}
+    \label{fig:query4min}
+\end{figure}
+
+\noindent Выполнение полностью аналогично запросу с максимумом. Единственное отличие: подзапрос вычисляет минимальное количество автомобилей среди всех зон, и затем основной запрос оставляет только те зоны, где это количество совпадает с минимумом.
+
+\noindent Реляционная формула запроса (MIN).
+
+\noindent Пусть $m = \gamma_{\;\text{MIN}(\text{car\_count})}\Bigl(
+  \gamma_{\;\text{parking\_zone\_id};\;\text{COUNT}(\text{car\_id}) \to \text{car\_count}}\bigl(\text{parking\_session}\bigr)
+\Bigr)$.
+
+\[
+\begin{aligned}
+&\pi_{
+  \text{parking\_zone\_id},\;\text{name},\;\text{cnt}
+}\Bigl( \\
+&\quad\sigma_{\;\text{cnt} = m}\Bigl( \\
+&\qquad\gamma_{
+  \text{parking\_zone\_id},\;\text{name};\;
+  \text{COUNT}(\text{car\_id}) \to \text{cnt}
+}\Bigl( \\
+&\quad\qquad\text{parking\_zone}
+  \bowtie_{\,\text{parking\_zone\_id}}
+  \text{parking\_session} \\
+&\qquad\Bigr) \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 4 (мин)}
+%    \label{tab:plan4min}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Index Scan (\textbf{idx\_parking\_session\_parking\_zone\_id}) & Сессии по зоне для подзапроса \textbf{ps2}, cost~156.46 \\
+%        2 & GroupAggregate (подзапрос)  & COUNT(DISTINCT car\_id) по каждой зоне, cost~173.19 \\
+%        3 & Aggregate (InitPlan 1)      & MIN(car\_count) из подзапроса, cost~175.70 \\
+%        4 & Index Scan (\textbf{idx\_parking\_session\_parking\_zone\_id}) & Основные сессии \textbf{ps}, cost~156.46 \\
+%        5 & Seq Scan (\textbf{parking\_zone}) & Все зоны парковки, cost~5.00 \\
+%        6 & Sort                        & Сортировка зон по \textbf{parking\_zone\_id} для Merge Join, cost~13.14 \\
+%        7 & Merge Join                  & Соединение \textbf{parking\_session} с \textbf{parking\_zone}, cost~206.93 \\
+%        8 & GroupAggregate + Filter     & COUNT(DISTINCT car\_id) = MIN, отбор зон, cost~399.87 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \newpage
 
@@ -255,12 +541,68 @@ ORDER BY e.full_name, sub.car_count;
     \label{fig:req5}
 \end{figure}
 
+Время выполнения запроса: \\
+Planning Time: 0.437 ms \\
+Execution Time: 4.812 ms \\
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.69\linewidth]{myPhoto/5.query.jpg}
-    \caption{План выполнения запроса 5}
+    \caption{Последовательность выполнения запроса 5}
     \label{fig:query5}
 \end{figure}
+
+\noindent Сначала читаются таблицы \textbf{alert\_event} и \textbf{parking\_session}, которые соединяются по \textbf{car\_id} через Hash Join. Результат сортируется и группируется по паре (\textbf{employee\_id}, \textbf{parking\_zone\_id}): для каждой такой пары считается количество уникальных автомобилей — это подзапрос. Затем подзапрос соединяется с \textbf{employee} через Hash Join. Итоговые данные снова сортируются и группируются: теперь уже по (\textbf{full\_name}, \textbf{car\_count}), чтобы посчитать, сколько зон у сотрудника имеют одинаковое число автомобилей.
+
+\noindent Реляционная формула запроса.
+
+\noindent Пусть $T = \gamma_{
+  \text{employee\_id},\;\text{parking\_zone\_id};\;
+  \text{COUNT}(\text{car\_id}) \to \text{car\_count}
+}\bigl(
+  \text{alert\_event}
+  \bowtie_{\,\text{car\_id}}
+  \text{parking\_session}
+\bigr)$.
+
+\[
+\begin{aligned}
+&\pi_{
+  \text{full\_name},\;\text{car\_count},\;\text{zone\_count}
+}\Bigl( \\
+&\quad\gamma_{
+  \text{full\_name},\;\text{car\_count};\;
+  \text{COUNT}(*) \to \text{zone\_count}
+}\Bigl( \\
+&\qquad\text{employee}
+\bowtie_{\,\text{employee\_id}}
+T \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 5}
+%    \label{tab:plan5}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Seq Scan (\textbf{alert\_event})   & Все тревожные события, cost~8.93 \\
+%        2 & Seq Scan (\textbf{parking\_session}) & Все сессии парковки, cost~51.46 \\
+%        3 & Hash Join                           & Соединение \textbf{parking\_session} с \textbf{alert\_event} по \textbf{car\_id}, cost~138.91 \\
+%        4 & Sort                                & Сортировка по \textbf{employee\_id, parking\_zone\_id} для подзапроса, cost~495.71 \\
+%        5 & GroupAggregate (подзапрос)          & COUNT(DISTINCT car\_id) по \textbf{employee\_id} и \textbf{parking\_zone\_id}, cost~592.30 \\
+%        6 & Seq Scan (\textbf{employee})        & Все сотрудники, cost~1.30 \\
+%        7 & Hash Join                           & Соединение подзапроса с \textbf{employee} по \textbf{employee\_id}, cost~663.96 \\
+%        8 & Sort                                & Сортировка по \textbf{full\_name, car\_count} для GROUP BY, cost~706.16 \\
+%        9 & GroupAggregate                      & COUNT(*) по \textbf{full\_name, car\_count}, cost~720.65 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \clearpage
 \newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
@@ -277,10 +619,6 @@ ORDER BY e.full_name, sub.car_count;
 \end{landscape}
 \restoregeometry
 \clearpage
-
-Время выполнения запроса: \\
-Planning Time: 0.437 ms \\
-Execution Time: 4.812 ms \\
 
 \newpage
 
@@ -307,16 +645,67 @@ ORDER BY cnt DESC;
     \label{fig:req6}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/6.query.jpg}
-    \caption{План выполнения запроса 6}
-    \label{fig:query6}
-\end{figure}
-
 Время выполнения запроса: \\
 Planning Time: 0.331 ms \\
 Execution Time: 0.217 ms \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.69\linewidth]{myPhoto/6.query.jpg}
+    \caption{Последовательность выполнения запроса 6}
+    \label{fig:query6}
+\end{figure}
+
+\noindent Сначала выполняется подзапрос: последовательно находится сотрудник~$A$, через битовый индекс находятся все его тревожные события, и агрегат считает их количество. Затем основной запрос читает все события и всех сотрудников, соединяет их через Hash Join и группирует по каждому сотруднику. Оставляются только те сотрудники, у которых событий больше, чем у~$A$. В конце результат сортируется по убыванию количества событий.
+
+\noindent Реляционная формула запроса.
+
+\noindent Пусть $C_A = \gamma_{\;\text{COUNT}(\text{alert\_event\_id})}\bigl(
+  \sigma_{\;\text{full\_name}=A}\bigl(
+    \text{employee} \bowtie_{\,\text{employee\_id}} \text{alert\_event}
+  \bigr)
+\bigr)$.
+
+\[
+\begin{aligned}
+&\pi_{
+  \text{employee\_id},\;\text{full\_name},\;\text{cnt}
+}\Bigl( \\
+&\quad\sigma_{\;\text{cnt} > C_A}\Bigl( \\
+&\qquad\gamma_{
+  \text{employee\_id},\;\text{full\_name};\;
+  \text{COUNT}(\text{alert\_event\_id}) \to \text{cnt}
+}\Bigl( \\
+&\quad\qquad\text{employee}
+  \bowtie_{\,\text{employee\_id}}
+  \text{alert\_event} \\
+&\qquad\Bigr) \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 6}
+%    \label{tab:plan6}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Seq Scan (\textbf{employee e2})               & Поиск сотрудника~$A$ по \textbf{full\_name}, cost~1.38 \\
+%        2 & Bitmap Index Scan (\textbf{idx\_alert\_event\_employee\_id}) & Индексный поиск событий сотрудника~$A$, cost~4.25 \\
+%        3 & Bitmap Heap Scan (\textbf{alert\_event ae2})  & Тревожные события сотрудника~$A$, cost~9.41 \\
+%        4 & Aggregate (InitPlan 1)                        & COUNT(alert\_event\_id) для сотрудника~$A$, cost~10.96 \\
+%        5 & Seq Scan (\textbf{alert\_event ae})           & Все тревожные события, cost~8.93 \\
+%        6 & Seq Scan (\textbf{employee e})                & Все сотрудники, cost~1.30 \\
+%        7 & Hash Join                                     & Соединение \textbf{alert\_event} с \textbf{employee}, cost~11.78 \\
+%        8 & HashAggregate + Filter                        & COUNT(alert\_event\_id) > \$1, cost~14.12 \\
+%        9 & Sort                                          & Сортировка по \textbf{cnt} DESC, cost~25.27 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \newpage
 
@@ -340,16 +729,54 @@ WHERE pz.parking_zone_id NOT IN (
     \label{fig:req7}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/7.query.jpg}
-    \caption{План выполнения запроса 7}
-    \label{fig:query7}
-\end{figure}
-
 Время выполнения запроса: \\
 Planning Time: 0.403 ms \\
 Execution Time: 0.100 ms \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.69\linewidth]{myPhoto/7.query.jpg}
+    \caption{Последовательность выполнения запроса 7}
+    \label{fig:query7}
+\end{figure}
+
+\noindent Сначала выполняется подзапрос: последовательно читается таблица \textbf{car}, находится нужный автомобиль по номеру, и по индексу находятся все зоны парковки, где он бывал. Этот список зон хешируется. Затем последовательно читается вся таблица \textbf{parking\_zone}, и каждая зона проверяется: если она есть в списке — она пропускается. В результат попадают только те зоны, которых в списке нет.
+
+\noindent Реляционная формула запроса:
+\[
+\begin{aligned}
+&\pi_{
+  \text{parking\_zone\_id},\;\text{name}
+}\bigl(\,\text{parking\_zone}\,\bigr) \\
+&\setminus \\
+&\pi_{
+  \text{parking\_zone\_id},\;\text{name}
+}\Bigl( \\
+&\quad\sigma_{\;\text{reg\_number}=\text{А}}\Bigl( \\
+&\qquad\text{car} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{parking\_session} \\
+&\qquad\bowtie_{\,\text{parking\_zone\_id}}\;\text{parking\_zone} \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 7}
+%    \label{tab:plan7}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Seq Scan (\textbf{car})                              & Поиск автомобиля по \textbf{reg\_number}, cost~5.50 \\
+%        2 & Index Scan (\textbf{idx\_parking\_session\_car\_id}) & Зоны парковки данного автомобиля, cost~8.54 \\
+%        3 & Nested Loop (SubPlan 1)                              & Список зон, где парковался автомобиль, cost~14.19 \\
+%        4 & Seq Scan (\textbf{parking\_zone}) + Filter NOT IN    & Зоны без данного автомобиля, cost~19.73 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \newpage
 
@@ -358,9 +785,11 @@ Execution Time: 0.100 ms \\
 \begin{lstlisting}[style=sqlstyle, caption={Запрос 8}, label={lst:req8}]
 SELECT c.car_id, c.reg_number, dst.name AS data_source,
        COUNT(tp.track_point_id) AS coord_count
-FROM data_source_type dst
-JOIN track_point tp ON tp.data_source_id = dst.data_source_id
-JOIN car c ON c.car_id = tp.car_id
+FROM car c
+CROSS JOIN data_source_type dst
+LEFT JOIN track_point tp
+    ON tp.car_id = c.car_id
+    AND tp.data_source_id = dst.data_source_id
 GROUP BY c.car_id, c.reg_number, dst.data_source_id, dst.name
 ORDER BY c.car_id, dst.name;
 \end{lstlisting}
@@ -372,12 +801,57 @@ ORDER BY c.car_id, dst.name;
     \label{fig:req8}
 \end{figure}
 
+Время выполнения запроса: \\
+Planning Time: 0.432 ms \\
+Execution Time: 139.903 ms \\
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.69\linewidth]{myPhoto/8.query.jpg}
-    \caption{План выполнения запроса 8}
+    \caption{Последовательность выполнения запроса 8}
     \label{fig:query8}
 \end{figure}
+
+\noindent По индексу читаются все точки трека. Для каждой точки через кэшированный поиск (Memoize) определяется тип источника данных — это позволяет не обращаться к таблице \textbf{data\_source\_type} повторно для одного и того же значения. Затем точки трека соединяются с автомобилями через Merge Join. Данные инкрементально сортируются по (\textbf{car\_id}, \textbf{data\_source\_id}) и группируются: для каждой пары считается количество координат. В конце результат сортируется по \textbf{car\_id} и названию источника.
+
+\noindent Реляционная формула запроса:
+\[
+\begin{aligned}
+&\pi_{
+  \text{car\_id},\;\text{reg\_number},\;\text{dst.name},\;\text{coord\_count}
+}\Bigl( \\
+&\quad\gamma_{
+  \text{car\_id},\;\text{reg\_number},\;\text{data\_source\_id},\;\text{dst.name};\;
+  \text{COUNT}(\text{track\_point\_id}) \to \text{coord\_count}
+}\Bigl( \\
+&\qquad\text{data\_source\_type} \\
+&\qquad\bowtie_{\,\text{data\_source\_id}}\;\text{track\_point} \\
+&\qquad\bowtie_{\,\text{car\_id}}\;\text{car} \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 8}
+%    \label{tab:plan8}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Index Scan (\textbf{idx\_track\_point\_car\_id})  & Все точки трека по \textbf{car\_id}, cost~9006.19 \\
+%        2 & Index Scan (\textbf{data\_source\_type\_pkey}) + Memoize & Тип источника данных с кешированием, cost~0.17 \\
+%        3 & Nested Loop                                       & Соединение \textbf{track\_point} с \textbf{data\_source\_type}, cost~17377.10 \\
+%        4 & Index Scan (\textbf{car\_pkey})                   & Автомобили по первичному ключу, cost~17.14 \\
+%        5 & Merge Join                                        & Соединение с \textbf{car} по \textbf{car\_id}, cost~21582.88 \\
+%        6 & Incremental Sort                                  & Сортировка по \textbf{car\_id, data\_source\_id}, cost~54577.16 \\
+%        7 & GroupAggregate                                    & COUNT(track\_point\_id) по автомобилю и источнику, cost~58710.05 \\
+%        8 & Incremental Sort                                  & Финальная сортировка по \textbf{car\_id, name}, cost~73391.34 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 \clearpage
 \newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
@@ -395,10 +869,6 @@ ORDER BY c.car_id, dst.name;
 \restoregeometry
 \clearpage
 
-Время выполнения запроса: \\
-Planning Time: 0.432 ms \\
-Execution Time: 139.903 ms \\
-
 \newpage
 
 \subsection{Запрос 9}
@@ -414,16 +884,54 @@ WHERE car_id = (SELECT car_id FROM car WHERE reg_number = 'А001АА77')
   );
 \end{lstlisting}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.69\linewidth]{myPhoto/9.query.jpg}
-    \caption{План выполнения запроса 9}
-    \label{fig:query9}
-\end{figure}
-
 Время выполнения запроса: \\
 Planning Time: 0.266 ms \\
 Execution Time: 0.078 ms \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{myPhoto/9.query.jpg}
+    \caption{Последовательность выполнения запроса 9}
+    \label{fig:query9}
+\end{figure}
+
+\noindent Три подзапроса выполняются независимо до начала основного обновления. Первый находит \textbf{track\_status\_id} нового статуса по индексу (не выполняется, если подходящих треков нет). Второй последовательно читает \textbf{car} и находит \textbf{car\_id} по номеру автомобиля. Третий находит \textbf{track\_status\_id} текущего статуса по индексу. После этого по индексу находятся все треки нужного автомобиля с нужным текущим статусом, и для каждой такой строки выполняется обновление поля \textbf{track\_status\_id}.
+
+\noindent Реляционная формула операции обновления.
+
+\noindent Пусть:
+\begin{align*}
+c   &= \pi_{\,\text{car\_id}}\Bigl(\sigma_{\;\text{reg\_number}=A}\bigl(\text{car}\bigr)\Bigr), \\
+s_B &= \pi_{\,\text{track\_status\_id}}\Bigl(\sigma_{\;\text{name}=B}\bigl(\text{track\_status\_type}\bigr)\Bigr), \\
+s_C &= \pi_{\,\text{track\_status\_id}}\Bigl(\sigma_{\;\text{name}=C}\bigl(\text{track\_status\_type}\bigr)\Bigr).
+\end{align*}
+\[
+\begin{aligned}
+&\text{UPDATE}_{\;\text{track\_status\_id} = s_C}\Bigl( \\
+&\quad\sigma_{\;\text{car\_id}=c \;\wedge\; \text{track\_status\_id}=s_B}\Bigl( \\
+&\qquad\text{track} \\
+&\quad\Bigr) \\
+&\Bigr)
+\end{aligned}
+\]
+
+%\begin{table}[H]
+%    \centering
+%    \caption{Последовательность выполнения запроса 9}
+%    \label{tab:plan9}
+%    \small
+%    \begin{tabularx}{\textwidth}{c >{\raggedright\arraybackslash}p{0.40\textwidth} X}
+%        \toprule
+%        \textbf{Шаг} & \textbf{Операция} & \textbf{Описание} \\
+%        \midrule
+%        1 & Index Scan (\textbf{track\_status\_type\_name\_key}) & Новый статус~$C$ ('Завершён'), не выполнен, cost~8.17 \\
+%        2 & Seq Scan (\textbf{car})                              & Поиск автомобиля по \textbf{reg\_number}~$A$, cost~5.50 \\
+%        3 & Index Scan (\textbf{track\_status\_type\_name\_key}) & Текущий статус~$B$ ('Активный'), cost~8.17 \\
+%        4 & Index Scan (\textbf{idx\_track\_car\_id})            & Треки автомобиля с фильтром по статусу, cost~8.68 \\
+%        5 & Update                                               & Обновление \textbf{track\_status\_id} на~$s_C$, cost~30.52 \\
+%        \bottomrule
+%    \end{tabularx}
+%\end{table}
 
 
 \newpage

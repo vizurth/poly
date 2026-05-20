@@ -37,7 +37,7 @@ void Lab4UI::showKruskal(Graph<int> *g) {
 	mstEdges = kr.compute();
 
 	if (mstEdges.empty()) {
-		cout << "  Граф несвязный — остов не существует.\n";
+		cout << "  Граф несвязный - остов не существует.\n";
 		hasMST = false;
 		return;
 	}

@@ -1,0 +1,25 @@
+% !TEX program = xelatex
+% !TEX options = -interaction=nonstopmode -synctex=1 "%DOC%"
+\documentclass[a4paper, final]{article}
+\input{settings}
+
+\begin{document}
+
+    \include{title}
+
+    \tableofcontents
+    \newpage
+
+    \include{intro}
+    \include{math}
+    \input{impl/common}
+    \input{impl/lab1}
+    \input{impl/lab2}
+    \input{impl/lab3}
+    \input{impl/lab4}
+	\input{impl/lab5}
+    % \include{results}
+    \include{conclusion}
+    \include{literature}
+
+\end{document}

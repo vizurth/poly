@@ -1,5 +1,4 @@
 #include "euler.h"
-#include <algorithm>
 #include <iostream>
 #include <queue>
 #include <stack>
@@ -7,249 +6,207 @@ using namespace std;
 
 /*
     LOOK: EulerianCycle(const Graph<int> &graph)
-    Конструктор создаёт рабочую копию графа.
+    Конструктор принимает граф и сохраняет его копию.
 */
 EulerianCycle::EulerianCycle(const Graph<int> &graph)
     : g(graph), n(graph.getNumVertices()) {}
 
 /*
-    LOOK: degree(int v) const
-    Возвращает степень вершины v (сумма строки в матрице смежности).
+    LOOK: degree(int v)
+    Возвращает степень вершины v.
 */
 int EulerianCycle::degree(int v) const {
 	auto adj = g.getAdjMatrix();
 	int d = 0;
 	for (int j = 0; j < n; j++)
-		d += adj[v][j];
+		if (adj[v][j] != 0) d++;
+	
 	return d;
 }
 
 /*
-    LOOK: oddDegreeVertices() const
+    LOOK: oddVertices()
     Возвращает список вершин с нечётной степенью.
 */
-vector<int> EulerianCycle::oddDegreeVertices() const {
+vector<int> EulerianCycle::oddVertices() const {
 	vector<int> odd;
-	for (int v = 0; v < n; v++)
-		if (degree(v) % 2 != 0)
+	for (int v = 0; v < n; v++) {
+		if (degree(v) % 2 != 0) {
 			odd.push_back(v);
+		}
+	}
 	return odd;
 }
 
 /*
-    LOOK: nonZeroComponents() const
-    BFS-обход: возвращает связные компоненты, содержащие хотя бы одно ребро.
+    LOOK: isBridge(int u, int v)
+    Проверяет, является ли ребро (u,v) мостом. Удаляем ребро и смотрим через BFS, достижима ли v из u. Если нет, ребро - мост.
 */
-vector<vector<int>> EulerianCycle::nonZeroComponents() const {
+bool EulerianCycle::isBridge(int u, int v) const {
 	auto adj = g.getAdjMatrix();
-	vector<bool> visited(n, false);
-	vector<vector<int>> comps;
+	adj[u][v] = adj[v][u] = 0; // удаляем ребро (u,v)
 
-	for (int start = 0; start < n; start++) {
-		if (visited[start] || degree(start) == 0)
-			continue;
-
-		vector<int> comp;
-		queue<int> q;
-		q.push(start);
-		visited[start] = true;
-
-		while (!q.empty()) {
-			int u = q.front();
-			q.pop();
-			comp.push_back(u);
-			for (int v = 0; v < n; v++) {
-				if (!visited[v] && adj[u][v] != 0) {
-					visited[v] = true;
-					q.push(v);
-				}
+	vector<bool> vis(n, false);
+	queue<int> q;
+	q.push(u);
+	vis[u] = true;
+	while (!q.empty()) {
+		int curr = q.front();
+		q.pop();
+		for (int w = 0; w < n; w++) {
+			if (!vis[w] && adj[curr][w]) {
+				vis[w] = true;
+				q.push(w);
 			}
 		}
-		comps.push_back(std::move(comp));
 	}
-	return comps;
+	return !vis[v]; // v недостижима из u
 }
 
 /*
-    LOOK: isEulerian() const
-    Граф эйлеров: все вершины чётной степени и граф связный.
+    LOOK: isEulerian()
+    Проверяет, является ли граф эйлеровым. Граф эйлеров, если он связный и все вершины имеют чётную степень. Связность гарантируется при генерации графа.
 */
-bool EulerianCycle::isEulerian() const {
-	return oddDegreeVertices().empty() && nonZeroComponents().size() <= 1;
-}
-
-/*
-    LOOK: isSemiEulerian() const
-    Граф полуэйлеров: ровно 2 вершины нечётной степени и граф связный.
-*/
-bool EulerianCycle::isSemiEulerian() const {
-	return oddDegreeVertices().size() == 2 && nonZeroComponents().size() <= 1;
-}
+bool EulerianCycle::isEulerian() const { return oddVertices().empty(); }
 
 /*
     LOOK: makeEulerian()
-    Добавляет рёбра для преобразования графа в эйлеров.
-    Шаг 1: соединяет несвязные компоненты.
-    Шаг 2: устраняет вершины нечётной степени попарным добавлением рёбер.
+    Пока есть нечётные вершины, выбираем пару и пытаемся исправить:
+    - если нет ребра, добавляем его.
+    - если есть ребро, но оно не мост, удаляем его.
+    - если есть ребро и оно - мост, пропускаем эту пару и идем дальше.
+    Если не удалось исправить ни одну пару, граф остаётся полуэйлеровым.
 */
 void EulerianCycle::makeEulerian() {
-	addedEdges.clear();
-
-	// Шаг 1: соединяем несвязные компоненты
-	auto comps = nonZeroComponents();
-	cout << "  Компонент с рёбрами: " << comps.size() << "\n";
-	for (size_t i = 1; i < comps.size(); i++) {
-		int u = comps[i - 1].front();
-		int v = comps[i].front();
-		g.addEdge(u, v, 1);
-		g.addEdge(v, u, 1);
-		addedEdges.emplace_back(u, v);
-		cout << "  [+] Ребро " << u << " -- " << v << " (соединение компонент)\n";
-	}
-
-	// Шаг 2: устраняем вершины нечётной степени
-	for (int iter = 0; iter < 64; iter++) {
-		auto odd = oddDegreeVertices();
+	for (int iter = 1;; iter++) {
+		auto odd = oddVertices();
 		if (odd.empty())
 			break;
 
-		cout << "  Вершин нечётной степени: " << odd.size() << " [";
+		cout << "  [шаг " << iter << "] нечётных вершин: " << odd.size()
+		     << " -> {";
 		for (size_t i = 0; i < odd.size(); i++) {
-			if (i) cout << ", ";
+			if (i) {
+				cout << ", ";
+			}
 			cout << odd[i];
 		}
-		cout << "]\n";
+		cout << "}\n";
 
-		bool added = false;
-		for (size_t i = 0; i < odd.size() && !added; i++) {
-			for (size_t j = i + 1; j < odd.size() && !added; j++) {
-				if (!g.hasEdge(odd[i], odd[j])) {
-					g.addEdge(odd[i], odd[j], 1);
-					g.addEdge(odd[j], odd[i], 1);
-					addedEdges.emplace_back(odd[i], odd[j]);
-					cout << "  [+] Ребро " << odd[i] << " -- " << odd[j]
-					     << " (устранение нечётной степени)\n";
-					added = true;
+		bool fixed = false;
+		for (size_t i = 0; i < odd.size() && !fixed; i++) {
+			for (size_t j = i + 1; j < odd.size() && !fixed; j++) {
+				int u = odd[i], v = odd[j];
+
+				if (!g.hasEdge(u, v)) {
+					g.addEdge(u, v, 1);
+					g.addEdge(v, u, 1);
+					cout << "    [+] добавляем " << u << " -- " << v << "\n";
+					fixed = true;
+				} else if (!isBridge(u, v)) {
+					g.removeEdge(u, v);
+					g.removeEdge(v, u);
+					cout << "    [-] удаляем  " << u << " -- " << v
+					     << " (ребро есть, не мост)\n";
+					fixed = true;
+				} else {
+					cout << "    [!] " << u << " -- " << v
+					     << " - мост, пропускаем\n";
 				}
 			}
 		}
 
-		if (!added) {
-			cout << "  Нет несмежных пар нечётных вершин — граф остаётся полуэйлеровым.\n";
+		if (!fixed) {
+			cout << "  Не удалось исправить ни одну пару.\n";
 			break;
 		}
 	}
-}
 
-/*
-    LOOK: findCycle()
-    Строит эйлеров цикл или путь алгоритмом Хирхольцера.
-    Возвращает nullopt, если граф не является ни эйлеровым, ни полуэйлеровым.
-*/
-optional<vector<int>> EulerianCycle::findCycle() {
-	if (!isEulerian() && !isSemiEulerian())
-		return nullopt;
-
-	// Начинаем с вершины нечётной степени (или любой ненулевой)
-	int start = -1;
-	auto odd = oddDegreeVertices();
-	if (!odd.empty()) {
-		start = odd[0];
+	auto odd = oddVertices();
+	if (odd.empty()) {
+		cout << "  Граф стал эйлеровым.\n";
+	} else if (odd.size() == 2) {
+		cout << "  Граф стал полуэйлеровым (ровно 2 вершины нечётной "
+		        "степени).\n";
 	} else {
-		for (int v = 0; v < n; v++) {
-			if (degree(v) > 0) {
-				start = v;
-				break;
-			}
-		}
+		cout << "  Граф не эйлеров и не полуэйлеров (" << odd.size()
+		     << " вершин нечётной степени).\n";
 	}
-	if (start == -1)
-		return nullopt;
-
-	return hierholzer(start);
 }
 
 /*
-    LOOK: hierholzer(int start) const
-    Алгоритм Хирхольцера: итеративный обход с удалением пройденных рёбер.
+    LOOK: buildCycle()
+    Строим эйлеров цикл.
+    - берем стартовую вершину.
+    - Потка есть рёбра, идём по ним, удаляя пройденные ребра. Если из текущей вершины нет рёбер, добавляем её в результат и откатываемся назад.
 */
-optional<vector<int>> EulerianCycle::hierholzer(int start) const {
-	auto adj = g.getAdjMatrix(); // рабочая копия — рёбра удаляем по ходу
+vector<int> EulerianCycle::buildCycle() const {
+	int start = -1;
+	for (int v = 0; v < n; v++) {
+		if (degree(v) > 0) {
+			start = v;
+			break;
+		}
+	}
+	if (start == -1) {
+		return {};
+	}
 
-	int totalEdges = 0;
-	for (int i = 0; i < n; i++)
-		for (int j = i + 1; j < n; j++)
-			if (adj[i][j] != 0)
-				totalEdges++;
+	auto adj = g.getAdjMatrix();
 
-	vector<int> ptr(n, 0); // указатель на следующий непройденный сосед
-	stack<int> stk;
-	vector<int> circuit;
-	circuit.reserve(totalEdges + 1);
-	stk.push(start);
+	int totalEdges = g.getEdgeCount();
 
-	while (!stk.empty()) {
-		int u = stk.top();
-		bool found = false;
-		while (ptr[u] < n) {
-			int v = ptr[u]++;
-			if (adj[u][v] != 0) {
-				adj[u][v] = 0;
-				adj[v][u] = 0;
-				stk.push(v);
-				found = true;
+	stack<int> S;
+	vector<int> result;
+	S.push(start);
+
+	while (!S.empty()) {
+		int v = S.top();
+		int u = -1;
+		for (int j = 0; j < n; j++) {
+			if (adj[v][j]) {
+				u = j;
 				break;
 			}
 		}
-		if (!found) {
-			circuit.push_back(u);
-			stk.pop();
+
+		if (u == -1) {
+			S.pop();
+			result.push_back(v);
+		} else {
+			S.push(u);
+			adj[v][u] = adj[u][v] = 0;
 		}
 	}
 
-	reverse(circuit.begin(), circuit.end());
-
-	if ((int)circuit.size() != totalEdges + 1)
-		return nullopt;
-
-	return circuit;
+	if ((int)result.size() != totalEdges + 1) {
+		return {};
+	}
+	return result;
 }
 
 /*
-    LOOK: getAddedEdges() const
-    Возвращает рёбра, добавленные при makeEulerian.
+    LOOK: getGraph() const
+    Получаем граф, для которого строится эйлеров цикл.
 */
-const vector<pair<int, int>> &EulerianCycle::getAddedEdges() const {
-	return addedEdges;
-}
+const Graph<int> &EulerianCycle::getGraph() const { return g; }
 
 /*
     LOOK: printCycle(const vector<int> &cycle)
-    Выводит эйлеров цикл или путь на экран.
+    Выводим эйлеров цикл на экран.
 */
 void EulerianCycle::printCycle(const vector<int> &cycle) {
-	if (cycle.size() < 2)
+	if (cycle.size() < 2) {
 		return;
+	}
 	bool isCycle = (cycle.front() == cycle.back());
-	cout << "\n  Эйлеров " << (isCycle ? "цикл" : "путь")
-	     << " (" << cycle.size() - 1 << " рёбер):\n  ";
+	cout << "\n  Эйлеров " << (isCycle ? "цикл" : "путь") << " ("
+	     << cycle.size() - 1 << " рёбер):\n  ";
 	for (size_t i = 0; i < cycle.size(); i++) {
-		if (i) cout << " -> ";
+		if (i) {
+			cout << " -> ";
+		}
 		cout << cycle[i];
 	}
 	cout << "\n";
-}
-
-/*
-    LOOK: printAddedEdges(const vector<pair<int, int>> &added)
-    Выводит список рёбер, добавленных при преобразовании графа.
-*/
-void EulerianCycle::printAddedEdges(const vector<pair<int, int>> &added) {
-	if (added.empty()) {
-		cout << "  Граф уже был эйлеровым — рёбра не добавлялись.\n";
-		return;
-	}
-	cout << "  Добавлено рёбер: " << added.size() << "\n";
-	for (auto &[u, v] : added)
-		cout << "    " << u << " -- " << v << "\n";
 }

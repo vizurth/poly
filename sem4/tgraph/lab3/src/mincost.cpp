@@ -6,9 +6,9 @@
 using namespace std;
 
 /*
-	LOOK: MinCostFlow(const Graph<T> &g, const vector<vector<T>> &costMatrix)
-	Конструктор инициализирует остаточный граф из весовой матрицы графа и
-	заданной матрицы стоимостей.
+    LOOK: MinCostFlow(const Graph<T> &g, const vector<vector<T>> &costMatrix)
+    Конструктор инициализирует остаточный граф из весовой матрицы графа и
+    заданной матрицы стоимостей.
 */
 template <typename T>
 MinCostFlow<T>::MinCostFlow(const Graph<T> &g,
@@ -33,8 +33,9 @@ MinCostFlow<T>::MinCostFlow(const Graph<T> &g,
 }
 
 /*
-	LOOK: findMinCostPath(int s, int t)
-	Строим остаточный граф и находим путь s->t минимальной стоимости c помощью матрицы cost и алгоритма Флойда-Уоршалла. Возвращаем {путь, стоимость}.
+    LOOK: findMinCostPath(int s, int t)
+    Строим остаточный граф и находим путь s->t минимальной стоимости c помощью
+   матрицы cost и алгоритма Флойда-Уоршалла. Возвращаем {путь, стоимость}.
 */
 template <typename T>
 pair<vector<int>, T> MinCostFlow<T>::findMinCostPath(int s, int t) const {
@@ -67,12 +68,12 @@ static void printIterationHeader(int iter, T flow, T targetFlow) {
 }
 
 /*
-	LOOK: compute(int s, int t, T targetFlow)
-	Основной цикл алгоритма минимального стоимостного потока:
-	1. Найти путь минимальной стоимости через findMinCostPath
-	2. Найти узкое место на пути (минимальная пропускная способность)
-	3. Обновить остаточный граф
-	4. Повторять до достижения целевого потока или невозможности продолжать
+    LOOK: compute(int s, int t, T targetFlow)
+    Основной цикл алгоритма минимального стоимостного потока:
+    1. Найти путь минимальной стоимости через findMinCostPath
+    2. Найти узкое место на пути (минимальная пропускная способность)
+    3. Обновить остаточный граф
+    4. Повторять до достижения целевого потока или невозможности продолжать
 */
 template <typename T>
 pair<T, T> MinCostFlow<T>::compute(int s, int t, T targetFlow) {
@@ -97,7 +98,7 @@ pair<T, T> MinCostFlow<T>::compute(int s, int t, T targetFlow) {
 
 		if (path.empty()) {
 			cout << "\n  Путь из " << s << " в " << t
-			     << " не найден — алгоритм завершён.\n";
+			     << " не найден - алгоритм завершён.\n";
 			break;
 		}
 
@@ -112,7 +113,8 @@ pair<T, T> MinCostFlow<T>::compute(int s, int t, T targetFlow) {
 		T push = targetFlow - flow;
 		int bottleneckU = path[0], bottleneckV = path[1];
 		for (int i = 0; i + 1 < (int)path.size(); i++) {
-			if (cap[path[i]][path[i + 1]] < push) { // ищем узкое место минимальную пропуск способностьь
+			if (cap[path[i]][path[i + 1]] <
+			    push) { // ищем узкое место минимальную пропуск способностьь
 				push = cap[path[i]][path[i + 1]];
 				bottleneckU = path[i];
 				bottleneckV = path[i + 1];
@@ -131,16 +133,16 @@ pair<T, T> MinCostFlow<T>::compute(int s, int t, T targetFlow) {
 		flow += push;
 		totalCost += push * pathCost;
 
-		cout << "  Пущено: " << push << "      Итого поток: " << flow << "      Итого стоимость: " << totalCost << "\n";
+		cout << "  Пущено: " << push << "      Итого поток: " << flow
+		     << "      Итого стоимость: " << totalCost << "\n";
 	}
 
 	return {flow, totalCost};
 }
 
-
 /*
-	LOOK: printResult(T flow, T totalCost, int s, int t)
-	Выводим итоговый достигнутый поток и его стоимость.
+    LOOK: printResult(T flow, T totalCost, int s, int t)
+    Выводим итоговый достигнутый поток и его стоимость.
 */
 template <typename T>
 void MinCostFlow<T>::printResult(T flow, T totalCost, T target, int s,

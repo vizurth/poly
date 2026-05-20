@@ -1,0 +1,108 @@
+\subsection{Модуль lab5}
+
+\subsubsection{EulerianCycle: проверка и достройка, построение цикла}
+
+\textbf{Вход:} \texttt{Graph<int> const\&}~-- неориентированный граф.
+
+\textbf{Выход:} модифицированный граф (после \texttt{makeEulerian}),
+\texttt{optional<vector<int>>}~-- последовательность вершин эйлерова
+цикла.
+
+\textbf{Описание:} Вспомогательный метод \texttt{degree(v)} суммирует
+строку матрицы смежности; \texttt{oddVertices()} возвращает список
+вершин с нечётной степенью; \texttt{isConnected()} выполняет BFS от
+первой ненулевой вершины и проверяет, что все остальные ненулевые
+вершины достижимы. \texttt{isBridge(u,\,v)} временно обнуляет
+$A[u][v] = A[v][u] = 0$ в рабочей копии матрицы, запускает BFS от
+$u$ и возвращает \texttt{true}, если $v$ недостижима.
+
+Метод \texttt{isEulerian()} возвращает \texttt{true} тогда и только
+тогда, когда граф связен и все степени чётны:
+
+\begin{lstlisting}[style=cstyle, caption={Проверка эйлеровости (euler.cpp)}]
+bool EulerianCycle::isEulerian() const {
+    return isConnected() && oddVertices().empty();
+}
+\end{lstlisting}
+
+Метод \texttt{makeEulerian()} итеративно устраняет нечётные степени.
+На каждом шаге строится список нечётных вершин $O$; для первой
+незаблокированной пары $(u,\,v) \in O \times O$ выполняется одно из
+трёх действий: добавить ребро, если его нет; удалить ребро, если оно
+не мост; пропустить пару, если ребро является мостом.
+
+\begin{lstlisting}[style=cstyle, caption={Достройка до эйлерового графа (euler.cpp)}]
+for (size_t i = 0; i < odd.size() && !fixed; i++) {
+    for (size_t j = i + 1; j < odd.size() && !fixed; j++) {
+        int u = odd[i], v = odd[j];
+        if (!g.hasEdge(u, v)) {
+            g.addEdge(u, v, 1); g.addEdge(v, u, 1);
+            addedEdges.emplace_back(u, v);
+            fixed = true;                      // [+] добавляем
+        } else if (!isBridge(u, v)) {
+            g.removeEdge(u, v); g.removeEdge(v, u);
+            fixed = true;                      // [-] удаляем
+        }
+        // [!] мост - пропускаем
+    }
+}
+\end{lstlisting}
+
+Метод \texttt{buildCycle()} реализует алгоритм Хирхольцера на основе
+стека. Работа ведётся с рабочей копией матрицы смежности; пройденные
+рёбра обнуляются немедленно.
+
+\begin{lstlisting}[style=cstyle, caption={Построение эйлерова цикла алгоритмом Хирхольцера (euler.cpp)}]
+S.push(start);
+while (!S.empty()) {
+    int v = S.top(), u = -1;
+    for (int j = 0; j < n; j++)
+        if (adj[v][j]) { u = j; break; }
+    if (u == -1) { S.pop(); circuit.push_back(v); }
+    else { S.push(u); adj[v][u] = adj[u][v] = 0; }
+}
+reverse(circuit.begin(), circuit.end());
+\end{lstlisting}
+
+После разворота вектор \texttt{circuit} содержит вершины эйлерова
+цикла (или пути). Корректность проверяется условием
+$|\texttt{circuit}| = |E| + 1$.
+
+\subsubsection{CycleBasis: фундаментальная система циклов}
+
+\textbf{Вход:} \texttt{vector<Edge> const\&}~-- рёбра МОД (из Краскала),
+\texttt{Graph<int> const\&}~-- исходный граф.
+
+\textbf{Выход:} система фундаментальных циклов \texttt{vector<EdgeSet>};
+результат симметрической разности выбранных циклов.
+
+\textbf{Описание:} Метод \texttt{compute()} перебирает все рёбра
+исходного графа. Для каждого ребра $(i,\,j)$, не входящего в МОД
+(хорды), вызывается \texttt{pathInMST(i, j, mst)}~-- BFS по остову,
+возвращающий последовательность вершин пути. Из этого пути формируется
+\texttt{EdgeSet} (нормализованные пары $(\min,\,\max)$); к нему
+добавляется хорда~-- получается фундаментальный цикл $Z_e$.
+
+\begin{lstlisting}[style=cstyle, caption={Построение фундаментального цикла для хорды (cycle\_basis.cpp)}]
+auto path = pathInMST(i, j, mst);
+EdgeSet cycle;
+for (int k = 0; k + 1 < (int)path.size(); k++) {
+    int u = min(path[k], path[k+1]);
+    int v = max(path[k], path[k+1]);
+    cycle.insert({u, v});
+}
+cycle.insert({i, j});   // хорда замыкает цикл
+basis.push_back(cycle);
+\end{lstlisting}
+
+Метод \texttt{interactiveSymDiff()} предлагает пользователю выбрать
+номера циклов из фундаментальной системы и последовательно вычисляет
+их симметрическую разность:
+
+\begin{lstlisting}[style=cstyle, caption={Симметрическая разность циклов (cycle\_basis.cpp)}]
+EdgeSet result = basis[indices[0]];
+for (size_t i = 1; i < indices.size(); i++)
+    result = symDiff(result, basis[indices[i]]);
+\end{lstlisting}
+
+\texttt{symDiff(a, b)} реализует операцию симметрической разности для множеств рёбер, представленных

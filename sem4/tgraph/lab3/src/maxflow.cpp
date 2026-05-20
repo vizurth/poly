@@ -4,8 +4,8 @@
 using namespace std;
 
 /*
-	LOOK: MaxFlow(const Graph<T> &g)
-	Конструктор инициализирует остаточный граф из весовой матрицы графа.
+    LOOK: MaxFlow(const Graph<T> &g)
+    Конструктор инициализирует остаточный граф из весовой матрицы графа.
 */
 template <typename T>
 MaxFlow<T>::MaxFlow(const Graph<T> &g) : n(g.getNumVertices()) {
@@ -19,7 +19,8 @@ MaxFlow<T>::MaxFlow(const Graph<T> &g) : n(g.getNumVertices()) {
 /*
     LOOK: bfs(int s, int t)
     Ищем кратчайший увеличивающий путь от s до t.
-    parent[v] = предыдущая вершина на пути — восстанавливаем путь из t обратно к s.
+    parent[v] = предыдущая вершина на пути - восстанавливаем путь из t обратно к
+   s.
 */
 template <typename T>
 vector<int> MaxFlow<T>::bfs(int s, int t) const {
@@ -92,7 +93,8 @@ T MaxFlow<T>::compute(int s, int t) {
 			cap[path[i]][path[i + 1]] -= push; // уменьшаем прямое ребро
 			cap[path[i + 1]][path[i]] += push; // увеличиваем обратное
 		}
-		// printMatrix(cap, "Остаточный граф после обновления пропускных способностей:");
+		// printMatrix(cap, "Остаточный граф после обновления пропускных
+		// способностей:");
 
 		maxFlow += push;
 		iter++;
@@ -102,8 +104,8 @@ T MaxFlow<T>::compute(int s, int t) {
 }
 
 /*
-	LOOK: printResult(T flow, int s, int t)
-	Выводим результат: максимальный поток и соответствующие вершины.
+    LOOK: printResult(T flow, int s, int t)
+    Выводим результат: максимальный поток и соответствующие вершины.
 */
 template <typename T>
 void MaxFlow<T>::printResult(T flow, int s, int t) const {

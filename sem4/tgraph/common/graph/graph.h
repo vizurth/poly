@@ -14,6 +14,7 @@ class Graph {
   public:
 	Graph(int n);
 	void addEdge(int from, int to, T weight);
+	void removeEdge(int from, int to);
 	bool hasEdge(int from, int to) const;
 
 	void printAdjMatrix() const;
@@ -24,6 +25,7 @@ class Graph {
 	int getNumVertices() const;
 	vector<vector<int>> getAdjMatrix() const;
 	vector<vector<T>> getWeightMatrix() const;
+	int getEdgeCount() const;
 
 	vector<int> bfs(int start) const;
 	void dfs(int current, int target, vector<bool> &visited,
