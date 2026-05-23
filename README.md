@@ -120,4 +120,4 @@ The repository is organized by semesters and courses and may include:
 | 3    | ✅      | ✅    |
 | 4    | ✅      | ✅    |
 | 5    | ✅      | ✅    |
-| CW   | ✅      | 🔄    |
+| CW   | ✅      | ✅    |
