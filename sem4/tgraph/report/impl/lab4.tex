@@ -8,15 +8,14 @@
 
 \textbf{Описание:} Метод \texttt{count} строит матрицу Лапласа $B$
 размера $n \times n$: $B[i][j] = -1$ для смежных вершин $i \neq j$,
-$B[i][i]$~-- степень вершины $i$. Смежность определяется так:
-ребро есть, если $\texttt{adj}[i][j] \neq 0$ или $\texttt{adj}[j][i] \neq 0$.
+$B[i][i]$~-- степень вершины $i$. Смежность определяется как
+$\texttt{adj}[i][j] \neq 0$ или $\texttt{adj}[j][i] \neq 0$.
 
-Затем берётся алгеброическое дополнение $B'$ к элементу $B[0][0]$~-- это матрица размера $(n-1) \times (n-1)$,
-без нулевой строки и нулевого столбца.  Определитель считается алгоритмом Барейсса, который сохраняет целочисленность  значений.
+Затем берётся алгебраическое дополнение $B'$~-- матрица $B$ без нулевой
+строки и нулевого столбца размера $(n-1) \times (n-1)$.
 
 \begin{lstlisting}[style=cstyle, caption={Метод Гаусса с целочисленной арифметикой (kirchhoff.cpp)}]
 for (int k = 0; k < m; k++) {
-    // поиск ненулевого опорного элемента
     int pivot = -1;
     for (int i = k; i < m; i++)
         if (mat[i][k] != 0) { pivot = i; break; }
@@ -36,19 +35,22 @@ for (int k = 0; k < m; k++) {
 return abs(mat[m-1][m-1]);
 \end{lstlisting}
 
+\textbf{Сложность:} $O(V^3)$ по времени; $O(V^2)$ по памяти.
+
 \subsubsection{Kruskal: алгоритм Краскала}
 
-\textbf{Вход:} \texttt{Graph<int> const\&}~-- связный неориентированный взвешенный граф.
+\textbf{Вход:} \texttt{Graph<int> const\&}~-- связный неориентированный
+взвешенный граф.
 
 \textbf{Выход:} \texttt{vector<Edge>}~-- рёбра минимального остова;
 пустой вектор, если граф несвязен.
 
 \textbf{Описание:} Конструктор собирает все рёбра (каждое один раз,
 условие $i < j$) в вектор \texttt{edges}; веса берутся по модулю.
-
 Метод \texttt{compute()} сортирует рёбра по весу и добавляет их в остов,
 если они не создают цикла. Цикл проверяется через BFS по уже построенному
-остову: если между концами ребра уже есть путь~-- значит добавление этого ребра создаёт цикл, и его пропускают.
+остову: если вершины $u$ и $v$ уже связаны~-- ребро пропускается.
+
 \begin{lstlisting}[style=cstyle, caption={Основной цикл алгоритма Краскала (kruskal.cpp)}]
 vector<Edge> Kruskal::compute() {
     sort(edges.begin(), edges.end());
@@ -65,27 +67,26 @@ vector<Edge> Kruskal::compute() {
 }
 \end{lstlisting}
 
-\texttt{hasPath} делает BFS по матрице смежности текущего остова.
-Сложность: $O(E^2)$ в худшем случае, пространственная: $O(V + E)$.
+\textbf{Сложность:} $O(E^2)$ по времени (BFS на каждое ребро);
+$O(V + E)$ по памяти.
 
 \subsubsection{Prufer: код Прюфера}
 
-\textbf{Вход (encode):} \texttt{vector<Edge> const\&}~-- рёбра МОД, \texttt{int n}.
+\textbf{Вход (encode):} \texttt{vector<Edge> const\&}~-- рёбра МОД,
+\texttt{int n}~-- число вершин.
 
-\textbf{Выход (encode):} \texttt{PruferCode}~-- поля:
-\texttt{seq} (последовательность длины $n-2$), \texttt{weights} (веса рёбер),
-\texttt{n} (число вершин).
+\textbf{Выход (encode):} \texttt{PruferCode}~-- поля: \texttt{seq}
+(последовательность длины $n-2$), \texttt{weights} (веса рёбер),
+\texttt{n}.
 
-\textbf{Описание (encode):} Строится временный граф \texttt{tree} из рёбер МОД.
+\textbf{Описание (encode):} Строится временный граф из рёбер МОД.
 Хранится вектор степеней \texttt{d} и вектор активных вершин \texttt{V}.
-На каждом из $n - 1$ шагов ищется активная висячая вершина с минимальным
-номером ($d[v] = 1$); её единственный сосед записывается в \texttt{seq},
-вес соответствующего ребра~-- в \texttt{weights}.
-Оба конца уменьшают степень, вершина $v$ деактивируется.
+На каждом шаге ищется активная висячая вершина с минимальным номером
+($d[v] = 1$); её единственный сосед записывается в последовательность,
+вес ребра~-- в \texttt{weights}. Вершина $v$ удаляется.
 
 \begin{lstlisting}[style=cstyle, caption={Кодирование в код Прюфера с сохранением весов (prufer.cpp)}]
 PruferCode Prufer::encode(const vector<Edge>& mst, int p) {
-    // строим дерево, считаем степени
     for (int i = 0; i < p - 1; i++) {
         int v = -1;
         for (int k = 0; k < p; k++)
@@ -102,25 +103,57 @@ PruferCode Prufer::encode(const vector<Edge>& mst, int p) {
 }
 \end{lstlisting}
 
-\textbf{Описание (decode):} Для каждого элемента \texttt{seq[i]} ищется
-наименьшая активная вершина, которой нет в остатке кода \texttt{seq[i..n-2]}.
-Между ней и \texttt{seq[i]} добавляется ребро с весом \texttt{weights[i]}.
-После $n - 2$ шагов последние две активные вершины соединяются последним ребром.
-Сложность: $O(n^2)$, пространственная: $O(n)$.
+\textbf{Вход (decode):} \texttt{PruferCode}~-- структура с полями
+\texttt{seq}, \texttt{weights}, \texttt{n}.
+
+\textbf{Выход (decode):} \texttt{vector<Edge>}~-- рёбра восстановленного
+дерева с весами.
+
+\textbf{Описание (decode):} Поддерживается вектор активных вершин \texttt{B}.
+Для каждого элемента \texttt{seq[i]} ищется наименьшая неудаленная вершина вершина,
+которой нет в остатке кода \texttt{seq[i..n-2]}.
+Между ней и \texttt{seq[i]} добавляется ребро с весом \texttt{weights[i]},
+вершина удаляется.
+
+\begin{lstlisting}[style=cstyle, caption={Декодирование кода Прюфера (prufer.cpp)}]
+vector<Edge> Prufer::decode(const PruferCode& code) {
+    int p = code.n;
+    vector<Edge> E;
+    vector<bool> B(p, true);
+
+    for (int i = 0; i < p - 1; i++) {
+        int v = -1;
+        for (int k = 0; k < p; k++) {
+            if (B[k]) {
+                bool in_rest = false;
+                for (int j = i; j < p - 1; j++)
+                    if (code.seq[j] == k) { in_rest = true; break; }
+                if (!in_rest) { v = k; break; }
+            }
+        }
+        E.push_back({v, code.seq[i], code.weights[i]});
+        B[v] = false;
+    }
+    return E;
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(V^2)$ по времени; $O(V)$ по памяти.
 
 \subsubsection{MIS: максимальное независимое множество}
 
 \textbf{Вход:} \texttt{vector<vector<int>> const\&}~-- матрица смежности
-(исходного графа или МОД~-- по выбору пользователя).
+исходного графа или МОД (по выбору пользователя).
 
-\textbf{Выход:} \texttt{vector<int>}~-- вершины МНМ.
+\textbf{Выход:} \texttt{vector<int>}~-- вершины максимального
+независимого множества.
 
 \textbf{Описание:} Метод \texttt{compute()} запускает рекурсивный
 \texttt{backtrack(S, T)}, где $S$~-- текущее независимое множество,
 $T$~-- кандидаты. Для каждой вершины $v \in T$ проверяется, не смежна
-ли она с вершинами из $S$. Если нет~-- добавляем $v$ в множество
-и убираем из кандидатов всех соседей $v$. Если новое множество больше
-текущего максимума~-- сохраняем его.
+ли она с вершинами из $S$. Если нет~-- добавляем $v$ и убираем из
+кандидатов всех соседей $v$. Если новое множество больше текущего
+максимума~-- сохраняем.
 
 \begin{lstlisting}[style=cstyle, caption={Backtracking для нахождения MIS (mis.cpp)}]
 void MIS::backtrack(vector<int> S, vector<int> T) {
@@ -142,4 +175,4 @@ void MIS::backtrack(vector<int> S, vector<int> T) {
 }
 \end{lstlisting}
 
-\texttt{isIndependent(S, v)} проверяет, зависима ли вершина $v$ от множества $S$, перебирая все вершины $u \in S$ и проверяя смежность.
+\textbf{Сложность:} $O(2^V)$ по времени в худшем случае; $O(V)$ по памяти.

@@ -25,7 +25,7 @@ WeibullDistribution::WeibullDistribution()
 */
 double WeibullDistribution::generate() {
 	double u = distribution(generator);
-	double raw = a * std::pow(-std::log(1 - u), 1.0 / c);
+	double raw = a * std::pow(-std::log(u), 1.0 / c);
 	if (raw > 0) {
 		return raw;
 	} else {

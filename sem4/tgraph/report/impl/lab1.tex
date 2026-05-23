@@ -2,16 +2,16 @@
 
 \subsubsection{Эксцентриситеты, центр и диаметральные вершины}
 
-Все метрики считаются внутри класса \texttt{Graph<T>}.
-
 \textbf{Вход:} \texttt{Graph<T>}~-- связный граф.
 
-\textbf{Выход:} вектор эксцентриситетов, списки центральных и диаметральных вершин.
+\textbf{Выход:} вектор эксцентриситетов всех вершин; список центральных
+вершин (минимальный эксцентриситет); список диаметральных вершин
+(максимальный эксцентриситет).
 
-\textbf{Описание:} Для каждой вершины запускается BFS (\texttt{bfs(int start)})
-по матрице весов~-- ребро считается существующим, если вес ненулевой.
-BFS возвращает вектор расстояний \texttt{distances} в рёбрах.
-Эксцентриситет вершины~-- наибольшее расстояние до других вершин:
+\textbf{Описание:} Для каждой вершины запускается BFS по матрице весов~--
+ребро считается существующим, если вес ненулевой. BFS возвращает
+расстояния в рёбрах. Эксцентриситет~-- наибольшее расстояние до других вершин.
+Центр~-- вершины с минимальным эксцентриситетом, диаметральные~-- с максимальным.
 
 \begin{lstlisting}[style=cstyle, caption={BFS и вычисление эксцентриситета (graph.cpp)}]
 template <typename T>
@@ -26,9 +26,6 @@ int Graph<T>::eccentricity(int vertex) const {
     return maxDist;
 }
 \end{lstlisting}
-
-Центр~-- вершины с наименьшим эксцентриситетом (радиус графа),
-диаметральные~-- с наибольшим (диаметр графа):
 
 \begin{lstlisting}[style=cstyle, caption={Поиск центра и диаметральных вершин (graph.cpp)}]
 template <typename T>
@@ -55,21 +52,22 @@ vector<int> Graph<T>::findDiametral() const {
 }
 \end{lstlisting}
 
+\textbf{Сложность:} $O(V^3)$ по времени (BFS из каждой вершины стоит
+$O(V^2)$ при матричном представлении); $O(V)$ по памяти.
+
 \subsubsection{ShimbelSolver\textless T\textgreater: метод Шимбелла}
 
-\textbf{Вход:} \texttt{Graph<T> const\&} (конструктор), \texttt{int k}~--
-длина пути в рёбрах.
+\textbf{Вход:} \texttt{Graph<T> const\&}, \texttt{int k}~-- длина пути
+в рёбрах.
 
 \textbf{Выход:} матрица минимальных и матрица максимальных путей
 ровно из $k$ рёбер для всех пар вершин.
 
-\textbf{Описание:} Начальная матрица заполняется по весам графа: \\
-$\texttt{currentMatrix}[i][j] = w(i,j)$, если ребро есть, иначе
-ставится сторожевое значение ($+\infty$ или $-\infty$).
-Матрица умножается $k - 1$ раз методом \\ \texttt{multiplyMatrix(bool findMin)}.
-При каждом умножении для пары $(i, j)$ перебираются все промежуточные вершины $m$:
-если значения не сторожевые и ребро $(m, j)$ есть, считается кандидат
-$\texttt{currentMatrix}[i][m] + w[m][j]$, затем берётся минимум или максимум:
+\textbf{Описание:} Начальная матрица заполняется по весам графа: если
+ребро $(i,j)$ есть~-- ставится $w(i,j)$, иначе~-- INF. Матрица умножается
+$k-1$ раз: для каждой пары $(i,j)$ перебираются промежуточные вершины $m$
+и выбирается минимальный или максимальный кандидат
+$\texttt{mat}[i][m] + w[m][j]$.
 
 \begin{lstlisting}[style=cstyle, caption={Матричное умножение для метода Шимбелла (shimbel.cpp)}]
 template <typename T>
@@ -91,17 +89,19 @@ void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
 }
 \end{lstlisting}
 
-При $k = 0$ возвращается единичная матрица.
+\textbf{Сложность:} $O(k \cdot V^3)$ по времени; $O(V^2)$ по памяти.
 
 \subsubsection{Поиск всех маршрутов (DFS с возвратом)}
 
-\textbf{Вход:} \texttt{Graph<T> const\&}, \texttt{int from}, \texttt{int to}.
+\textbf{Вход:} \texttt{Graph<T> const\&}, вершина \texttt{from},
+вершина \texttt{to}.
 
-\textbf{Выход:} \texttt{vector<vector<int>>}~-- все простые пути.
+\textbf{Выход:} \texttt{vector<vector<int>>}~-- список всех простых
+путей из \texttt{from} в \texttt{to}.
 
-\textbf{Описание:} \texttt{findAllPaths} запускает рекурсивный \texttt{dfs}.
-Когда доходим до \texttt{target}~-- сохраняем текущий путь \texttt{currentPath} и возвращаемся к предущей вершине и пробуем другой маршрут.
-
+\textbf{Описание:} \texttt{findAllPaths} запускает рекурсивный DFS
+с возвратом. При достижении целевой вершины текущий
+путь сохраняется в результат.
 \begin{lstlisting}[style=cstyle, caption={Поиск всех путей DFS (graph.cpp)}]
 template <typename T>
 void Graph<T>::dfs(int current, int target,
@@ -123,3 +123,6 @@ void Graph<T>::dfs(int current, int target,
     }
 }
 \end{lstlisting}
+
+\textbf{Сложность:} $O(V!)$ по времени в худшем случае;
+$O(V)$ по памяти (стек рекурсии и текущий путь).
