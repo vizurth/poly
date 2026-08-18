@@ -81,7 +81,7 @@ T MaxFlow<T>::compute(int s, int t) {
 		}
 		cout << "\n";
 
-		// push = узкое место на пути (минимальная пропускная способность)
+		// push = узкое место на пути
 		T push = numeric_limits<T>::max();
 		for (int i = 0; i + 1 < (int)path.size(); i++)
 			push = min(push, cap[path[i]][path[i + 1]]);
@@ -93,8 +93,6 @@ T MaxFlow<T>::compute(int s, int t) {
 			cap[path[i]][path[i + 1]] -= push; // уменьшаем прямое ребро
 			cap[path[i + 1]][path[i]] += push; // увеличиваем обратное
 		}
-		// printMatrix(cap, "Остаточный граф после обновления пропускных
-		// способностей:");
 
 		maxFlow += push;
 		iter++;

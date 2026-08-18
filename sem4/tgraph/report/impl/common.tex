@@ -19,8 +19,7 @@
 \textbf{Вход:} число вершин \texttt{n}; рёбра добавляются через
 \texttt{addEdge(from, to, weight)}.
 
-\textbf{Выход:} матрицы смежности и весов, методы обхода (BFS, DFS)
-и вычисления метрик.
+\textbf{Выход:} матрицы смежности и весов, методы обхода (BFS, DFS).
 
 \textbf{Описание:} \texttt{Graph<T>}~-- шаблонный класс; тип весов рёбер
 задаётся параметром \texttt{T}. Граф хранится в двух матрицах размера
@@ -56,7 +55,7 @@ BFS по матрице~-- $O(V^2)$; память~-- $O(V^2)$.
 
 \subsubsection{WeibullDistribution: генерация случайных чисел}
 
-\textbf{Вход:} параметры масштаба $a$ и формы $c$ (по умолчанию $a=1, c=0.2$).
+\textbf{Вход:} параметры масштаба $a$ и формы $c$ (по умолчанию $a=10, c=0.2$).
 
 \textbf{Выход:} случайное число $X > 0$ по распределению Вейбулла.
 
@@ -94,25 +93,57 @@ double WeibullDistribution::generate() {
 Список перемешивается через \texttt{weibullShuffle} и добавляются
 первые $d_i$ рёбер.
 
-\begin{lstlisting}[style=cstyle, caption={Генератор весов и Вейбуллово перемешивание (generator.cpp)}]
+\begin{lstlisting}[style=cstyle, caption={Генерация графа (generator.cpp)}]
 template <typename T>
-T Generator<T>::generateWeight(WeightType weightType) {
-    double weight = distributionForWeights.generate();
-    if (weightType == WeightType::NEGATIVE)
-        return static_cast<T>(-weight);
-    else if (weightType == WeightType::MIXED)
-        return isNegative() ? static_cast<T>(-weight)
-                            : static_cast<T>(weight);
-    return static_cast<T>(weight);
-}
+Graph<T> Generator<T>::generateGraph() {
+	Graph<T>  graph(numVertices);
 
-template <typename T>
-void Generator<T>::weibullShuffle(vector<int>& vertices) {
-    int n = vertices.size();
-    for (int i = n - 1; i > 0; i--) {
-        int j = randomIndex(i + 1);
-        swap(vertices[i], vertices[j]);
-    }
+	int maxDeg = max(1, static_cast<int>(log(numVertices)));
+	vector<int> degrees(numVertices);
+	for (int i = 0; i < numVertices; i++) {
+		int raw = static_cast<int>(distributionForStructure.generate());
+		degrees[i] = max(1, min(raw, maxDeg));
+	}
+
+	vector<int> perm(numVertices);
+	iota(perm.begin(), perm.end(), 0);
+	weibullShuffle(perm);
+
+	for (int i = 1; i < numVertices; i++) {
+		int j = randomIndex(i);
+		T weight = generateWeight(weightMode);
+		graph.addEdge(perm[j], perm[i], weight);
+		if (!directed) {
+			graph.addEdge(perm[i], perm[j], weight);
+		}
+	}
+
+
+	for (int i = 0; i < numVertices; i++) {
+		int edgesToAdd = degrees[i];
+		vector<int> possibleTargets;
+
+		for (int j = i + 1; j < numVertices; j++) {
+			if (!graph.hasEdge(perm[i], perm[j])) {
+				possibleTargets.push_back(j);
+			}
+		}
+
+		if (!possibleTargets.empty()) {
+			weibullShuffle(possibleTargets);
+
+			for (int k = 0; k < edgesToAdd && k < (int)possibleTargets.size(); k++) {
+				int target = possibleTargets[k];
+				T weight = generateWeight(weightMode);
+				graph.addEdge(perm[i], perm[target], weight);
+				if (!directed) {
+					graph.addEdge(perm[target], perm[i], weight);
+				}
+			}
+		}
+	}
+
+	return graph;
 }
 \end{lstlisting}
 

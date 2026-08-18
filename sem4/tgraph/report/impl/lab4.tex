@@ -14,7 +14,7 @@ $\texttt{adj}[i][j] \neq 0$ или $\texttt{adj}[j][i] \neq 0$.
 Затем берётся алгебраическое дополнение $B'$~-- матрица $B$ без нулевой
 строки и нулевого столбца размера $(n-1) \times (n-1)$.
 
-\begin{lstlisting}[style=cstyle, caption={Метод Гаусса с целочисленной арифметикой (kirchhoff.cpp)}]
+\begin{lstlisting}[style=cstyle, caption={Алгоритм Барейсса(kirchhoff.cpp)}]
 for (int k = 0; k < m; k++) {
     int pivot = -1;
     for (int i = k; i < m; i++)
@@ -42,8 +42,7 @@ return abs(mat[m-1][m-1]);
 \textbf{Вход:} \texttt{Graph<int> const\&}~-- связный неориентированный
 взвешенный граф.
 
-\textbf{Выход:} \texttt{vector<Edge>}~-- рёбра минимального остова;
-пустой вектор, если граф несвязен.
+\textbf{Выход:} \texttt{vector<Edge>}~-- рёбра минимального остова.
 
 \textbf{Описание:} Конструктор собирает все рёбра (каждое один раз,
 условие $i < j$) в вектор \texttt{edges}; веса берутся по модулю.
@@ -67,8 +66,8 @@ vector<Edge> Kruskal::compute() {
 }
 \end{lstlisting}
 
-\textbf{Сложность:} $O(E^2)$ по времени (BFS на каждое ребро);
-$O(V + E)$ по памяти.
+\textbf{Сложность:} $O(V^4)$ по времени;
+$O(V)$ по памяти.
 
 \subsubsection{Prufer: код Прюфера}
 
@@ -102,6 +101,9 @@ PruferCode Prufer::encode(const vector<Edge>& mst, int p) {
     return code;
 }
 \end{lstlisting}
+
+\textbf{Сложность:} $O(V^2)$ по времени; $O(V^2)$ по памяти.
+\\
 
 \textbf{Вход (decode):} \texttt{PruferCode}~-- структура с полями
 \texttt{seq}, \texttt{weights}, \texttt{n}.
@@ -155,7 +157,16 @@ $T$~-- кандидаты. Для каждой вершины $v \in T$ пров
 кандидатов всех соседей $v$. Если новое множество больше текущего
 максимума~-- сохраняем.
 
-\begin{lstlisting}[style=cstyle, caption={Backtracking для нахождения MIS (mis.cpp)}]
+\begin{lstlisting}[style=cstyle, caption={Исходный код (mis.cpp)}]
+
+bool MIS::isIndependent(const vector<int> &S, int v) const {
+	for (int u : S) {
+		if (adj[u][v] != 0 || adj[v][u] != 0) {
+			return false; // множество S + v зависимое
+		}
+	}
+	return true;
+}
 void MIS::backtrack(vector<int> S, vector<int> T) {
     for (int v : T) {
         if (isIndependent(S, v)) {

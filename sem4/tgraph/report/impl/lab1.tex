@@ -27,7 +27,17 @@ int Graph<T>::eccentricity(int vertex) const {
 }
 \end{lstlisting}
 
+\textbf{Сложность:} $O(V^2)$ по времени, $O(V)$ по памяти.
+
 \begin{lstlisting}[style=cstyle, caption={Поиск центра и диаметральных вершин (graph.cpp)}]
+template <typename T>
+vector<int> Graph<T>::allEccentricities() const {
+	vector<int> eccs(numVertices);
+	for (int i = 0; i < numVertices; i++) {
+		eccs[i] = eccentricity(i);
+	}
+	return eccs;
+}
 template <typename T>
 vector<int> Graph<T>::findCenter() const {
     vector<int> eccs = allEccentricities();
@@ -52,8 +62,7 @@ vector<int> Graph<T>::findDiametral() const {
 }
 \end{lstlisting}
 
-\textbf{Сложность:} $O(V^3)$ по времени (BFS из каждой вершины стоит
-$O(V^2)$ при матричном представлении); $O(V)$ по памяти.
+\textbf{Сложность:} $O(V^3)$ по времени, $O(V)$ по памяти.
 
 \subsubsection{ShimbelSolver\textless T\textgreater: метод Шимбелла}
 
@@ -102,27 +111,18 @@ void ShimbelSolver<T>::multiplyMatrix(bool findMin) {
 \textbf{Описание:} \texttt{findAllPaths} запускает рекурсивный DFS
 с возвратом. При достижении целевой вершины текущий
 путь сохраняется в результат.
-\begin{lstlisting}[style=cstyle, caption={Поиск всех путей DFS (graph.cpp)}]
+\begin{lstlisting}[style=cstyle, caption={Поиск всех маршрутов (graph.cpp)}]
 template <typename T>
-void Graph<T>::dfs(int current, int target,
-                   vector<bool>& visited,
-                   vector<int>& currentPath,
-                   vector<vector<int>>& allPaths) const {
-    if (current == target) {
-        allPaths.push_back(currentPath);
-        return;
-    }
-    for (int next = 0; next < numVertices; next++) {
-        if (weightMatrix[current][next] != T{} && !visited[next]) {
-            visited[next] = true;
-            currentPath.push_back(next);
-            dfs(next, target, visited, currentPath, allPaths);
-            currentPath.pop_back();
-            visited[next] = false;
-        }
-    }
+vector<vector<int>> Graph<T>::findAllPaths(int from, int to) const {
+	vector<vector<int>> allPaths;
+	vector<bool> visited(numVertices, false);
+	vector<int> currentPath = {from}; // путь начинается с from
+
+	visited[from] = true;
+	dfs(from, to, visited, currentPath, allPaths);
+
+	return allPaths;
 }
 \end{lstlisting}
 
-\textbf{Сложность:} $O(V!)$ по времени в худшем случае;
-$O(V)$ по памяти (стек рекурсии и текущий путь).
+\textbf{Сложность:} по времени $O(V!)$, по памяти $O(V)$. 

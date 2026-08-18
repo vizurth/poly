@@ -41,7 +41,8 @@ T Generator<T>::generateWeight(WeightType weightType) {
 
 /*
     LOOK: void weibullShuffle(vector<int>& vertices)
-    Перемешиваем вектор вершин с помощью распределения Вейбулла для генерации случайных индексов
+    Перемешиваем вектор вершин с помощью распределения Вейбулла для генерации
+   случайных индексов
 */
 template <typename T>
 void Generator<T>::weibullShuffle(vector<int> &vertices) {
@@ -55,10 +56,10 @@ void Generator<T>::weibullShuffle(vector<int> &vertices) {
 /*
     LOOK: Graph<T> generateGraph()
     Генерируем граф на основе переданных параметров в config
-*/ 
+*/
 template <typename T>
 Graph<T> Generator<T>::generateGraph() {
-	Graph<T>  graph(numVertices);
+	Graph<T> graph(numVertices);
 
 	int maxDeg = max(1, static_cast<int>(log(numVertices)));
 	vector<int> degrees(numVertices);
@@ -80,7 +81,6 @@ Graph<T> Generator<T>::generateGraph() {
 		}
 	}
 
-
 	for (int i = 0; i < numVertices; i++) {
 		int edgesToAdd = degrees[i];
 		vector<int> possibleTargets;
@@ -94,7 +94,8 @@ Graph<T> Generator<T>::generateGraph() {
 		if (!possibleTargets.empty()) {
 			weibullShuffle(possibleTargets);
 
-			for (int k = 0; k < edgesToAdd && k < (int)possibleTargets.size(); k++) {
+			for (int k = 0; k < edgesToAdd && k < (int)possibleTargets.size();
+			     k++) {
 				int target = possibleTargets[k];
 				T weight = generateWeight(weightMode);
 				graph.addEdge(perm[i], perm[target], weight);

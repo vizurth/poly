@@ -43,6 +43,12 @@ for (size_t i = 0; i < odd.size() && !fixed; i++) {
 }
 \end{lstlisting}
 
+\textbf{Сложность:}
+\texttt{makeEulerian}
+На каждой итерации перебираются все пары нечётных вершин~--- $O(V^2)$,
+для каждой пары вызывается \texttt{isBridge} через BFS~--- $O(V^2)$.
+Итераций не более $O(V)$, итого $O(V^5)$ по времени, $O(V^2)$ по памяти.
+
 Метод \texttt{buildCycle()} строит эйлеров цикл алгоритмом Хирхольцера
 на основе стека. Пройденные рёбра обнуляются в рабочей копии матрицы.
 
@@ -58,9 +64,11 @@ while (!S.empty()) {
 reverse(circuit.begin(), circuit.end());
 \end{lstlisting}
 
-\textbf{Сложность:} \texttt{makeEulerian}~-- $O(V^2 \cdot (V + E))$
-(проверка моста через BFS на каждую пару нечётных вершин);
-\texttt{buildCycle}~-- $O(V + E)$ по времени; $O(V + E)$ по памяти.
+\textbf{Сложность:}
+\texttt{buildCycle}
+Каждое ребро обрабатывается ровно один раз, однако поиск следующего
+ребра требует просмотра строки матрицы~--- $O(V)$ на каждый шаг.
+Итого $O(V \cdot E) = O(V^3)$ по времени, $O(V^2)$ по памяти.
 
 \subsubsection{CycleBasis: фундаментальная система циклов}
 
@@ -76,16 +84,57 @@ reverse(circuit.begin(), circuit.end());
 Из этого пути формируется множество рёбер; к нему добавляется хорда~--
 получается фундаментальный цикл $Z_e$.
 
-\begin{lstlisting}[style=cstyle, caption={Построение фундаментального цикла для хорды (cycle\_basis.cpp)}]
-auto path = pathInMST(i, j, mst);
-EdgeSet cycle;
-for (int k = 0; k + 1 < (int)path.size(); k++) {
-    int u = min(path[k], path[k+1]);
-    int v = max(path[k], path[k+1]);
-    cycle.insert({u, v});
+\begin{lstlisting}[style=cstyle, caption={Построение фундаментального цикла и симметрическая разность (cycle\_basis.cpp)}]
+void CycleBasis::compute(const vector<Edge> &mst, const Graph<int> &g) {
+	n = g.getNumVertices();
+	basis.clear();
+
+	vector<vector<bool>> inTree(n, vector<bool>(n, false));
+	for (auto &e : mst) {
+		inTree[e.u][e.v] = true;
+		inTree[e.v][e.u] = true;
+	}
+
+	auto adj = g.getAdjMatrix();
+
+	for (int i = 0; i < n; i++) {
+		for (int j = i + 1; j < n; j++) {
+			if (adj[i][j] == 0 || inTree[i][j]) {
+				continue;
+			}
+
+			auto path = pathInMST(i, j, mst);
+			if (path.empty()) {
+				continue;
+			}
+
+			EdgeSet cycle;
+			for (int k = 0; k + 1 < (int)path.size(); k++) {
+				int u = min(path[k], path[k + 1]);
+				int v = max(path[k], path[k + 1]);
+				cycle.insert({u, v});
+			}
+			cycle.insert({i, j});
+			basis.push_back(cycle);
+		}
+	}
 }
-cycle.insert({i, j});
-basis.push_back(cycle);
+
+EdgeSet CycleBasis::symDiff(const EdgeSet &a, const EdgeSet &b) {
+	EdgeSet result;
+	for (auto &e : a) {
+		if (!b.count(e)) {
+			result.insert(e);
+		}
+	}
+
+	for (auto &e : b) {
+		if (!a.count(e)) {
+			result.insert(e);
+		}
+	}
+	return result;
+}
 \end{lstlisting}
 
 Метод \texttt{interactiveSymDiff()} предлагает пользователю выбрать
@@ -100,7 +149,19 @@ for (size_t i = 1; i < indices.size(); i++)
 \texttt{symDiff(a, b)} возвращает рёбра, входящие ровно в одно из двух
 множеств.
 
-\textbf{Сложность:} построение базиса~-- $O(E \cdot (V + E))$
-(BFS по остову на каждую хорду);
-симметрическая разность~-- $O(E \log E)$ на каждую операцию;
-$O(E)$ по памяти.
+\textbf{Сложность:}
+ \texttt{compute()}
+Внешний двойной цикл перебирает все пары вершин~--- $O(V^2)$.
+Для каждой хорды вызывается \texttt{pathInMST} через BFS по матрице
+остова~--- $O(V^2)$.
+Итого:
+\[
+    O(V^2) \cdot O(V^2) = O(V^4).
+\]
+
+\texttt{symDiff()}
+Два прохода по множествам рёбер размера не более $V$,
+каждый поиск в \texttt{set} стоит $O(\log V)$:
+\[
+    O(V \log V).
+\]

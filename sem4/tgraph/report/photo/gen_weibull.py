@@ -1,10 +1,3 @@
-"""
-Генерация 1000 чисел по распределению Вейбулла той же формулой,
-что используется в C++-реализации:
-    X = a * (-ln(r))^(1/c),  r ~ Uniform(0, 1)
-Параметры из main.cpp: a=10, c=2
-"""
-
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -13,24 +6,19 @@ from math import gamma
 
 np.random.seed(42)
 
-# --- параметры (как в main.cpp) ---
 a = 10.0
 c = 2.0
 N = 1000
 
-# --- генерация (точно как в weibull.cpp) ---
 r = np.random.uniform(0, 1, N)
 samples = a * (-np.log(r)) ** (1.0 / c)
 
-# --- теоретическая PDF ---
 x = np.linspace(0.01, np.max(samples) * 1.05, 500)
 pdf = (c / a) * (x / a) ** (c - 1) * np.exp(-(x / a) ** c)
 
-# --- статистики ---
-mean_theory = a * gamma(1 + 1.0 / c)   # 10 * Gamma(1.5) ≈ 8.86
-mode_theory = a * ((c - 1) / c) ** (1.0 / c)  # 10 * 0.5^0.5 ≈ 7.07
+mean_theory = a * gamma(1 + 1.0 / c) 
+mode_theory = a * ((c - 1) / c) ** (1.0 / c)  # 10 * 0
 
-# --- стиль ---
 plt.rcParams.update({
     'font.family': 'serif',
     'font.size': 11,
