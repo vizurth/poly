@@ -121,3 +121,9 @@ The repository is organized by semesters and courses and may include:
 | 4    | ✅      | ✅    |
 | 5    | ✅      | ✅    |
 | CW   | ✅      | ✅    |
+
+---
+
+## 📝 Semester 5
+
+### Пока хз что тут будет
