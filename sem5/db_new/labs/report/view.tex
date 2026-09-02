@@ -1,0 +1,101 @@
+\section{Представления}
+В данном разделе требудется создать представление по ранее созданной базе данных по предметной области Геомониторинг автопарка каршеринга и выполнить запросы к нему.
+
+\subsection*{Постановка задачи}
+\begin{itemize}
+	\item Создать представление на основе таблиц базы данных по предметной области Геомониторинг автопарка каршеринга.
+	\item Написать и выполнить простой запрос к созданному представлению.
+	\item Написать и выполнить сложный запрос к созданному представлению.
+	\item Проверить право доступа на изменение данных в представлении.
+\end{itemize}
+
+\subsection{Создание представления}
+Для создания представления на основе таблиц базы данных по предметной области Геомониторинг автопарка каршеринга был сформулирован запрос:
+для каждого автомобиля подсчитать количество тревожных событий и число парковочных зон, в которых этот автомобиль парковался.
+
+Запрос для создания представления представлен на листинге~\ref{lst:view}.
+\begin{lstlisting}[style=sqlstyle, caption={Запрос 1.2}, label={lst:view}]
+CREATE VIEW car_stats AS
+SELECT
+	c.car_id,
+	c.reg_number,
+	COUNT(DISTINCT a.alert_event_id) AS alert_count,
+	COUNT(DISTINCT pz.parking_zone_id) AS parking_count
+FROM car c
+LEFT JOIN alert_event a ON c.car_id = a.car_id
+LEFT JOIN parking_session ps ON c.car_id = ps.car_id
+LEFT JOIN parking_zone pz ON ps.parking_zone_id = pz.parking_zone_id
+GROUP BY c.car_id, c.reg_number;
+\end{lstlisting}
+
+\subsection{Выполнение запросов к представлению}
+\subsubsection*{Простой запрос}
+Для выполнения простого запроса к созданному представлению был сформулирован запрос: вывести автомобили, которые парковались более чем в N разных зонах и имеют хотя бы одно тревожное событие.
+
+Запрос для выполнения простого запроса представлен на листинге~\ref{lst:easy_query}.
+\begin{lstlisting}[style=sqlstyle, caption={Запрос 1.2}, label={lst:easy_query}]
+SELECT
+	c.reg_number,
+	c.alert_count,
+	c.parking_count
+FROM
+	car_stats c
+WHERE
+	c.parking_count > 17
+	AND
+	c.alert_count > 1;
+\end{lstlisting}
+
+Результат выполнения простого запроса представлен на листинге~\ref{fig:easy_query_result}. В результате выполнения было выведено 25 автомобилей.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{myPhoto/easy_query_result.jpg}
+    \caption{Результат выполнения простого запроса к представлению}
+    \label{fig:easy_query_result}
+\end{figure}
+
+
+
+\subsubsection*{Сложный запрос}
+Для выполнения сложного запроса к созданному представлению был сформулирован запрос: вывести автомобили, которые парковались менее чем в N разных зонах и имеют необработанные тревожные события заданного типа.
+
+Запрос для выполнения сложного запроса представлен на листинге~\ref{lst:hard_query}.
+\begin{lstlisting}[style=sqlstyle, caption={Запрос 1.2}, label={lst:hard_query}]
+SELECT
+	c.reg_number,
+	c.alert_count
+FROM
+	car_stats c
+LEFT JOIN
+	alert_event a ON c.car_id = a.car_id
+LEFT JOIN
+	alert_event_process_status s ON a.status_id = s.status_id
+LEFT JOIN
+	alert_event_type t ON a.alert_event_type_id = t.alert_event_type_id
+WHERE
+	c.parking_count < 18
+	AND 
+	s.name = 'Новое'
+	AND
+	t.name = 'Потеря связи';
+\end{lstlisting}
+
+Результат выполнения сложного запроса представлен на листинге~\ref{fig:hard_query_result}. В результате выполнения было выведено 20 автомобилей.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\linewidth]{myPhoto/hard_query_result.jpg}
+    \caption{Результат выполнения сложного запроса к представлению}
+    \label{fig:hard_query_result}
+\end{figure}
+
+\newpage
+\subsection{Проверка доступа к представлению}
+
+В созданном представлении был проверен доступ на изменение данных. В данном представлении нельзя было сделать изменения, так как оно было создано при помощь GROUP BY. В качестве подтверждения был выполнен запрос на изменение данных в представлении, который выдал ошибку. Результат выполнения запроса представлен на листинге~\ref{fig:hard_query_result}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{myPhoto/avability.jpg}
+    \caption{Ошибки выдаваемые при попытке изменения данных в представлении}
+    \label{fig:hard_query_result}
+\end{figure}
