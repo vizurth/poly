@@ -1,0 +1,528 @@
+\section{Проектирование}
+
+\subsection{Таблицы с описанием таблиц базы данных}
+
+В таблицах~\ref{tab:employee_type}--\ref{tab:geo_request} представлены атрибуты таблиц базы данных геомониторинга.
+Каждая таблица с описанием содержит колонки: номер по порядку, имя атрибута на русском и английском языках, тип атрибута, при необходимости со значением размера, значение по умолчанию, признак ключа при наличии, для внешнего ключа ссылка на таблицу, примечание.
+
+% Настройка стилей колонок для выравнивания как на картинке
+\newcolumntype{Y}{>{\centering\arraybackslash}X} % Растягиваемая колонка по центру
+\newcolumntype{Z}{>{\raggedright\arraybackslash}X} % Растягиваемая по левому краю (для длинных названий)
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}} % Фиксированная ширина по центру
+
+% --- Таблица 1: employee_type ---
+\begin{table}[H]
+    \caption{Типы сотрудников}
+    \label{tab:employee_type}
+    \footnotesize % Уменьшенный шрифт для вместимости
+    \renewcommand{\arraystretch}{1.3} % Чуть больше отступ между строками
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип сотрудника -- employee\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & тип\_сотрудника\_id & employee\_type\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(30) & - & UQ & - & NOT NULL \\
+        3 & описание & description & TEXT & NULL & - & - & NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название типа сотрудника — VARCHAR(30). Перечень ролей закрытый и фиксированный: «Оператор колл-центра», «Администратор системы», «Сервисный специалист», «Аналитик» — самое длинное значение занимает 21 символа. Выбрано 30 как ближайшая граница выше наблюдаемого максимума.
+
+% --- Таблица 2: employee_status ---
+\begin{table}[H]
+    \caption{Таблица статусов сотрудника}
+    \label{tab:employee_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус сотрудника -- employee\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_id & employee\_status\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(20) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название статуса сотрудника — VARCHAR(20). Перечень статусов закрытый: «Активен», «В отпуске», «Уволен», «Заблокирован» — максимум 12 символов. Любой возможный новый статус, например «На испытании» (13 символов), также укладывается в выбранный предел.
+
+% --- Таблица 3: employee ---
+\begin{table}[H]
+    \caption{Таблица сотрудников}
+    \label{tab:employee}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Сотрудник -- employee}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & сотрудник\_id & employee\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & тип\_сотрудника\_id & employee\_type\_id & INT & - & FK & empl\_type & NOT NULL \\
+        3 & фио & full\_name & VARCHAR(100) & - & - & - & NOT NULL \\
+        4 & логин & login & VARCHAR(30) & - & UQ & - & NOT NULL \\
+        5 & статус\_id & employee\_status\_id & INT & - & FK & employee\_status & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: ФИО — VARCHAR(100). Согласно Приказу ФМС России \\ от 30.06.2011 №~279 «Об утверждении Правил и способа формирования машиночитаемой записи в паспорте гражданина Российской Федерации», верхняя строка машиночитаемой записи отводит под ФИО 39 символов — это аппаратное ограничение физического бланка паспорта. Поскольку в системе ФИО хранится одной строкой в кириллице, а не в транслитерации, реальная длина оказывается больше: с учётом двойных фамилий и длинных отчеств она может достигать 60--70 символов. Выбрано 100 с запасом. Логин — VARCHAR(30). Логин является произвольной строкой для входа в систему. Выбрано 30 как разумный предел, исключающий избыточно длинные значения.
+
+% --- Таблица 4: parking_zone ---
+\begin{table}[H]
+    \caption{Таблица зон парковки}
+    \label{tab:parking_zone}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Зона парковки -- parking\_zone}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & зона\_парковки\_id & parking\_zone\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(60) & - & - & - & NOT NULL \\
+        3 & тип\_зоны\_id & zone\_type\_id & INT & - & FK & zone\_typ & NOT NULL \\
+        4 & район\_города & city\_district & VARCHAR(50) & - & - & - & NOT NULL \\
+        5 & макс\_авто & max\_cars & INT & - & - & - & NOT NULL \\
+        6 & статус\_зоны\_id & zone\_status\_id & INT & - & FK & zone\_st & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название зоны — VARCHAR(60). Зоны получают описательные имена вроде «ТЦ Галерея — северный въезд» (29 символов) или «Площадь Восстания — восточная сторона» (38 символов). Выбрано 60 как граница, перекрывающая самые длинные реальные описания. Район города — VARCHAR(50): административные округа Москвы имеют официальные полные названия длиной до 38 символов — например «Северо-Восточный административный округ» (38 символов) и «Юго-Восточный административный округ» (36 символов). Выбрано 50 как граница, перекрывающая самые длинные реальные названия районов с небольшим запасом.
+
+% --- Таблица 5: parking_zone_type ---
+\begin{table}[H]
+    \caption{Справочник типов зон парковки}
+    \label{tab:parking_zone_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип зоны парковки -- parking\_zone\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & тип\_зоны\_id & zone\_type\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(20) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название типа зоны — VARCHAR(20). Текущие значения: «Бесплатная», «Платная», «Запрещённая» — максимум 11 символов. Перечень типов короткий и устоявшийся, новые значения вряд ли будут длиннее. Выбрано 20 как ближайшая граница выше наблюдаемого максимума.
+
+% --- Таблица 6: parking_zone_status ---
+\begin{table}[H]
+    \caption{Справочник статусов зоны парковки}
+    \label{tab:parking_zone_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус зоны парковки -- parking\_zone\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_зоны\_id & zone\_status\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(25) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название статуса зоны — VARCHAR(25). Текущие значения: «Активна», «Временно закрыта», «Недоступна» — максимум 16 символов. Выбрано 25 как ближайшая граница выше наблюдаемого максимума.
+
+% --- Таблица 7: parking_zone_point ---
+\begin{table}[H]
+    \caption{Таблица координат зон парковки}
+    \label{tab:parking_zone_point}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Координаты зоны парковки -- parking\_zone\_point}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & координаты\_зоны\_id & parking\_zone\_point\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & зона\_парковки\_id & parking\_zone\_id & INT & - & FK & park\_zone & NOT NULL \\
+        3 & номер\_вершины & vertex\_number & INT & - & - & - & NOT NULL \\
+        4 & широта & latitude & NUMERIC(8, 5)& - & - & - & NOT NULL \\
+        5 & долгота & longitude & NUMERIC(8, 5)& - & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 8: car ---
+\begin{table}[H]
+    \caption{Таблица автомобилей}
+    \label{tab:car}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Автомобиль -- car}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & авто\_id & car\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & гос\_номер & reg\_number & VARCHAR(9) & - & UQ & - & NOT NULL \\
+        3 & марка & brand & VARCHAR(50) & - & - & - & NOT NULL \\
+        4 & модель & model & VARCHAR(70) & - & - & - & NOT NULL \\
+        5 & год\_выпуска & manufacture\_year & INT & - & - & - & NOT NULL \\
+        6 & vin\_номер & vin & VARCHAR(17) & - & UQ & - & NOT NULL \\
+        7 & статус\_id & car\_status\_id & INT & - & FK & car\_status & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: гос. номер — VARCHAR(9). По ГОСТ Р 50577--2018 стандартный российский знак имеет формат «А000АА 777» — 9 символов с учётом пробела перед кодом региона. Выбрано 9 с запасом на возможные новые форматы. VIN — VARCHAR(17): стандарт ISO 3779 жёстко фиксирует длину идентификатора ровно в 17 символов. Марка — VARCHAR(50): названия марок автомобилей, присутствующих в российском автопарке, короткие: «BMW» (3), «Volkswagen» (10), «Mercedes-Benz» (13), «Great Wall Motors» (16) — реальный максимум не превышает 20 символов. Выбрано 50 с запасом. Модель — VARCHAR(70): обозначение модели с индексом кузова и модификации обычно не превышает 30 символов, например «Transporter T6.1 2.0 TDI» (24 символа). Встречаются и длинные наименования — «AS55K YAAS EDITION Abu Dhabi Sheikh Sultan Bin Rashed Al Nahyan» (63 символа). Выбрано 70 с запасом.
+
+% --- Таблица 9: car_status ---
+\begin{table}[H]
+    \caption{Таблица статусов автомобиля}
+    \label{tab:car_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус автомобиля -- car\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_id & car\_status\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(25) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название статуса автомобиля — VARCHAR(25). Текущие значения: «Свободен», «В аренде», «На обслуживании», «Неисправен» — максимум 15 символов. Выбрано 25 как ближайшая граница выше наблюдаемого максимума.
+
+% --- Таблица 10: parking_session ---
+\begin{table}[H]
+    \caption{Таблица парковочных сессий}
+    \label{tab:parking_session}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Парковочная сессия -- parking\_session}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & сессия\_id & parking\_session\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
+        3 & зона\_парковки\_id & parking\_zone\_id & INT & - & FK & park\_zone & NOT NULL \\
+        4 & время\_въезда & entry\_time & TIMESTAMP & - & - & - & NOT NULL \\
+        5 & время\_выезда & exit\_time & TIMESTAMP & NULL & - & - & NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 11: track ---
+\begin{table}[H]
+    \caption{Таблица треков движения}
+    \label{tab:movement_track}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Трек движения -- track}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & трек\_id & track\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
+        3 & время\_начала & start\_time & TIMESTAMP & - & - & - & NOT NULL \\
+        4 & время\_конца & end\_time & TIMESTAMP & NULL & - & - & NULL \\
+        5 & статус\_трека\_id & track\_status\_id & INT & - & FK & track\_status\_type & NOT NULL \\
+        6 & вид\_трека\_id & track\_kind\_id & INT & - & FK & track\_kind\_type & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 12: track_status_type ---
+\begin{table}[H]
+    \caption{Таблица типов статусов трека}
+    \label{tab:track_status_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип статуса трека -- track\_status\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_трека\_id & track\_status\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(20) & - & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название статуса трека — VARCHAR(20). Это технический статус записи: «Активный», «Завершён», «Архивный» — максимум 8 символов. Выбрано 20 как граница, при которой можно добавить новый статус, например «В обработке» (12 символов), без изменения схемы.
+
+% --- Таблица 13: track_kind_type ---
+\begin{table}[H]
+    \caption{Таблица типов видов трека}
+    \label{tab:track_kind_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип вида трека -- track\_kind\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & вид\_трека\_id & track\_kind\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(25) & - & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название вида трека — VARCHAR(25). Текущие значения: «Пользовательский» (16 символов), «Сервисный» (9 символов) — максимум 16 символов. Выбрано 25 как ближайшая граница выше максимума.
+
+% --- Таблица 14: track_point ---
+\begin{table}[H]
+    \caption{Таблица точек трека движения}
+    \label{tab:track_point}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Координаты точки трека -- track\_point}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & id\_точки & track\_point\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & id\_трека & track\_id & INT & - & FK & mov\_track & NOT NULL \\
+        3 & id\_авто & car\_id & INT & - & FK & car & NULL \\
+        4 & широта & latitude & NUMERIC(8, 5)& - & - & - & NOT NULL \\
+        5 & долгота & longitude & NUMERIC(8, 5)& - & - & - & NOT NULL \\
+        6 & скорость & speed\_kmh & NUMERIC(5, 2) & NULL & - & - & NULL \\
+        7 & источник\_id & data\_source\_id & INT & - & FK & data\_source\_type & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 15: data_source_type ---
+\begin{table}[H]
+    \caption{Таблица источников данных}
+    \label{tab:data_source_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Источник данных -- data\_source\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & источник\_id & data\_source\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(25) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название источника данных — VARCHAR(25). Перечень источников технически закрытый: GPS, ГЛОНАСС, инерциальная навигация и их комбинации. Самое длинное значение «Инерциальная система» — 20 символов. Выбрано 25 как граница вплотную к максимуму.
+
+% --- Таблица 16: alert_event ---
+\begin{table}[H]
+    \caption{Таблица тревожных событий}
+    \label{tab:alert_event}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тревожное событие -- alert\_event}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & событие\_id & alert\_event\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
+        3 & сотрудник\_id & employee\_id & INT & NULL & FK & employee & NULL \\
+        4 & тип\_события\_id & alert\_event\_type\_id & INT & - & FK & alert\_event\_type & NOT NULL \\
+        5 & широта & latitude & NUMERIC(8, 5)& NULL & - & - & NULL \\
+        6 & долгота & longitude & NUMERIC(8, 5)& NULL & - & - & NULL \\
+        7 & описание & description & TEXT & NULL & - & - & NULL \\
+        8 & статус\_id & status\_id & INT & - & FK & event\_process\_status & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 17: alert_event_process_status ---
+\begin{table}[H]
+    \caption{Таблица статусов обработки события}
+    \label{tab:alert_event_process_status}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статус обработки события -- alert\_event\_process\_status}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & статус\_id & status\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название & name & VARCHAR(20) & - & UQ & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название статуса обработки события — VARCHAR(20). Жизненный цикл события — фиксированный: «Новое», «В работе», «Закрыто» — максимум 8 символов. Выбрано 20 с запасом на детализацию, например «Передано диспетчеру» (19 символов).
+
+% --- Таблица 18: alert_event_type ---
+\begin{table}[H]
+    \caption{Таблица типов тревожных событий}
+    \label{tab:alert_event_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип тревожного события -- alert\_event\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & тип\_события\_id & alert\_event\_type\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(25) & - & UQ & - & NOT NULL \\
+        3 & описание & description & TEXT & - & - & - & NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название типа тревожного события — VARCHAR(25). Текущие значения: «Потеря связи», «Превышение скорости», «Резкое торможение», «Удар», «Попытка угона», «Выезд за границу» — максимум 19 символов. Названия типов событий должны оставаться краткими метками, поэтому выбрано 25.
+
+% --- Таблица 19: geo_request ---
+\begin{table}[H]
+    \caption{Таблица обращений}
+    \label{tab:geo_request}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Обращение к геомониторингу -- geo\_request}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & запрос\_id & geo\_request\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & сотрудник\_id & employee\_id & INT & - & FK & employee & NOT NULL \\
+        3 & авто\_id & car\_id & INT & - & FK & car & NOT NULL \\
+        4 & тип\_запроса\_id & geo\_request\_type\_id & INT & - & FK & geo\_request\_type & NOT NULL \\
+        5 & цель\_запроса & request\_goal & TEXT & - & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+% --- Таблица 20: geo_request_type ---
+\begin{table}[H]
+    \caption{Таблица типов обращения к геомониторингу}
+    \label{tab:geo_request_type}
+    \footnotesize
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Тип обращения к геомониторингу -- geo\_request\_type}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & тип\_запрос\_id & geo\_request\_type\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & название\_типа & name & VARCHAR(25) & - & UQ & - & NOT NULL \\
+        3 & описание & description & TEXT & - & - & - & NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\noindent Обоснование: название типа обращения к геомониторингу — VARCHAR(25). Текущие значения: «Текущие координаты» (18 символов), «История событий» (16 символов) — максимум 18 символов. Выбрано 25 как граница вплотную к максимуму.
+
+\subsection{Лингвистическое описание схемы базы данных}
+
+\begin{enumerate}
+    \item Тип сотрудника (тип\_сотрудника\_id(SERIAL), название\_типа(VARCHAR(30)), описание(TEXT)).
+    \item Статус сотрудника (статус\_id(SERIAL), название(VARCHAR(20))).
+    \item Сотрудник (сотрудник\_id(SERIAL), тип\_сотрудника\_id(INT), фио(VARCHAR(100)), логин(VARCHAR(30)), статус\_id(INT)).
+
+    \item Тип зоны парковки (тип\_зоны\_id(SERIAL), название(VARCHAR(20))).
+    \item Статус зоны парковки (статус\_зоны\_id(SERIAL), название(VARCHAR(25))).
+    \item Зона парковки (зона\_парковки\_id(SERIAL), название(VARCHAR(60)), тип\_зоны\_id(INT), район\_города(VARCHAR(50)), макс\_авто(INT), статус\_зоны\_id(INT)).
+    \item Координаты зоны парковки (координаты\_зоны\_id(SERIAL), зона\_парковки\_id(INT), номер\_вершины(INT), широта(NUMERIC(8, 5)), долгота(NUMERIC(8, 5))).
+
+    \item Статус автомобиля (статус\_id(SERIAL), название(VARCHAR(25))).
+    \item Автомобиль (авто\_id(SERIAL), гос\_номер(VARCHAR(9)), марка(VARCHAR(50)), модель(VARCHAR(70)), год\_выпуска(INT), vin\_номер(VARCHAR(17)), статус\_id(INT)).
+    \item Парковочная сессия (сессия\_id(SERIAL), авто\_id(INT), зона\_парковки\_id(INT), время\_въезда(TIMESTAMP), время\_выезда(TIMESTAMP)).
+
+    \item Тип статуса трека (статус\_трека\_id(SERIAL), название\_типа(VARCHAR(20))).
+    \item Тип вида трека (вид\_трека\_id(SERIAL), название\_типа(VARCHAR(25))).
+    \item Трек движения (трек\_id(SERIAL), авто\_id(INT), время\_начала(TIMESTAMP), время\_конца(TIMESTAMP), статус\_трека\_id(INT), вид\_трека\_id(INT)).
+    \item Источник данных (источник\_id(SERIAL), название(VARCHAR(25))).
+    \item Координаты точки трека (id\_точки(SERIAL), id\_трека(INT), id\_авто(INT), широта(NUMERIC(8, 5)), долгота(NUMERIC(8, 5)), скорость(NUMERIC(5, 2), источник\_id(INT)).
+
+    \item Тип тревожного события (тип\_события\_id(SERIAL), название\_типа(VARCHAR(25)), описание(TEXT)).
+    \item Статус обработки события (статус\_id(SERIAL), название(VARCHAR(20))).
+    \item Тревожное событие (событие\_id(SERIAL), авто\_id(INT), сотрудник\_id(INT), тип\_события\_id(INT), широта(NUMERIC(8, 5)), долгота(NUMERIC(8, 5)), описание(TEXT), статус\_id(INT)).
+
+    \item Тип обращения к геомониторингу (тип\_запрос\_id(SERIAL), название\_типа(VARCHAR(25)), описание(TEXT)).
+    \item Обращение к геомониторингу (запрос\_id(SERIAL), сотрудник\_id(INT), авто\_id(INT), тип\_запроса\_id(INT), цель\_запроса(TEXT)).
+\end{enumerate}
+
+\clearpage
+\newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
+\begin{landscape}
+  \thispagestyle{empty}
+  \captionsetup{font=small,skip=4pt}
+
+  \begin{figure}[!p]
+    \centering
+\includegraphics[width=\linewidth,height=\dimexpr\textheight-4\baselineskip\relax,keepaspectratio]{myPhoto/db-russia.png}
+    \caption{Графическое описание схемы базы данных на русском языке}
+    \label{fig:db-russia}
+  \end{figure}
+\end{landscape}
+
+\restoregeometry
+\clearpage
+
+\clearpage
+\newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
+\begin{landscape}
+  \thispagestyle{empty}
+  \captionsetup{font=small,skip=4pt}
+
+  \begin{figure}[!p]
+    \centering
+\includegraphics[width=\linewidth,height=\dimexpr\textheight-4\baselineskip\relax,keepaspectratio]{myPhoto/db-english.png}
+    \caption{Графическое описание схемы базы данных на английском языке}
+    \label{fig:db-english}
+  \end{figure}
+\end{landscape}
+
+\restoregeometry
+\clearpage
+
+\clearpage
+\newgeometry{paperwidth=430mm,paperheight=297mm,margin=-2mm}
+\begin{landscape}
+  \thispagestyle{empty}
+  \captionsetup{font=small,skip=4pt}
+
+  \begin{figure}[!p]
+    \centering
+\includegraphics[width=\linewidth,height=\dimexpr\textheight-4\baselineskip\relax,keepaspectratio]{myPhoto/levels.png}
+    \caption{Cхема заполнения базы данных}
+    \label{fig:db-levels}
+  \end{figure}
+\end{landscape}
+
+\restoregeometry
+\clearpage
+
+\subsection{Исходный текст программы генерации схемы базы данных}
+
+База данных создана средствами СУБД PostgreSQL с использованием SQL-скриптов, приведенных в \hyperref[app:A]{приложении A} (схема на рис. 3).
+
+\subsection{Исходный текст программы заполнения базы данных}
+База данных заполнена тестовыми данными с помощью модуля pgx, на языке Golang. Исходный код генератора тестовых данных приведён в \hyperref[app:B]{приложении B} (схема на рис. 4).
+
+\newpage

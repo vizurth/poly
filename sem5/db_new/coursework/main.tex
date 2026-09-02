@@ -1,0 +1,26 @@
+% !TEX program = xelatex
+% !TEX options = -interaction=nonstopmode -synctex=1 "%DOC%"
+
+\documentclass[a4paper, final]{article}
+\input{settings}
+
+\begin{document}
+
+ 	\includepdf[pages=-]{myPhoto/title.pdf}
+
+	\include{referat}
+
+    \tableofcontents
+    \newpage
+
+    \include{intro}
+    \include{tasks} 
+    \include{analisys}
+	\include{project}
+	\includepdf[pages=-]{myPhoto/req.pdf}
+	\include{prog}
+    \include{result}
+    \include{literature}
+	\include{prilog}
+
+\end{document}

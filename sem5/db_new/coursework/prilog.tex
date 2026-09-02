@@ -1,0 +1,1471 @@
+
+\addcontentsline{toc}{section}{Приложение А}
+\section*{Приложение A «Исходный код программы генерации схемы базы данных»}\label{app:A}
+
+\begin{lstlisting}[style=sqlstyle, caption={SQL-скрипт для создания схемы базы данных}, label={lst:schema}]
+CREATE TABLE employee_type (
+    employee_type_id   SERIAL PRIMARY KEY,
+    name               VARCHAR(30) NOT NULL UNIQUE,
+    description        TEXT
+);
+
+CREATE TABLE employee_status (
+    employee_status_id SERIAL PRIMARY KEY,
+    name               VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE employee (
+    employee_id        SERIAL PRIMARY KEY,
+    employee_type_id   INT NOT NULL REFERENCES employee_type(employee_type_id),
+    full_name          VARCHAR(100) NOT NULL,
+    login              VARCHAR(30) NOT NULL UNIQUE,
+    employee_status_id INT NOT NULL REFERENCES employee_status(employee_status_id)
+);
+
+CREATE TABLE parking_zone_type (
+    zone_type_id       SERIAL PRIMARY KEY,
+    name               VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE parking_zone_status (
+    zone_status_id     SERIAL PRIMARY KEY,
+    name               VARCHAR(25) NOT NULL UNIQUE
+);
+
+CREATE TABLE parking_zone (
+    parking_zone_id    SERIAL PRIMARY KEY,
+    name               VARCHAR(60) NOT NULL,
+    zone_type_id       INT NOT NULL REFERENCES parking_zone_type(zone_type_id),
+    city_district      VARCHAR(50) NOT NULL,
+    max_cars           INT      NOT NULL,
+    zone_status_id     INT NOT NULL REFERENCES parking_zone_status(zone_status_id)
+);
+
+CREATE TABLE parking_zone_point (
+    parking_zone_point_id SERIAL PRIMARY KEY,
+    parking_zone_id       INT NOT NULL REFERENCES parking_zone(parking_zone_id) ON DELETE CASCADE,
+    vertex_number         INT NOT NULL,
+    latitude              NUMERIC(8, 5) NOT NULL,
+    longitude             NUMERIC(8, 5) NOT NULL,
+    UNIQUE (parking_zone_id, vertex_number)
+);
+
+CREATE TABLE car_status (
+    car_status_id      SERIAL PRIMARY KEY,
+    name               VARCHAR(25) NOT NULL UNIQUE
+);
+
+CREATE TABLE car (
+    car_id             SERIAL PRIMARY KEY,
+    reg_number         VARCHAR(20)  NOT NULL UNIQUE,
+    brand              VARCHAR(50)  NOT NULL,
+    model              VARCHAR(70)  NOT NULL,
+    manufacture_year   INT      NOT NULL,
+    vin                VARCHAR(17)  NOT NULL UNIQUE,
+    car_status_id      INT NOT NULL REFERENCES car_status(car_status_id)
+);
+
+CREATE TABLE parking_session (
+    parking_session_id SERIAL PRIMARY KEY,
+    car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
+    parking_zone_id    INT NOT NULL REFERENCES parking_zone(parking_zone_id) ON DELETE CASCADE,
+    entry_time         TIMESTAMP NOT NULL,
+    exit_time          TIMESTAMP
+);
+
+CREATE TABLE track_status_type (
+    track_status_id    SERIAL PRIMARY KEY,
+    name               VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE track_kind_type (
+    track_kind_id      SERIAL PRIMARY KEY,
+    name               VARCHAR(25) NOT NULL UNIQUE
+);
+
+CREATE TABLE data_source_type (
+    data_source_id     SERIAL PRIMARY KEY,
+    name               VARCHAR(25) NOT NULL UNIQUE
+);
+
+CREATE TABLE track (
+    track_id           SERIAL PRIMARY KEY,
+    car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
+    start_time         TIMESTAMP NOT NULL,
+    end_time           TIMESTAMP,
+    track_status_id    INT NOT NULL REFERENCES track_status_type(track_status_id),
+    track_kind_id      INT NOT NULL REFERENCES track_kind_type(track_kind_id)
+);
+
+CREATE TABLE track_point (
+    track_point_id     SERIAL PRIMARY KEY,
+    track_id           INT REFERENCES track(track_id) ON DELETE CASCADE,
+    car_id             INT REFERENCES car(car_id) ON DELETE CASCADE,
+    latitude           NUMERIC(8, 5) NOT NULL,
+    longitude          NUMERIC(8, 5) NOT NULL,
+    speed_kmh          NUMERIC(5, 2),
+    data_source_id     INT NOT NULL REFERENCES data_source_type(data_source_id)
+);
+
+CREATE TABLE alert_event_type (
+    alert_event_type_id SERIAL PRIMARY KEY,
+    name               VARCHAR(25) NOT NULL UNIQUE,
+    description        TEXT
+);
+
+CREATE TABLE alert_event_process_status (
+    status_id          SERIAL PRIMARY KEY,
+    name               VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE alert_event (
+    alert_event_id     SERIAL PRIMARY KEY,
+    car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE CASCADE,
+    employee_id        INT REFERENCES employee(employee_id),
+    alert_event_type_id INT NOT NULL REFERENCES alert_event_type(alert_event_type_id),
+    latitude           NUMERIC(8, 5),
+    longitude          NUMERIC(8, 5),
+    description        TEXT,
+    status_id          INT NOT NULL REFERENCES alert_event_process_status(status_id)
+);
+
+CREATE TABLE geo_request_type (
+    geo_request_type_id SERIAL PRIMARY KEY,
+    name               VARCHAR(25) NOT NULL UNIQUE,
+    description        TEXT
+);
+
+CREATE TABLE geo_request (
+    geo_request_id     SERIAL PRIMARY KEY,
+    employee_id        INT NOT NULL REFERENCES employee(employee_id),
+    car_id             INT NOT NULL REFERENCES car(car_id),
+    geo_request_type_id INT NOT NULL REFERENCES geo_request_type(geo_request_type_id),
+    request_goal       TEXT NOT NULL
+);
+
+
+\end{lstlisting}
+
+\begin{lstlisting}[style=sqlstyle, caption={SQL-скрипт для создания индексов}, label={lst:schema}]
+-- employee
+CREATE INDEX IF NOT EXISTS idx_employee_employee_type_id
+  	ON employee(employee_type_id);
+
+CREATE INDEX IF NOT EXISTS idx_employee_employee_status_id
+  	ON employee(employee_status_id);
+
+-- parking_zone
+CREATE INDEX IF NOT EXISTS idx_parking_zone_zone_type_id
+  	ON parking_zone(zone_type_id);
+
+CREATE INDEX IF NOT EXISTS idx_parking_zone_zone_status_id
+  	ON parking_zone(zone_status_id);
+
+-- parking_zone_point
+CREATE INDEX IF NOT EXISTS idx_parking_zone_point_parking_zone_id
+  	ON parking_zone_point(parking_zone_id);
+
+-- car
+CREATE INDEX IF NOT EXISTS idx_car_car_status_id
+  	ON car(car_status_id);
+
+-- parking_session
+CREATE INDEX IF NOT EXISTS idx_parking_session_car_id
+  	ON parking_session(car_id);
+
+CREATE INDEX IF NOT EXISTS idx_parking_session_parking_zone_id
+  	ON parking_session(parking_zone_id);
+
+-- track
+CREATE INDEX IF NOT EXISTS idx_track_car_id
+  	ON track(car_id);
+
+CREATE INDEX IF NOT EXISTS idx_track_track_status_id
+  	ON track(track_status_id);
+
+CREATE INDEX IF NOT EXISTS idx_track_track_kind_id
+  	ON track(track_kind_id);
+
+-- track_point
+CREATE INDEX IF NOT EXISTS idx_track_point_track_id
+  	ON track_point(track_id);
+
+CREATE INDEX IF NOT EXISTS idx_track_point_car_id
+  	ON track_point(car_id);
+
+CREATE INDEX IF NOT EXISTS idx_track_point_data_source_id
+  	ON track_point(data_source_id);
+
+-- alert_event
+CREATE INDEX IF NOT EXISTS idx_alert_event_car_id
+  	ON alert_event(car_id);
+
+CREATE INDEX IF NOT EXISTS idx_alert_event_employee_id
+  	ON alert_event(employee_id);
+
+CREATE INDEX IF NOT EXISTS idx_alert_event_alert_event_type_id
+  	ON alert_event(alert_event_type_id);
+
+CREATE INDEX IF NOT EXISTS idx_alert_event_status_id
+  	ON alert_event(status_id);
+
+-- geo_request
+CREATE INDEX IF NOT EXISTS idx_geo_request_employee_id
+	ON geo_request(employee_id);
+
+CREATE INDEX IF NOT EXISTS idx_geo_request_car_id
+  	ON geo_request(car_id);
+
+CREATE INDEX IF NOT EXISTS idx_geo_request_geo_request_type_id
+  	ON geo_request(geo_request_type_id);
+
+-- DROP индексов
+DROP INDEX IF EXISTS idx_employee_employee_type_id;
+DROP INDEX IF EXISTS idx_employee_employee_status_id;
+
+DROP INDEX IF EXISTS idx_parking_zone_zone_type_id;
+DROP INDEX IF EXISTS idx_parking_zone_zone_status_id;
+
+DROP INDEX IF EXISTS idx_parking_zone_point_parking_zone_id;
+
+DROP INDEX IF EXISTS idx_car_car_status_id;
+
+DROP INDEX IF EXISTS idx_parking_session_car_id;
+DROP INDEX IF EXISTS idx_parking_session_parking_zone_id;
+
+DROP INDEX IF EXISTS idx_track_car_id;
+DROP INDEX IF EXISTS idx_track_track_status_id;
+DROP INDEX IF EXISTS idx_track_track_kind_id;
+
+DROP INDEX IF EXISTS idx_track_point_track_id;
+DROP INDEX IF EXISTS idx_track_point_car_id;
+DROP INDEX IF EXISTS idx_track_point_data_source_id;
+
+DROP INDEX IF EXISTS idx_alert_event_car_id;
+DROP INDEX IF EXISTS idx_alert_event_employee_id;
+DROP INDEX IF EXISTS idx_alert_event_alert_event_type_id;
+DROP INDEX IF EXISTS idx_alert_event_status_id;
+
+DROP INDEX IF EXISTS idx_geo_request_employee_id;
+DROP INDEX IF EXISTS idx_geo_request_car_id;
+DROP INDEX IF EXISTS idx_geo_request_geo_request_type_id;
+\end{lstlisting}
+
+\newpage
+
+\addcontentsline{toc}{section}{Приложение Б}
+\section*{Приложение Б «Исходный код программы заполнения базы данных тестовыми данными»}\label{app:B}
+
+\begin{lstlisting}[style=gostyle, caption={Точка входа программы (cmd/seeder/main.go)}, label={lst:goMain}]
+package main
+
+import (
+	"context"
+	"db_generation/internal/config"
+	"db_generation/internal/logger"
+	"db_generation/internal/postgres"
+	"db_generation/internal/seeder"
+	"sort"
+	"time"
+
+	"go.uber.org/zap"
+)
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
+	defer cancel()
+
+	ctx, err := logger.New(ctx)
+	if err != nil {
+		panic("failed to create logger")
+	}
+
+	log, err := logger.GetLoggerFromCtx(ctx)
+	if err != nil {
+		panic("failed to create logger")
+	}
+
+	cfg, err := config.New()
+	if err != nil {
+		log.Fatal(ctx, "failed to parse config")
+	}
+
+	pool, err := postgres.New(ctx, cfg.Postgres)
+	if err != nil {
+		log.Fatal(ctx, "failed to create postgres pool")
+	}
+	defer pool.Close()
+
+	if err := postgres.Migrate(ctx, cfg.Postgres); err != nil {
+		log.Fatal(ctx, "failed to run migrations")
+	}
+
+	log.Info(ctx, "db migration success")
+
+	report, err := seeder.SeedWithReport(ctx, pool, seeder.DefaultConfig())
+	if err != nil {
+		log.Fatal(ctx, "failed to seed database", zap.Error(err))
+	}
+
+	tables := make([]string, 0, len(report.TableCounts))
+	for table := range report.TableCounts {
+		tables = append(tables, table)
+	}
+	sort.Strings(tables)
+
+	for _, table := range tables {
+		log.Info(ctx, "seed report", zap.String("table", table), zap.Int("count", report.TableCounts[table]))
+	}
+	log.Info(ctx, "seed report total", zap.Int("total_rows", report.TotalRows))
+
+	log.Info(ctx, "db generation completed successfully")
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Загрузка конфигурации (internal/config/config.go)}, label={lst:goConfig}]
+package config
+
+import (
+	"db_generation/internal/postgres"
+	"fmt"
+	"os"
+
+	"github.com/ilyakaznacheev/cleanenv"
+)
+
+type Config struct {
+	Postgres  postgres.Config `yaml:"postgres"`
+}
+
+func New() (*Config, error) {
+	var cfg Config
+
+	configPaths := []string{
+		"./configs/configs.yaml",
+		"./configs/config.yaml",
+		"configs/configs.yaml",
+		"configs/config.yaml",
+		"../configs/configs.yaml",
+		"../configs/config.yaml",
+		"../../configs/configs.yaml",
+		"../../configs/config.yaml",
+	}
+
+	var configPath string
+	for _, path := range configPaths {
+		if _, err := os.Stat(path); err == nil {
+			configPath = path
+			break
+		}
+	}
+
+	if configPath == "" {
+		return &Config{}, fmt.Errorf("config file not found")
+	}
+
+	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
+		return &Config{}, fmt.Errorf("error reading config: %w", err)
+	}
+
+	return &cfg, nil
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Обёртка логгера (internal/logger/logger.go)}, label={lst:goLogger}]
+package logger
+
+import (
+	"context"
+	"fmt"
+
+	"go.uber.org/zap"
+)
+
+type key string
+
+const (
+	KeyForLogger    key = "logger"
+	KeyForRequestID key = "requestID"
+)
+
+type Logger struct {
+	l *zap.Logger
+}
+
+func New(ctx context.Context) (context.Context, error) {
+	l, err := zap.NewProduction()
+	if err != nil {
+		return ctx, fmt.Errorf("failed to create logger: %w", err)
+	}
+	wrapped := &Logger{l: l}
+	ctx = context.WithValue(ctx, KeyForLogger, wrapped)
+	return ctx, nil
+}
+
+func GetLoggerFromCtx(ctx context.Context) (*Logger, error) {
+	if l, ok := ctx.Value(KeyForLogger).(*Logger); ok {
+		return l, nil
+	}
+	return nil, fmt.Errorf("logger not found in context")
+}
+
+func (l *Logger) Debug(ctx context.Context, msg string, fields ...zap.Field) {
+	if ctx.Value(KeyForRequestID) != nil {
+		fields = append(fields, zap.String(string(KeyForRequestID), ctx.Value(KeyForRequestID).(string)))
+	}
+	l.l.Debug(msg, fields...)
+}
+
+func (l *Logger) Info(ctx context.Context, msg string, fields ...zap.Field) {
+	if ctx.Value(KeyForRequestID) != nil {
+		fields = append(fields, zap.String(string(KeyForRequestID), ctx.Value(KeyForRequestID).(string)))
+	}
+	l.l.Info(msg, fields...)
+}
+
+func (l *Logger) Warn(ctx context.Context, msg string, fields ...zap.Field) {
+	if ctx.Value(KeyForRequestID) != nil {
+		fields = append(fields, zap.String(string(KeyForRequestID), ctx.Value(KeyForRequestID).(string)))
+	}
+	l.l.Warn(msg, fields...)
+}
+
+func (l *Logger) Error(ctx context.Context, msg string, fields ...zap.Field) {
+	if ctx.Value(KeyForRequestID) != nil {
+		fields = append(fields, zap.String(string(KeyForRequestID), ctx.Value(KeyForRequestID).(string)))
+	}
+	l.l.Error(msg, fields...)
+}
+
+func (l *Logger) Fatal(ctx context.Context, msg string, fields ...zap.Field) {
+	if ctx.Value(KeyForRequestID) != nil {
+		fields = append(fields, zap.String(string(KeyForRequestID), ctx.Value(KeyForRequestID).(string)))
+	}
+	l.l.Fatal(msg, fields...)
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Подключение к PostgreSQL и миграции (internal/postgres/postgres.go)}, label={lst:goPostgres}]
+package postgres
+
+import (
+	"context"
+	"db_generation/internal/logger"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Config struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Database string `yaml:"database"`
+	MaxConns int32  `yaml:"max_conns" env:"MAX_CONNS" env-default:"10"`
+	MinConns int32  `yaml:"min_conns" env:"MIN_CONNS" env-default:"5"`
+}
+
+func New(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
+	poolCfg, err := pgxpool.ParseConfig(cfg.GetConnString())
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse postgres config: %w", err)
+	}
+
+	poolCfg.MaxConns = cfg.MaxConns
+	poolCfg.MinConns = cfg.MinConns
+	poolCfg.MaxConnLifetime = 30 * time.Minute
+	poolCfg.MaxConnIdleTime = 5 * time.Minute
+	poolCfg.HealthCheckPeriod = 1 * time.Minute
+
+	pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
+	}
+
+	return pool, nil
+}
+
+func Migrate(ctx context.Context, cfg Config) error {
+	connString := cfg.GetConnString()
+	log, err := logger.GetLoggerFromCtx(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get logger from context: %w", err)
+	}
+
+	migrationPaths := []string{
+		"migrations",
+		"./migrations",
+		"../migrations",
+		"../../migrations",
+	}
+
+	var migrationPath string
+	for _, path := range migrationPaths {
+		if info, err := os.Stat(path); err == nil && info.IsDir() {
+			migrationPath, _ = filepath.Abs(path)
+			break
+		}
+	}
+
+	if migrationPath == "" {
+		return fmt.Errorf("migrations directory not found")
+	}
+
+	m, err := migrate.New("file://"+migrationPath, connString)
+	if err != nil {
+		return fmt.Errorf("failed to create migration instance: %w", err)
+	}
+
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("failed to run migrations: %w", err)
+	}
+
+	log.Info(ctx, "migrations applied successfully")
+	return nil
+}
+
+func (c *Config) GetConnString() string {
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		c.Username,
+		c.Password,
+		c.Host,
+		c.Port,
+		c.Database,
+	)
+	return connString
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Типы данных сидера (internal/seeder/types.go)}, label={lst:goTypes}]
+package seeder
+
+import "time"
+
+type Config struct {
+	Employees           int
+	Cars                int
+	ParkingZones        int
+	ZonePointsMin       int
+	ZonePointsMax       int
+	TracksPerCarMin     int
+	TracksPerCarMax     int
+	SessionsPerCarMin   int
+	SessionsPerCarMax   int
+	TrackPointsMin      int
+	TrackPointsMax      int
+	AlertEvents         int
+	AlertEventPerCarMin int
+	AlertEventPerCarMax int
+	GeoRequestsMin      int
+	GeoRequestsMax      int
+	BatchSize           int
+}
+
+type Report struct {
+	TableCounts map[string]int
+	TotalRows   int
+}
+
+type trackRef struct {
+	ID        int
+	CarID     int
+	ZoneID    int
+	StartTime time.Time
+	EndTime   *time.Time
+}
+
+type level1Refs struct {
+	EmpTypeIDs         []int
+	EmpStatusIDs       []int
+	CarStatusIDs       []int
+	ZoneTypeIDs        []int
+	ZoneStatusIDs      []int
+	TrackStatusIDs     []int
+	TrackKindIDs       []int
+	DataSourceIDs      []int
+	AlertEventTypeIDs  []int
+	AlertProcStatusIDs []int
+	GeoReqTypeIDs      []int
+}
+
+type level2Refs struct {
+	EmployeeIDs    []int
+	CarIDs         []int
+	ParkingZoneIDs []int
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Статические данные для генерации (internal/seeder/data.go)}, label={lst:goData}]
+package seeder
+
+var empTypeData = []struct{ name, desc string }{
+	{"Оператор колл-центра", "Обрабатывает входящие обращения клиентов"},
+	{"Администратор системы", "Управляет системой и пользователями"},
+	{"Сервисный специалист", "Обслуживает автомобили и оборудование"},
+	{"Аналитик", "Анализирует данные и формирует отчёты"},
+}
+
+var empStatusNames = []string{"Активен", "В отпуске", "Уволен", "Заблокирован"}
+var carStatusNames = []string{"Свободен", "В аренде", "На обслуживании", "Неисправен"}
+var zoneTypeNames = []string{"Бесплатная", "Платная", "Запрещённая"}
+var zoneStatusNames = []string{"Активна", "Временно закрыта", "Недоступна"}
+var trackStatusNames = []string{"Активный", "Завершён", "Архивный"}
+var trackKindNames = []string{"Пользовательский", "Сервисный"}
+var dataSourceNames = []string{"GPS", "ГЛОНАСС", "GPS/ГЛОНАСС", "Инерциальная система"}
+
+var alertEventTypeData = []struct{ name, desc string }{
+	{"Потеря связи", "Автомобиль не выходит на связь"},
+	{"Превышение скорости", "Скорость выше допустимого предела"},
+	{"Резкое торможение", "Зафиксировано экстренное торможение"},
+	{"Удар", "Зафиксировано столкновение"},
+	{"Попытка угона", "Несанкционированное использование"},
+	{"Выезд за границу", "Автомобиль покинул разрешённую зону"},
+}
+
+var alertProcStatusNames = []string{"Новое", "В работе", "Закрыто"}
+
+var geoReqTypeData = []struct{ name, desc string }{
+	{"Текущие координаты", "Запрос текущего местоположения"},
+	{"История событий", "Запрос истории перемещений"},
+}
+
+var surnames = []string{
+	"Иванов", "Смирнов", "Кузнецов", "Попов", "Васильев",
+	"Петров", "Соколов", "Михайлов", "Новиков", "Фёдоров",
+	"Морозов", "Волков", "Алексеев", "Лебедев", "Семёнов",
+	"Егоров", "Павлов", "Козлов", "Степанов", "Николаев",
+	"Орлов", "Андреев", "Макаров", "Никитин", "Захаров",
+	"Зайцев", "Соловьёв", "Борисов", "Яковлев", "Григорьев",
+}
+
+var firstNamesMale = []string{
+	"Александр", "Алексей", "Андрей", "Артём", "Василий",
+	"Виктор", "Владимир", "Григорий", "Дмитрий", "Евгений",
+	"Иван", "Игорь", "Кирилл", "Константин", "Максим",
+	"Михаил", "Николай", "Павел", "Роман", "Сергей",
+}
+
+var patronymicsMale = []string{
+	"Александрович", "Алексеевич", "Андреевич", "Артёмович", "Васильевич",
+	"Викторович", "Владимирович", "Григорьевич", "Дмитриевич", "Евгеньевич",
+	"Иванович", "Игоревич", "Кириллович", "Константинович", "Максимович",
+	"Михайлович", "Николаевич", "Павлович", "Романович", "Сергеевич",
+}
+
+var carData = []struct {
+	brand  string
+	models []string
+}{
+	{"Lada", []string{"Vesta", "Granta", "Niva Travel", "Largus", "Vesta SW"}},
+	{"Kia", []string{"Rio", "Sportage", "Ceed", "K5", "Sorento"}},
+	{"Hyundai", []string{"Solaris", "Tucson", "Creta", "Santa Fe", "Elantra"}},
+	{"Toyota", []string{"Camry", "RAV4", "Land Cruiser", "Corolla", "Highlander"}},
+	{"Volkswagen", []string{"Polo", "Tiguan", "Passat", "Taos", "Touareg"}},
+	{"Renault", []string{"Logan", "Sandero", "Duster", "Arkana", "Kaptur"}},
+	{"Nissan", []string{"Qashqai", "X-Trail", "Juke", "Almera", "Pathfinder"}},
+	{"Skoda", []string{"Octavia", "Rapid", "Superb", "Kodiaq", "Karoq"}},
+	{"Mazda", []string{"3", "6", "CX-5", "CX-9", "MX-5"}},
+	{"BMW", []string{"3 Series", "5 Series", "X5", "X3", "7 Series"}},
+}
+
+var plateLetters = []rune("АВЕКМНОРСТУХ")
+
+var zoneNamePrefixes = []string{
+	"ТЦ Мега", "ТЦ Галерея", "ТЦ Авиапарк", "ТЦ Columbus",
+	"ТЦ Европейский", "ТЦ Атриум", "ТЦ Рио", "ТЦ Ереван Плаза",
+	"БЦ Москва-Сити", "Парк Горького", "ВДНХ", "Красная площадь",
+	"Лужники", "Сокольники", "Измайловский парк", "Коломенское",
+	"ЖК Северный", "ЖК Западный", "МЦД Одинцово", "МЦД Подольск",
+}
+
+var zoneNameSuffixes = []string{
+	"северный въезд", "южный въезд", "восточный въезд", "западный въезд",
+	"парковка А", "парковка Б", "парковка В", "подземная парковка",
+	"уровень 1", "уровень 2", "главный вход", "боковой вход",
+}
+
+var moscowDistricts = []string{
+	"Центральный", "Северный", "Северо-Восточный", "Восточный",
+	"Юго-Восточный", "Южный", "Юго-Западный", "Западный", "Северо-Западный",
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Вспомогательные функции (internal/seeder/utils.go)}, label={lst:goUtils}]
+package seeder
+
+import (
+	"fmt"
+	"strings"
+)
+
+func genRegNumber(i int) string {
+	chars := []rune("АВЕКМНОРСТУХ")
+	n := i % 999
+	c1 := chars[(i/999)%len(chars)]
+	c2 := chars[(i/(999*len(chars)))%len(chars)]
+	c3 := chars[(i/(999*len(chars)*len(chars)))%len(chars)]
+	region := 77 + (i % 5)
+	return fmt.Sprintf("%c%03d%c%c%d", c1, n+1, c2, c3, region)
+}
+
+func transliterate(s string) string {
+	mapping := map[rune]string{
+		'А': "A", 'Б': "B", 'В': "V", 'Г': "G", 'Д': "D", 'Е': "E", 'Ё': "E", 'Ж': "ZH",
+		'З': "Z", 'И': "I", 'Й': "Y", 'К': "K", 'Л': "L", 'М': "M", 'Н': "N", 'О': "O",
+		'П': "P", 'Р': "R", 'С': "S", 'Т': "T", 'У': "U", 'Ф': "F", 'Х': "H", 'Ц': "TS",
+		'Ч': "CH", 'Ш': "SH", 'Щ': "SCH", 'Ъ': "", 'Ы': "Y", 'Ь': "", 'Э': "E", 'Ю': "YU", 'Я': "YA",
+		'а': "a", 'б': "b", 'в': "v", 'г': "g", 'д': "d", 'е': "e", 'ё': "e", 'ж': "zh",
+		'з': "z", 'и': "i", 'й': "y", 'к': "k", 'л': "l", 'м': "m", 'н': "n", 'о': "o",
+		'п': "p", 'р': "r", 'с': "s", 'т': "t", 'у': "u", 'ф': "f", 'х': "h", 'ц': "ts",
+		'ч': "ch", 'ш': "sh", 'щ': "sch", 'ъ': "", 'ы': "y", 'ь': "", 'э': "e", 'ю': "yu", 'я': "ya",
+	}
+	var sb strings.Builder
+	for _, r := range s {
+		if val, ok := mapping[r]; ok {
+			sb.WriteString(val)
+		} else {
+			sb.WriteRune(r)
+		}
+	}
+	return sb.String()
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Конфигурация и отчёт сидера (internal/seeder/config.go)}, label={lst:goSeederConfig}]
+package seeder
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func DefaultConfig() Config {
+	return Config{
+		Employees:           30,
+		Cars:                200,
+		ParkingZones:        200,
+		ZonePointsMin:       20,
+		ZonePointsMax:       30,
+		TracksPerCarMin:     10,
+		TracksPerCarMax:     30,
+		SessionsPerCarMin:   10,
+		SessionsPerCarMax:   20,
+		TrackPointsMin:      70,
+		TrackPointsMax:      100,
+		AlertEvents:         500,
+		AlertEventPerCarMin: 1,
+		AlertEventPerCarMax: 3,
+		GeoRequestsMin:      8,
+		GeoRequestsMax:      20,
+		BatchSize:           1000,
+	}
+}
+
+var reportTables = []string{
+	"employee_type", "employee_status",
+	"car_status", "parking_zone_type", "parking_zone_status",
+	"track_status_type", "track_kind_type", "data_source_type",
+	"alert_event_type", "alert_event_process_status", "geo_request_type",
+	"employee", "car", "parking_zone",
+	"parking_zone_point", "track", "parking_session",
+	"alert_event", "geo_request", "track_point",
+}
+
+func buildReport(ctx context.Context, pool *pgxpool.Pool) (*Report, error) {
+	report := &Report{TableCounts: make(map[string]int, len(reportTables))}
+	for _, table := range reportTables {
+		var count int
+		if err := pool.QueryRow(ctx, fmt.Sprintf("SELECT COUNT(*) FROM %s", table)).Scan(&count); err != nil {
+			return nil, fmt.Errorf("count %s: %w", table, err)
+		}
+		report.TableCounts[table] = count
+		report.TotalRows += count
+	}
+	return report, nil
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Главная функция заполнения БД (internal/seeder/seeder.go)}, label={lst:goSeeder}]
+package seeder
+
+import (
+	"context"
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func Seed(ctx context.Context, pool *pgxpool.Pool) error {
+	_, err := SeedWithReport(ctx, pool, DefaultConfig())
+	return err
+}
+
+func SeedWithReport(ctx context.Context, pool *pgxpool.Pool, cfg Config) (*Report, error) {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	if err := truncateAll(ctx, pool); err != nil {
+		return nil, err
+	}
+
+	fmt.Println("=== Уровень 1: справочники ===")
+	l1, n1, err := seedLevel1(ctx, pool, r)
+	if err != nil {
+		return nil, fmt.Errorf("level1: %w", err)
+	}
+	fmt.Printf("  Вставлено: %d\n\n", n1)
+
+	fmt.Println("=== Уровень 2: основные сущности ===")
+	l2, n2, err := seedLevel2(ctx, pool, r, cfg, l1)
+	if err != nil {
+		return nil, fmt.Errorf("level2: %w", err)
+	}
+	fmt.Printf("  Вставлено: %d\n\n", n2)
+
+	fmt.Println("=== Уровень 3: зависимые сущности ===")
+	tracks, n3, err := seedLevel3(ctx, pool, r, cfg, l1, l2)
+	if err != nil {
+		return nil, fmt.Errorf("level3: %w", err)
+	}
+	fmt.Printf("  Вставлено: %d\n\n", n3)
+
+	fmt.Println("=== Уровень 4: точки треков ===")
+	n4, err := seedLevel4(ctx, pool, r, cfg, tracks, l1.DataSourceIDs)
+	if err != nil {
+		return nil, fmt.Errorf("level4: %w", err)
+	}
+	fmt.Printf("  Вставлено: %d\n\n", n4)
+
+	fmt.Printf("=== Итого вставлено: %d ===\n", n1+n2+n3+n4)
+	return buildReport(ctx, pool)
+}
+
+func truncateAll(ctx context.Context, pool *pgxpool.Pool) error {
+	query := `TRUNCATE TABLE
+		geo_request,
+		alert_event,
+		track_point,
+		parking_session,
+		track,
+		car,
+		parking_zone_point,
+		parking_zone,
+		employee,
+		employee_type,
+		employee_status,
+		car_status,
+		parking_zone_type,
+		parking_zone_status,
+		track_status_type,
+		track_kind_type,
+		data_source_type,
+		alert_event_type,
+		alert_event_process_status,
+		geo_request_type
+	RESTART IDENTITY CASCADE`
+
+	if _, err := pool.Exec(ctx, query); err != nil {
+		return fmt.Errorf("truncate tables: %w", err)
+	}
+	return nil
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Заполнение таблиц-справочников (internal/seeder/level1.go)}, label={lst:goLevel1}]
+package seeder
+
+import (
+	"context"
+	"fmt"
+	"math/rand"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func seedLevel1(ctx context.Context, pool *pgxpool.Pool, _ *rand.Rand) (*level1Refs, int, error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("level1 begin: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	refs := &level1Refs{}
+	n := 0
+
+	refs.EmpTypeIDs, err = insertLookupWithDesc(ctx, tx, "employee_type", "employee_type_id", empTypeData)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.EmpTypeIDs)
+
+	refs.EmpStatusIDs, err = insertLookupNames(ctx, tx, "employee_status", "employee_status_id", empStatusNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.EmpStatusIDs)
+
+	refs.CarStatusIDs, err = insertLookupNames(ctx, tx, "car_status", "car_status_id", carStatusNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.CarStatusIDs)
+
+	refs.ZoneTypeIDs, err = insertLookupNames(ctx, tx, "parking_zone_type", "zone_type_id", zoneTypeNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.ZoneTypeIDs)
+
+	refs.ZoneStatusIDs, err = insertLookupNames(ctx, tx, "parking_zone_status", "zone_status_id", zoneStatusNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.ZoneStatusIDs)
+
+	refs.TrackStatusIDs, err = insertLookupNames(ctx, tx, "track_status_type", "track_status_id", trackStatusNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.TrackStatusIDs)
+
+	refs.TrackKindIDs, err = insertLookupNames(ctx, tx, "track_kind_type", "track_kind_id", trackKindNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.TrackKindIDs)
+
+	refs.DataSourceIDs, err = insertLookupNames(ctx, tx, "data_source_type", "data_source_id", dataSourceNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.DataSourceIDs)
+
+	refs.AlertEventTypeIDs, err = insertLookupWithDesc(ctx, tx, "alert_event_type", "alert_event_type_id", alertEventTypeData)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.AlertEventTypeIDs)
+
+	refs.AlertProcStatusIDs, err = insertLookupNames(ctx, tx, "alert_event_process_status", "status_id", alertProcStatusNames)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.AlertProcStatusIDs)
+
+	refs.GeoReqTypeIDs, err = insertLookupWithDesc(ctx, tx, "geo_request_type", "geo_request_type_id", geoReqTypeData)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.GeoReqTypeIDs)
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, 0, fmt.Errorf("level1 commit: %w", err)
+	}
+	return refs, n, nil
+}
+
+func insertLookupWithDesc(ctx context.Context, tx pgx.Tx, table, idCol string, rows []struct{ name, desc string }) ([]int, error) {
+	ids := make([]int, 0, len(rows))
+	for _, row := range rows {
+		var id int
+		query := fmt.Sprintf(
+			"INSERT INTO %s(name, description) VALUES ($1, $2) RETURNING %s",
+			table, idCol,
+		)
+		if err := tx.QueryRow(ctx, query, row.name, row.desc).Scan(&id); err != nil {
+			return nil, fmt.Errorf("insert %s(%q): %w", table, row.name, err)
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
+func insertLookupNames(ctx context.Context, tx pgx.Tx, table, idCol string, names []string) ([]int, error) {
+	ids := make([]int, 0, len(names))
+	for _, name := range names {
+		var id int
+		query := fmt.Sprintf(
+			"INSERT INTO %s(name) VALUES ($1) RETURNING %s",
+			table, idCol,
+		)
+		if err := tx.QueryRow(ctx, query, name).Scan(&id); err != nil {
+			return nil, fmt.Errorf("insert %s(%q): %w", table, name, err)
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Заполнение основных сущностей (internal/seeder/level2.go)}, label={lst:goLevel2}]
+package seeder
+
+import (
+	"context"
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func seedLevel2(ctx context.Context, pool *pgxpool.Pool, r *rand.Rand, cfg Config, l1 *level1Refs) (*level2Refs, int, error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("level2 begin: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	refs := &level2Refs{}
+	n := 0
+
+	refs.EmployeeIDs, err = seedEmployees(ctx, tx, r, cfg, l1)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.EmployeeIDs)
+	fmt.Printf("  employees: %d\n", len(refs.EmployeeIDs))
+
+	refs.CarIDs, err = seedCars(ctx, tx, r, cfg, l1)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.CarIDs)
+	fmt.Printf("  cars: %d\n", len(refs.CarIDs))
+
+	refs.ParkingZoneIDs, err = seedParkingZones(ctx, tx, r, cfg, l1)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(refs.ParkingZoneIDs)
+	fmt.Printf("  parking_zones: %d\n", len(refs.ParkingZoneIDs))
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, 0, fmt.Errorf("level2 commit: %w", err)
+	}
+	return refs, n, nil
+}
+
+func seedEmployees(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, l1 *level1Refs) ([]int, error) {
+	ids := make([]int, 0, cfg.Employees)
+	for i := 0; i < cfg.Employees; i++ {
+		surname := surnames[i%len(surnames)]
+		firstName := firstNamesMale[r.Intn(len(firstNamesMale))]
+		patronymic := patronymicsMale[r.Intn(len(patronymicsMale))]
+		fullName := fmt.Sprintf("%s %s %s", surname, firstName, patronymic)
+		login := fmt.Sprintf("%s%02d", transliterate(surname), i+1)
+
+		var id int
+		query := "INSERT INTO employee(employee_type_id, full_name, login, employee_status_id) VALUES ($1, $2, $3, $4) RETURNING employee_id"
+		err := tx.QueryRow(ctx, query,
+			l1.EmpTypeIDs[r.Intn(len(l1.EmpTypeIDs))],
+			fullName,
+			login,
+			l1.EmpStatusIDs[r.Intn(len(l1.EmpStatusIDs))],
+		).Scan(&id)
+		if err != nil {
+			return nil, fmt.Errorf("insert employee[%d]: %w", i, err)
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
+func seedCars(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, l1 *level1Refs) ([]int, error) {
+	ids := make([]int, 0, cfg.Cars)
+	currentYear := time.Now().Year()
+	minYear := currentYear - 15
+	for i := 0; i < cfg.Cars; i++ {
+		brand := carData[r.Intn(len(carData))]
+		model := brand.models[r.Intn(len(brand.models))]
+		regNum := genRegNumber(i)
+		vin := fmt.Sprintf("X%016d", i+1)
+		year := minYear + r.Intn(currentYear-minYear+1)
+
+		var id int
+		query := "INSERT INTO car(reg_number, brand, model, manufacture_year, vin, car_status_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING car_id"
+		err := tx.QueryRow(ctx, query,
+			regNum,
+			brand.brand,
+			model,
+			year,
+			vin,
+			l1.CarStatusIDs[r.Intn(len(l1.CarStatusIDs))],
+		).Scan(&id)
+		if err != nil {
+			return nil, fmt.Errorf("insert car[%d]: %w", i, err)
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
+func seedParkingZones(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, l1 *level1Refs) ([]int, error) {
+	ids := make([]int, 0, cfg.ParkingZones)
+	for i := 0; i < cfg.ParkingZones; i++ {
+		prefix := zoneNamePrefixes[r.Intn(len(zoneNamePrefixes))]
+		suffix := zoneNameSuffixes[r.Intn(len(zoneNameSuffixes))]
+		name := fmt.Sprintf("%s -- %s", prefix, suffix)
+		if len([]rune(name)) > 60 {
+			name = string([]rune(name)[:60])
+		}
+		district := moscowDistricts[r.Intn(len(moscowDistricts))]
+
+		var id int
+		query := "INSERT INTO parking_zone(name, zone_type_id, city_district, max_cars, zone_status_id) VALUES ($1, $2, $3, $4, $5) RETURNING parking_zone_id"
+		err := tx.QueryRow(ctx, query,
+			name,
+			l1.ZoneTypeIDs[r.Intn(len(l1.ZoneTypeIDs))],
+			district,
+			20+r.Intn(80),
+			l1.ZoneStatusIDs[r.Intn(len(l1.ZoneStatusIDs))],
+		).Scan(&id)
+		if err != nil {
+			return nil, fmt.Errorf("insert parking_zone[%d]: %w", i, err)
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Заполнение зависимых сущностей (internal/seeder/level3.go)}, label={lst:goLevel3}]
+package seeder
+
+import (
+	"context"
+	"fmt"
+	"math/rand"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func seedLevel3(ctx context.Context, pool *pgxpool.Pool, r *rand.Rand, cfg Config, l1 *level1Refs, l2 *level2Refs) ([]trackRef, int, error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("level3 begin: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	n := 0
+
+	pts, err := seedParkingZonePoints(ctx, tx, r, cfg, l2.ParkingZoneIDs)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += pts
+	fmt.Printf("  parking_zone_points: %d\n", pts)
+
+	tracks, err := seedTracks(ctx, tx, r, cfg, l1, l2)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += len(tracks)
+	fmt.Printf("  tracks: %d\n", len(tracks))
+
+	sessions, err := seedParkingSessions(ctx, tx, r, cfg, l2)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += sessions
+	fmt.Printf("  parking_sessions: %d\n", sessions)
+
+	alerts, err := seedAlertEvents(ctx, tx, r, cfg, l1, l2)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += alerts
+	fmt.Printf("  alert_events: %d\n", alerts)
+
+	geoReqs, err := seedGeoRequests(ctx, tx, r, cfg, l1, l2)
+	if err != nil {
+		return nil, 0, err
+	}
+	n += geoReqs
+	fmt.Printf("  geo_requests: %d\n", geoReqs)
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, 0, fmt.Errorf("level3 commit: %w", err)
+	}
+	return tracks, n, nil
+}
+
+func seedParkingZonePoints(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, zoneIDs []int) (int, error) {
+	total := 0
+	for _, zoneID := range zoneIDs {
+		count := cfg.ZonePointsMin + r.Intn(cfg.ZonePointsMax-cfg.ZonePointsMin+1)
+		for v := 1; v <= count; v++ {
+			lat := 55.7 + r.Float64()*0.2
+			lon := 37.3 + r.Float64()*0.6
+			query := "INSERT INTO parking_zone_point(parking_zone_id, vertex_number, latitude, longitude) VALUES ($1, $2, $3, $4)"
+			if _, err := tx.Exec(ctx, query, zoneID, v, lat, lon); err != nil {
+				return 0, fmt.Errorf("insert parking_zone_point(zone=%d, v=%d): %w", zoneID, v, err)
+			}
+			total++
+		}
+	}
+	return total, nil
+}
+
+func seedTracks(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, l1 *level1Refs, l2 *level2Refs) ([]trackRef, error) {
+	refs := make([]trackRef, 0, len(l2.CarIDs)*cfg.TracksPerCarMax)
+	now := time.Now()
+
+	for _, carID := range l2.CarIDs {
+		trackCount := cfg.TracksPerCarMin + r.Intn(cfg.TracksPerCarMax-cfg.TracksPerCarMin+1)
+		for j := 0; j < trackCount; j++ {
+			startTime := now.Add(-time.Duration(r.Intn(365*24)) * time.Hour)
+			duration := time.Duration(10+r.Intn(50)) * time.Minute
+			endTime := startTime.Add(duration)
+
+			statusID := l1.TrackStatusIDs[r.Intn(len(l1.TrackStatusIDs))]
+			var endPtr *time.Time
+			if statusID != l1.TrackStatusIDs[0] {
+				endPtr = &endTime
+			}
+
+			var id int
+			query := "INSERT INTO track(car_id, start_time, end_time, track_status_id, track_kind_id) VALUES ($1, $2, $3, $4, $5) RETURNING track_id"
+			err := tx.QueryRow(ctx, query,
+				carID, startTime, endPtr,
+				statusID,
+				l1.TrackKindIDs[r.Intn(len(l1.TrackKindIDs))],
+			).Scan(&id)
+			if err != nil {
+				return nil, fmt.Errorf("insert track(car=%d, j=%d): %w", carID, j, err)
+			}
+			refs = append(refs, trackRef{
+				ID:        id,
+				CarID:     carID,
+				ZoneID:    l2.ParkingZoneIDs[r.Intn(len(l2.ParkingZoneIDs))],
+				StartTime: startTime,
+				EndTime:   endPtr,
+			})
+		}
+	}
+	return refs, nil
+}
+
+func seedParkingSessions(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, l2 *level2Refs) (int, error) {
+	total := 0
+	now := time.Now()
+
+	for _, carID := range l2.CarIDs {
+		sessionCount := cfg.SessionsPerCarMin + r.Intn(cfg.SessionsPerCarMax-cfg.SessionsPerCarMin+1)
+		for i := 0; i < sessionCount; i++ {
+			entryTime := now.Add(-time.Duration(r.Intn(365*24)) * time.Hour)
+			exitTime := entryTime.Add(time.Duration(30+r.Intn(480)) * time.Minute)
+			zoneID := l2.ParkingZoneIDs[r.Intn(len(l2.ParkingZoneIDs))]
+
+			query := "INSERT INTO parking_session(car_id, parking_zone_id, entry_time, exit_time) VALUES ($1, $2, $3, $4)"
+			if _, err := tx.Exec(ctx, query, carID, zoneID, entryTime, exitTime); err != nil {
+				return 0, fmt.Errorf("insert parking_session(car=%d, idx=%d): %w", carID, i, err)
+			}
+			total++
+		}
+	}
+	return total, nil
+}
+
+func seedAlertEvents(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, l1 *level1Refs, l2 *level2Refs) (int, error) {
+	inserted := 0
+	query := "INSERT INTO alert_event(car_id, employee_id, alert_event_type_id, latitude, longitude, description, status_id) VALUES ($1, $2, $3, $4, $5, $6, $7)"
+
+	if cfg.AlertEventPerCarMin > 0 || cfg.AlertEventPerCarMax > 0 {
+		for _, carID := range l2.CarIDs {
+			count := cfg.AlertEventPerCarMin + r.Intn(cfg.AlertEventPerCarMax-cfg.AlertEventPerCarMin+1)
+			for j := 0; j < count; j++ {
+				lat := 59.899901 + r.Float64()*0.2
+				lon := 30.265473 + r.Float64()*0.6
+				inserted++
+				_, err := tx.Exec(ctx, query,
+					carID,
+					l2.EmployeeIDs[r.Intn(len(l2.EmployeeIDs))],
+					l1.AlertEventTypeIDs[r.Intn(len(l1.AlertEventTypeIDs))],
+					lat, lon,
+					fmt.Sprintf("Событие %d", inserted),
+					l1.AlertProcStatusIDs[r.Intn(len(l1.AlertProcStatusIDs))],
+				)
+				if err != nil {
+					return 0, fmt.Errorf("insert alert_event[%d]: %w", inserted-1, err)
+				}
+			}
+		}
+		return inserted, nil
+	}
+
+	total := cfg.AlertEvents
+	if total <= 0 {
+		return 0, nil
+	}
+
+	base := total / len(l2.CarIDs)
+	rem := total % len(l2.CarIDs)
+	perm := r.Perm(len(l2.CarIDs))
+	for i, carIdx := range perm {
+		carID := l2.CarIDs[carIdx]
+		count := base
+		if i < rem {
+			count++
+		}
+		for j := 0; j < count; j++ {
+			lat := 59.899901 + r.Float64()*0.2
+			lon := 30.265473 + r.Float64()*0.6
+			inserted++
+			_, err := tx.Exec(ctx, query,
+				carID,
+				l2.EmployeeIDs[r.Intn(len(l2.EmployeeIDs))],
+				l1.AlertEventTypeIDs[r.Intn(len(l1.AlertEventTypeIDs))],
+				lat, lon,
+				fmt.Sprintf("Событие %d", inserted),
+				l1.AlertProcStatusIDs[r.Intn(len(l1.AlertProcStatusIDs))],
+			)
+			if err != nil {
+				return 0, fmt.Errorf("insert alert_event[%d]: %w", inserted-1, err)
+			}
+		}
+	}
+	return inserted, nil
+}
+
+func seedGeoRequests(ctx context.Context, tx pgx.Tx, r *rand.Rand, cfg Config, l1 *level1Refs, l2 *level2Refs) (int, error) {
+	total := 0
+	for _, employeeID := range l2.EmployeeIDs {
+		requestCount := cfg.GeoRequestsMin + r.Intn(cfg.GeoRequestsMax-cfg.GeoRequestsMin+1)
+		for i := 0; i < requestCount; i++ {
+			query := "INSERT INTO geo_request(employee_id, car_id, geo_request_type_id, request_goal) VALUES ($1, $2, $3, $4)"
+			_, err := tx.Exec(ctx, query,
+				employeeID,
+				l2.CarIDs[r.Intn(len(l2.CarIDs))],
+				l1.GeoReqTypeIDs[r.Intn(len(l1.GeoReqTypeIDs))],
+				fmt.Sprintf("Запрос сотрудника %d, запись %d", employeeID, i+1),
+			)
+			if err != nil {
+				return 0, fmt.Errorf("insert geo_request(employee=%d, idx=%d): %w", employeeID, i, err)
+			}
+			total++
+		}
+	}
+	return total, nil
+}
+\end{lstlisting}
+\newpage
+
+\begin{lstlisting}[style=gostyle, caption={Заполнение точек треков (internal/seeder/level4.go)}, label={lst:goLevel4}]
+package seeder
+
+import (
+	"context"
+	"fmt"
+	"math/rand"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func seedLevel4(ctx context.Context, pool *pgxpool.Pool, r *rand.Rand, cfg Config, tracks []trackRef, dataSourceIDs []int) (int, error) {
+	type row struct {
+		trackID      int
+		carID        int
+		lat, lon     float64
+		speed        float64
+		dataSourceID int
+	}
+
+	batch := make([]row, 0, cfg.BatchSize)
+	total := 0
+
+	flush := func() error {
+		if len(batch) == 0 {
+			return nil
+		}
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			return fmt.Errorf("level4 begin: %w", err)
+		}
+		defer tx.Rollback(ctx)
+
+		for _, b := range batch {
+			query := "INSERT INTO track_point(track_id, car_id, latitude, longitude, speed_kmh, data_source_id) VALUES ($1, $2, $3, $4, $5, $6)"
+			if _, err := tx.Exec(ctx, query, b.trackID, b.carID, b.lat, b.lon, b.speed, b.dataSourceID); err != nil {
+				return fmt.Errorf("insert track_point: %w", err)
+			}
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return fmt.Errorf("level4 commit: %w", err)
+		}
+		total += len(batch)
+		batch = batch[:0]
+		return nil
+	}
+
+	for _, tr := range tracks {
+		lat := 59.790891 + r.Float64()*0.2
+		lon := 30.324453 + r.Float64()*0.6
+		pointCount := cfg.TrackPointsMin + r.Intn(cfg.TrackPointsMax-cfg.TrackPointsMin+1)
+		for p := 0; p < pointCount; p++ {
+			lat += (r.Float64() - 0.5) * 0.002
+			lon += (r.Float64() - 0.5) * 0.003
+			if lat < 59.8 {
+				lat = 59.8
+			}
+			if lat > 60.0 {
+				lat = 60.0
+			}
+			if lon < 30.0 {
+				lon = 30.0
+			}
+			if lon > 30.7 {
+				lon = 30.7
+			}
+
+			batch = append(batch, row{
+				trackID:      tr.ID,
+				carID:        tr.CarID,
+				lat:          lat,
+				lon:          lon,
+				speed:        float64(r.Intn(121)),
+				dataSourceID: dataSourceIDs[r.Intn(len(dataSourceIDs))],
+			})
+
+			if len(batch) >= cfg.BatchSize {
+				if err := flush(); err != nil {
+					return 0, err
+				}
+			}
+		}
+	}
+	if err := flush(); err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+\end{lstlisting}
+
+\newpage
