@@ -43,7 +43,7 @@ FROM
 WHERE
 	c.parking_count > 17
 	AND
-	c.alert_count > 1;
+	c.alert_count > 0;
 \end{lstlisting}
 
 Результат выполнения простого запроса представлен на листинге~\ref{fig:easy_query_result}. В результате выполнения было выведено 25 автомобилей.
@@ -61,7 +61,7 @@ WHERE
 
 Запрос для выполнения сложного запроса представлен на листинге~\ref{lst:hard_query}.
 \begin{lstlisting}[style=sqlstyle, caption={Запрос 1.2}, label={lst:hard_query}]
-SELECT
+SELECT 
 	c.reg_number,
 	c.alert_count
 FROM
@@ -75,7 +75,7 @@ LEFT JOIN
 WHERE
 	c.parking_count < 18
 	AND 
-	s.name = 'Новое'
+	s.name IN ('Новое', 'В работе')
 	AND
 	t.name = 'Потеря связи';
 \end{lstlisting}
