@@ -21,10 +21,10 @@ FROM
 WHERE
 	c.parking_count > 17
 	AND
-	c.alert_count > 1;
+	c.alert_count > 0;
 
 -- Запрос 2
-SELECT
+SELECT 
 	c.reg_number,
 	c.alert_count
 FROM
@@ -38,6 +38,6 @@ LEFT JOIN
 WHERE
 	c.parking_count < 18
 	AND 
-	s.name = 'Новое'
+	s.name IN ('Новое', 'В работе')
 	AND
 	t.name = 'Потеря связи';
