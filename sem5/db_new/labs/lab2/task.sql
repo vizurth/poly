@@ -1,10 +1,7 @@
-CREATE TABLE
-	c.car_id,
-	c.reg_number,
-	COUNT(DISTINCT a.alert_event_id) AS alert_count,
-	COUNT(DISTINCT pz.parking_zone_id) AS parking_count
-FROM car c
-LEFT JOIN alert_event a ON c.car_id = a.car_id
-LEFT JOIN parking_session ps ON c.car_id = ps.car_id
-LEFT JOIN parking_zone pz ON ps.parking_zone_id = pz.parking_zone_id
-GROUP BY c.car_id, c.reg_number;
+CREATE TABLE car_stats (
+    car_id        INT PRIMARY KEY REFERENCES car(car_id) ON DELETE CASCADE,
+    reg_number    VARCHAR(9) NOT NULL,
+    alert_count   BIGINT NOT NULL DEFAULT 0,
+    parking_count BIGINT NOT NULL DEFAULT 0
+);
+
