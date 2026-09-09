@@ -24,16 +24,17 @@ WHERE
 	c.alert_count > 0;
 
 -- Запрос 2
-SELECT 
+SELECT
+	DISTINCT
 	c.reg_number,
 	c.alert_count
 FROM
 	car_stats c
-LEFT JOIN
+JOIN
 	alert_event a ON c.car_id = a.car_id
-LEFT JOIN
+JOIN
 	alert_event_process_status s ON a.status_id = s.status_id
-LEFT JOIN
+JOIN
 	alert_event_type t ON a.alert_event_type_id = t.alert_event_type_id
 WHERE
 	c.parking_count < 18
