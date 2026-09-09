@@ -4,3 +4,4 @@ CREATE TABLE car_stats (
     alert_count   BIGINT NOT NULL DEFAULT 0,
     parking_count BIGINT NOT NULL DEFAULT 0
 );
+

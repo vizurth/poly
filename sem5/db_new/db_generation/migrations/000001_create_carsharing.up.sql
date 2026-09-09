@@ -63,7 +63,7 @@ CREATE TABLE car (
 CREATE TABLE parking_session (
     parking_session_id SERIAL PRIMARY KEY,
     car_id             INT NOT NULL REFERENCES car(car_id) ON DELETE NO ACTION,
-    parking_zone_id    INT NOT NULL REFERENCES parking_zone(parking_zone_id) ON DELETE NO ACTION,
+    parking_zone_id    INT NOT NULL REFERENCES parking_zone(parking_zone_id) ON DELETE CASCADE,
     entry_time         TIMESTAMP NOT NULL,
     exit_time          TIMESTAMP
 );
