@@ -6,7 +6,6 @@ import (
 	"db_generation/internal/logger"
 	"db_generation/internal/postgres"
 	"time"
-
 )
 
 func main() {

@@ -21,7 +21,7 @@ FROM
 WHERE
 	c.parking_count > 17
 	AND
-	c.alert_count > 0;
+	c.alert_count > 1;
 
 -- Запрос 2
 SELECT
