@@ -130,3 +130,39 @@ CREATE TRIGGER parking_session_before_delete
 BEFORE DELETE ON parking_session
 FOR EACH ROW
 EXECUTE FUNCTION parking_session_stats_delete();
+
+-- Триггеры на alert_event
+CREATE OR REPLACE FUNCTION alert_event_stats_change()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Добавили тревожное событие
+    IF TG_OP = 'INSERT' THEN
+        UPDATE car_stats
+        SET alert_count = alert_count + 1
+        WHERE car_id = NEW.car_id;
+
+        RETURN NEW;
+    END IF;
+
+    -- Удалили тревожное событие
+    IF TG_OP = 'DELETE' THEN
+        UPDATE car_stats
+        SET alert_count = GREATEST(alert_count - 1, 0)
+        WHERE car_id = OLD.car_id;
+
+        RETURN OLD;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- insert
+CREATE TRIGGER alert_event_after_insert
+AFTER INSERT ON alert_event
+FOR EACH ROW
+EXECUTE FUNCTION alert_event_stats_change();
+
+-- delete
+CREATE TRIGGER alert_event_after_delete
+AFTER DELETE ON alert_event
+FOR EACH ROW
+EXECUTE FUNCTION alert_event_stats_change();
