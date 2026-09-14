@@ -130,7 +130,7 @@ The repository is organized by semesters and courses and may include:
 | Лаба | Сделано | Сдана |
 | ---- | ------- | ----- |
 | 1    | ✅      | 🔄    |
-| 2    | 🔄      | ⬜    |
+| 2    | ✅      | ⬜    |
 | 3    | ⬜      | ⬜    |
 | 4    | ⬜      | ⬜    |
 | 5    | ⬜      | ⬜    |
@@ -158,7 +158,8 @@ The repository is organized by semesters and courses and may include:
 ### Python
 | Лаба | Сделано | Сдана |
 | ---- | ------- | ----- |
-| хз   | ⬜      | ⬜    |
+| 1    | 🔄      | ⬜    |
+| 2    | ⬜      | ⬜    |
 
 ### Сети
 | Лаба | Сделано | Сдана |
