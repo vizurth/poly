@@ -7,6 +7,36 @@
 \textbf{parking\_session}.
 
 \subsection{Создание таблицы статистики}
+
+\subsubsection*{Таблица с описание атрибутов новой таблицы}
+
+% Настройка стилей колонок для выравнивания как на картинке
+\newcolumntype{Y}{>{\centering\arraybackslash}X} % Растягиваемая колонка по центру
+\newcolumntype{Z}{>{\raggedright\arraybackslash}X} % Растягиваемая по левому краю (для длинных названий)
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}} % Фиксированная ширина по центру
+
+% --- Таблица 1: car_stats ---
+\begin{table}[H]
+    \caption{Статистика автомобилей -- car\_stats}
+    \label{tab:car_stats}
+    \footnotesize % Уменьшенный шрифт для вместимости
+    \renewcommand{\arraystretch}{1.3} % Чуть больше отступ между строками
+    \begin{tabularx}{\textwidth}{|c Z Y C{2.2cm} c c c c|}
+        \hline
+        \multicolumn{8}{|c|}{\textbf{Статистика автомобилей -- car\_stats}} \\
+        \hline
+        № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
+        \hline
+        1 & авто\_id & car\_id & SERIAL & - & PK & - & NOT NULL \\
+        2 & гос_номер & reg\_number & VARCHAR(30) & - & - & - & NOT NULL \\
+        3 & кол-во событий & alert\_count & BIGINT & 0 & - & - & NOT NULL \\
+        4 & кол-во парковок & parking\_count & BIGINT & 0 & - & - & NOT NULL \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\subsubsection*{Код создания таблицы}
+
 Сначала представление переименовывается в \textbf{car\_stats\_view}, после
 чего создаётся таблица \textbf{car\_stats} и заполняется данными из
 представления. Порядок операций важен: представление и таблица не могут
@@ -138,6 +168,30 @@ EXECUTE FUNCTION parking_session_stats_delete();
 парковочные сессии, а триггер \textbf{parking\_session\_before\_delete}
 корректирует статистику. Это предотвращает двойное уменьшение счётчика для
 одной зоны.
+
+\subsection{Графическое описание схемы базы данных}
+
+Графическое описание схемы базы данных с новой таблицей и триггерами приведено на рисунке~\ref{fig:db-schema-triggers}.
+
+\newpage
+\clearpage
+\newgeometry{paperwidth=420mm,paperheight=297mm,margin=-2mm}
+
+\begin{landscape}
+  \thispagestyle{empty}
+  \captionsetup{font=small,skip=4pt}
+
+  \begin{figure}[!p]
+    \centering
+\includegraphics[width=\linewidth,height=\dimexpr\textheight-4\baselineskip\relax,keepaspectratio]{myPhoto/db_english.png}
+    \caption{Схема базы данных на английском языке}
+    \label{fig:db-schema-triggers}
+  \end{figure}
+\end{landscape}
+
+\restoregeometry
+\clearpage
+
 
 \subsection{Проверка работы триггеров}
 Перед проверкой триггеров выполняем команду \texttt{BEGIN;} для начала транзакции. После проверки всех триггеров выполняется команда \texttt{ROLLBACK;} для отмены изменений. Чтобы не засорять базу данных тестовыми данными.

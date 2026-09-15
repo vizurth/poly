@@ -82,28 +82,6 @@ BEFORE DELETE ON car
 FOR EACH ROW
 EXECUTE FUNCTION car_stats_change();
 
--- Триггеры на таблицу parking_zone
-CREATE OR REPLACE FUNCTION parking_zone_stats_delete()
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE car_stats
-    SET parking_count = GREATEST(parking_count - 1, 0)
-    WHERE car_id IN (
-        SELECT DISTINCT car_id
-        FROM parking_session
-        WHERE parking_zone_id = OLD.parking_zone_id
-    );
-
-    RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
--- delete
-CREATE TRIGGER parking_zone_before_delete
-BEFORE DELETE ON parking_zone
-FOR EACH ROW
-EXECUTE FUNCTION parking_zone_stats_delete();
-
 -- Триггеры на parking_session
 
 CREATE OR REPLACE FUNCTION parking_session_stats_delete()
