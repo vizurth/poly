@@ -1,0 +1,270 @@
+\section{Особенности реализации}
+
+Программа написана на языке Go. Функции преобразования находятся в модуле
+\texttt{bf16}. В них реализовано кодирование десятичного
+числа в 16-битный формат \texttt{bfloat16}, обратное восстановление числа из
+строки битов и вывод 16 бит в строку. Формат состоит из одного бита
+знака, восьми битов смещённой экспоненты и семи битов мантиссы.
+
+\vspace{8pt}
+\subsection*{Функция FloatToBits}
+\textbf{Вход:} \texttt{float64 value} --- десятичное вещественное число. \par
+\textbf{Выход:} \texttt{uint16} --- 16-битное представление числа в формате
+\texttt{bfloat16}. \par
+\textbf{Описание:} Функция определяет знак числа, отдельно переводит его
+целую и дробную части в двоичный вид, а затем нормализует полученную запись.
+После этого формируются семь бит мантиссы, экспонента смещается на 127, и
+поля $S$, $E$, $M$ собираются сдвигами. При переполнении возвращается
+бесконечность, при слишком маленькой экспоненте --- ноль. \par
+\vspace{6pt}
+
+\begin{lstlisting}[style=common, language=Go, caption=FloatToBits, label=lst:float-to-bits]
+func FloatToBits(value float64) uint16 {
+    var sign uint16
+    if value < 0 {
+        sign, value = 1, -value
+    }
+    if value != value {
+        return nanBits
+    }
+    if value == 0 {
+        return sign << 15
+    }
+
+    integer := uint64(value)
+    integerBits := integerToBinary(integer)
+    fractionBits := fractionToBinary(value - float64(integer))
+    exponent, source, found := normalize(integerBits, fractionBits)
+    if !found {
+        return sign << 15
+    }
+    mantissa, bump := roundMantissa(source)
+    exponent += bump
+
+    exponent += bias
+    if exponent >= maxExponent {
+        return sign<<15 | infinityBits
+    }
+    if exponent <= 0 {
+        return sign << 15
+    }
+    return sign<<15 | uint16(exponent<<7) | mantissa
+}
+\end{lstlisting}
+
+\newpage
+
+\subsection*{Функция BitsToBinary}
+\textbf{Вход:} \texttt{uint16 bits} --- 16-битное число. \par
+\textbf{Выход:} \texttt{string} --- строка из 16 символов \texttt{0} и
+\texttt{1}. \par
+\textbf{Описание:} Функция вызывает общий перевод \texttt{toBinary} с флагом
+\texttt{true}. Поэтому результат всегда содержит 16 бит и нули слева.
+
+\begin{lstlisting}[style=common, language=Go, caption=BitsToBinary, label=lst:bits-to-binary]
+func BitsToBinary(bits uint16) string {
+    return toBinary(uint64(bits), true)
+}
+\end{lstlisting}
+
+
+\subsection*{Функция integerToBinary} 
+\textbf{Вход:} \texttt{uint64 value} --- неотрицательная целая часть числа. \par
+\textbf{Выход:} \texttt{string} --- двоичная запись числа. \par
+\textbf{Описание:} Функция вызывает общий перевод \texttt{toBinary} без
+добавления нулей слева. Поэтому результат содержит только значимые биты.
+
+\begin{lstlisting}[style=common, language=Go, caption=integerToBinary, label=lst:integer-to-binary]
+func integerToBinary(value uint64) string {
+    return toBinary(value, false)
+}
+
+\end{lstlisting}
+
+\subsection*{Функция toBinary}
+\textbf{Вход:} \texttt{uint64 value} --- число для перевода;
+\texttt{bool fillTo16} --- флаг добавления нулей до 16 бит. \par
+\textbf{Выход:} \texttt{string} --- двоичная запись числа. \par
+\textbf{Описание:} Функция получает младший бит, добавляет его в начало
+строки и сдвигает число вправо. Если \texttt{fillTo16} равен \texttt{true},
+слева добавляются нули до длины 16 символов.
+
+\begin{lstlisting}[style=common, language=Go, caption=toBinary, label=lst:to-binary]
+func toBinary(value uint64, fillTo16 bool) string {
+    bits := ""
+    for {
+        if value&1 == 1 {
+            bits = "1" + bits
+        } else {
+            bits = "0" + bits
+        }
+        value >>= 1
+        if value == 0 {
+            break
+        }
+    }
+    if fillTo16 {
+        for len(bits) < totalBits {
+            bits = "0" + bits
+        }
+    }
+    return bits
+}
+\end{lstlisting}
+
+\subsection*{Функция fractionToBinary}
+\textbf{Вход:} \texttt{float64 value} --- дробная часть числа от 0 до 1. \par
+\textbf{Выход:} \texttt{string} --- двоичные разряды дробной части. \par
+\textbf{Описание:} Дробная часть последовательно умножается на 2. Целая
+часть результата становится очередным битом, после чего она вычитается.
+Строится не более 135 бит: этого достаточно для определения мантиссы и
+экспоненты \texttt{bfloat16}.
+
+\begin{lstlisting}[style=common, language=Go, caption=fractionToBinary, label=lst:fraction-to-binary]
+func fractionToBinary(value float64) string {
+    bits := ""
+    for index := 0; value != 0 && index < 135; index++ {
+        value *= 2
+        if value >= 1 {
+            bits += "1"
+            value--
+        } else {
+            bits += "0"
+        }
+    }
+    return bits
+}
+\end{lstlisting}
+
+\subsection*{Функция normalize}
+\textbf{Вход:} \texttt{string integerBits}, \texttt{string fractionBits} ---
+двоичные записи целой и дробной частей. \par
+\textbf{Выход:} истинная экспонента, исходные биты мантиссы и флаг успешной
+нормализации. \par
+\textbf{Описание:} Если целая часть не равна нулю, её старшая единица становится
+неявной единицей перед точкой, а экспонента равна позиции этой единицы.
+Если целая часть нулевая, функция ищет первую единицу в дробной части;
+экспонента в этом случае отрицательная.
+
+\begin{lstlisting}[style=common, language=Go, caption=normalize, label=lst:normalize]
+func normalize(integerBits, fractionBits string) (int, string, bool) {
+    if integerBits != "0" {
+        return len(integerBits) - 1, integerBits[1:] + fractionBits, true
+    }
+
+    for index, bit := range fractionBits {
+        if bit == '1' {
+            return -(index + 1), fractionBits[index+1:], true
+        }
+    }
+    return 0, "", false
+}
+\end{lstlisting}
+
+\newpage
+
+\subsection*{Функция roundMantissa}
+\textbf{Вход:} \texttt{string source} --- биты после неявной единицы. \par
+\textbf{Выход:} 7-битная мантисса и флаг переноса в экспоненту. \par
+\textbf{Описание:} Сохраняются первые семь бит. Восьмой бит определяет
+округление: если он равен единице, к мантиссе прибавляется единица. При
+переполнении мантисса обнуляется, а флаг переноса равен единице.
+
+\begin{lstlisting}[style=common, language=Go, caption=roundMantissa, label=lst:round-mantissa]
+func roundMantissa(source string) (uint16, int) {
+    for len(source) < 8 {
+        source += "0"
+    }
+
+    var mantissa uint16
+    for _, bit := range source[:7] {
+        mantissa <<= 1
+        if bit == '1' {
+            mantissa |= 1
+        }
+    }
+    if source[7] == '1' {
+        mantissa++
+    }
+    if mantissa == 128 {
+        return 0, 1
+    }
+    return mantissa, 0
+}
+\end{lstlisting}
+
+\subsection*{Функция BitsToFloat}
+\textbf{Вход:} \texttt{string binary} --- строка из 16 бит
+\texttt{bfloat16}. \par
+\textbf{Выход:} \texttt{float64} --- восстановленное десятичное число. \par
+\textbf{Описание:} Из строки отдельно берутся знак, восемь бит экспоненты
+и семь бит мантиссы. Для обычного числа
+используется формула $(-1)^S(1+M)2^{E-127}$, степень двойки вычисляется
+функцией \texttt{math.Pow}. При нулевой экспоненте
+восстанавливается денормализованное число, а экспонента из единиц обозначает
+бесконечность или \texttt{NaN}.
+
+\begin{lstlisting}[style=common, language=Go, caption=BitsToFloat, label=lst:bits-to-float]
+func BitsToFloat(binary string) float64 {
+    sign := 1.0
+    if binary[0] == '1' {
+        sign = -1
+    }
+    exponent := binaryToNumber(binary[1 : 1+exponentBits])
+    mantissa := bitsToFraction(binary[1+exponentBits:])
+
+    if exponent == maxExponent {
+        zero := 0.0
+        if mantissa != 0 {
+            return zero / zero
+        }
+        return sign / zero
+    }
+
+    value, power := mantissa, 1-bias
+    if exponent != 0 {
+        value, power = 1+mantissa, int(exponent)-bias
+    }
+    return sign * value * math.Pow(2, float64(power))
+}
+\end{lstlisting}
+
+\subsection*{Функция binaryToNumber}
+\textbf{Вход:} \texttt{string binary} --- строка из нулей и единиц. \par
+\textbf{Выход:} \texttt{int} --- число в десятичной системе. \par
+\textbf{Описание:} Функция проходит по битам слева направо. На каждом шаге
+накопленное число сдвигается влево, а при единице увеличивается на единицу.
+
+\begin{lstlisting}[style=common, language=Go, caption=binaryToNumber, label=lst:binary-to-number]
+func binaryToNumber(binary string) int {
+    value := 0
+    for _, bit := range binary {
+        value <<= 1
+        if bit == '1' {
+            value++
+        }
+    }
+    return value
+}
+\end{lstlisting}
+
+\subsection*{Функция bitsToFraction}
+\textbf{Вход:} \texttt{string binary} --- биты мантиссы. \par
+\textbf{Выход:} \texttt{float64} --- дробная часть мантиссы. \par
+\textbf{Описание:} Функция рассматривает первый бит как $2^{-1}$, второй как
+$2^{-2}$ и так далее. Степень вычисляется функцией \texttt{math.Pow}; если
+бит равен единице, его вес добавляется к результату.
+
+\begin{lstlisting}[style=common, language=Go, caption=bitsToFraction, label=lst:bits-to-fraction]
+func bitsToFraction(binary string) float64 {
+    fraction := 0.0
+    for index, bit := range binary {
+        if bit == '1' {
+            fraction += math.Pow(2, -float64(index+1))
+        }
+    }
+    return fraction
+}
+\end{lstlisting}
+
+\newpage

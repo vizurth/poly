@@ -1,0 +1,309 @@
+\section{Особенности реализации}
+
+Программа написана на языке Go. Её основная логика находится в пакете
+\texttt{automation}. В программе есть две главные структуры: \texttt{Rule}
+хранит правило изменения клеток, а \texttt{Field} --- квадратное поле и
+состояние каждой клетки. Состояние хранится как \texttt{bool}: \texttt{true}
+означает, что клетка жива, а \texttt{false} --- что мертва. При расчёте следующего шага использует правило из \texttt{Rule}.
+\subsection{Структура \texttt{Rule}}
+
+Структура \texttt{Rule} хранит правило, которое программа использует при
+обновлении поля. В ней есть один элемент:
+
+\begin{itemize}
+    \item \texttt{Number} типа \texttt{uint32} --- число, в котором записано
+    правило. Его биты определяют, должна ли клетка стать живой или мёртвой.
+\end{itemize}
+
+\subsubsection{Функция \texttt{RuleFromVariant}}
+
+\textbf{Вход:} номер варианта \texttt{variant}.
+
+\textbf{Выход:} объект \texttt{Rule} и пустая ошибка при успехе; нулевое
+правило и ошибка, если вариант меньше 1.
+
+\textbf{Описание:} умножает номер варианта на постоянный коэффициент и
+формирует правило.
+
+\begin{lstlisting}[style=gostyle,caption={Создание правила по номеру варианта}]
+func RuleFromVariant(variant int) (Rule, error) {
+    if variant < 1 {
+        return Rule{}, fmt.Errorf("variant number must be positive")
+    }
+    number := uint32(variant) * ruleMultiplier
+    if number > math.MaxUint32 {
+        return Rule{}, fmt.Errorf("variant number must not exceed %d", math.MaxUint32/ruleMultiplier)
+    }
+    return Rule{Number: number}, nil
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{Bits}}
+\textbf{Вход:} объект-получатель \texttt{r} типа \texttt{Rule}.
+
+\textbf{Выход:} строка из 32 символов с двоичным номером правила.
+
+\textbf{Описание:} представляет число правила в виде двоичной строки; объект
+не изменяется.
+
+\begin{lstlisting}[style=gostyle,caption={Представление правила в двоичном виде}]
+func (r Rule) Bits() string {
+    return fmt.Sprintf("%032b", r.Number)
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти, так как длина строки постоянна.
+
+\subsubsection{Метод \texttt{transition}}
+\textbf{Вход:} правило \texttt{r} и номер конфигурации
+\texttt{configuration} от 0 до 31.
+
+\textbf{Выход:} \texttt{true}, если центральная клетка должна быть живой,
+иначе \texttt{false}.
+
+\textbf{Описание:} проверяет бит правила для заданной конфигурации; конфигурация
+0 соответствует старшему биту.
+
+\begin{lstlisting}[style=gostyle,caption={Получение состояния клетки по правилу}]
+func (r Rule) transition(configuration int) bool {
+    return r.Number&(1<<uint(31-configuration)) != 0
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsection{Структура \texttt{Field}}
+
+Структура \texttt{Field} хранит квадратное поле и правило для его обновления.
+В ней есть два элемента:
+
+\begin{itemize}
+    \item \texttt{cells} типа \texttt{[][]bool} --- матрица состояний клеток.
+    Значение \texttt{true} означает живую клетку, \texttt{false} --- мёртвую;
+    \item \texttt{rule} типа \texttt{Rule} --- правило, используемое для
+    вычисления нового состояния поля.
+\end{itemize}
+
+Размер поля задаётся количеством строк и столбцов в \texttt{cells}. При
+расчёте следующего поколения программа сначала заполняет новую матрицу, а
+затем заменяет ею старую.
+
+\subsubsection{Функция \texttt{New}}
+\textbf{Вход:} размер поля \texttt{size} и правило \texttt{rule}.
+
+\textbf{Выход:} указатель на созданный объект \texttt{Field}.
+
+\textbf{Описание:} создаёт квадратное поле, изначально заполненное мёртвыми
+клетками, и сохраняет в нём правило.
+
+\begin{lstlisting}[style=gostyle,caption={Создание пустого поля}]
+func New(size int, rule Rule) *Field {
+    return &Field{cells: makeCells(size), rule: rule}
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(n^2)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{Size}}
+\textbf{Вход:} объект-получатель \texttt{f} типа \texttt{*Field}.
+
+\textbf{Выход:} целое число --- длина стороны поля.
+
+\textbf{Описание:} возвращает количество строк поля, не изменяя его.
+
+\begin{lstlisting}[style=gostyle,caption={Получение размера поля}]
+func (f *Field) Size() int {
+    return len(f.cells)
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{At}}
+\textbf{Вход:} объект \texttt{f} типа \texttt{*Field}, строка
+\texttt{row} и столбец \texttt{col}.
+
+\textbf{Выход:} состояние клетки типа \texttt{bool}.
+
+\textbf{Описание:} возвращает состояние клетки; координаты за границей поля
+переходят на противоположную сторону.
+
+\begin{lstlisting}[style=gostyle,caption={Чтение состояния клетки}]
+func (f *Field) At(row, col int) bool {
+    return f.cells[f.wrap(row)][f.wrap(col)]
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsubsection{Функция \texttt{makeCells}}
+\textbf{Вход:} размер матрицы \texttt{size}.
+
+\textbf{Выход:} квадратная матрица типа \texttt{[][]bool}, заполненная
+значениями \texttt{false}.
+
+\textbf{Описание:} выделяет память для строк матрицы и создаёт пустое поле.
+
+\begin{lstlisting}[style=gostyle,caption={Создание матрицы клеток}]
+func makeCells(size int) [][]bool {
+    cells := make([][]bool, size)
+    for row := range cells {
+        cells[row] = make([]bool, size)
+    }
+    return cells
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(n^2)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{Set}}
+\textbf{Вход:} объект поля \texttt{f}, координаты \texttt{row} и
+\texttt{col}, новое состояние \texttt{state}.
+
+\textbf{Выход:} отдельно не возвращается; обновляется объект \texttt{Field}.
+
+\textbf{Описание:} записывает заданное состояние в выбранную клетку.
+
+\begin{lstlisting}[style=gostyle,caption={Задание состояния клетки}]
+func (f *Field) Set(row, col int, state bool) {
+    f.cells[f.wrap(row)][f.wrap(col)] = state
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{Toggle}}
+\textbf{Вход:} объект \texttt{f} типа \texttt{*Field} и координаты
+клетки \texttt{row}, \texttt{col}.
+
+\textbf{Выход:} отдельно не возвращается; обновляется объект \texttt{Field}.
+
+\textbf{Описание:} меняет состояние клетки на противоположное.
+
+\begin{lstlisting}[style=gostyle,caption={Переключение состояния клетки}]
+func (f *Field) Toggle(row, col int) {
+    row, col = f.wrap(row), f.wrap(col)
+    f.cells[row][col] = !f.cells[row][col]
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{Clear}}
+\textbf{Вход:} объект-получатель \texttt{f} типа \texttt{*Field};
+дополнительных аргументов нет.
+
+\textbf{Выход:} отдельно не возвращается; все клетки объекта \texttt{Field}
+становятся мёртвыми.
+
+\textbf{Описание:} проходит по матрице и сбрасывает состояние каждой клетки.
+
+\begin{lstlisting}[style=gostyle,caption={Очистка поля}]
+func (f *Field) Clear() {
+    for row := range f.cells {
+        for col := range f.cells[row] {
+            f.cells[row][col] = false
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(n^2)$ по времени и $O(1)$ дополнительной памяти.
+
+\subsubsection{Метод \texttt{Randomize}}
+\textbf{Вход:} объект \texttt{f} типа \texttt{*Field} и начальное
+значение генератора \texttt{seed}.
+
+\textbf{Выход:} отдельно не возвращается; заполняется объект \texttt{Field}.
+
+\textbf{Описание:} случайно задаёт состояние каждой клетки. При одинаковых
+размере поля и \texttt{seed} результат повторяется.
+
+\begin{lstlisting}[style=gostyle,caption={Случайное заполнение поля}]
+func (f *Field) Randomize(seed int64) {
+    rng := rand.New(rand.NewSource(seed))
+    for row := range f.cells {
+        for col := range f.cells[row] {
+            f.cells[row][col] = rng.Intn(2) == 1
+        }
+    }
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(n^2)$ по времени и $O(1)$ дополнительной памяти.
+
+\subsubsection{Метод \texttt{neighbourhoodIndex}}
+\textbf{Вход:} объект \texttt{f} типа \texttt{*Field} и координаты
+центральной клетки \texttt{row}, \texttt{col}.
+
+\textbf{Выход:} номер конфигурации от 0 до 31.
+
+\textbf{Описание:} кодирует состояния пяти клеток в порядке: центр, верх,
+право, низ, лево.
+
+\begin{lstlisting}[style=gostyle,caption={Кодирование конфигурации соседей}]
+func (f *Field) neighbourhoodIndex(row, col int) int {
+    bits := [5]bool{
+        f.At(row, col),
+        f.At(row-1, col),
+        f.At(row, col+1),
+        f.At(row+1, col),
+        f.At(row, col-1),
+    }
+    index := 0
+    for _, bit := range bits {
+        index <<= 1
+        if bit {
+            index++
+        }
+    }
+    return index
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{wrap}}
+\textbf{Вход:} объект \texttt{f} типа \texttt{*Field} и координата
+\texttt{value}.
+
+\textbf{Выход:} индекс от 0 до \texttt{size - 1}, где \texttt{size} --- размер
+поля.
+
+\textbf{Описание:} приводит координату к полю с учётом перехода через границы.
+
+\begin{lstlisting}[style=gostyle,caption={Приведение координаты к границам поля}]
+func (f *Field) wrap(value int) int {
+    size := f.Size()
+    return (value%size + size) % size
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(1)$ по времени и памяти.
+
+\subsubsection{Метод \texttt{Step}}
+\textbf{Вход:} объект-получатель \texttt{f} типа \texttt{*Field};
+дополнительных аргументов нет.
+
+\textbf{Выход:} отдельно не возвращается; текущее состояние поля заменяется
+следующим поколением.
+
+\textbf{Описание:} вычисляет состояние всех клеток во временной матрице и
+только затем заменяет ею текущее поле. Поэтому при расчёте одного поколения
+все клетки используют состояния предыдущего поколения.
+
+\begin{lstlisting}[style=gostyle,caption={Вычисление следующего поколения}]
+func (f *Field) Step() {
+    next := makeCells(f.Size())
+    for row := range f.cells {
+        for col := range f.cells[row] {
+            next[row][col] = f.rule.transition(f.neighbourhoodIndex(row, col))
+        }
+    }
+    f.cells = next
+}
+\end{lstlisting}
+
+\textbf{Сложность:} $O(n^2)$ по времени и $O(n^2)$ дополнительной памяти.

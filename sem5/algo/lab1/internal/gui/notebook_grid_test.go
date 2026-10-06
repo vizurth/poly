@@ -32,3 +32,22 @@ func TestNotebookGridPlacesSquareCellsWithoutGaps(t *testing.T) {
 		t.Fatalf("third cell position = %v, want (0, 24)", grid.Objects[2].Position())
 	}
 }
+
+func TestCenteredGridLayoutCentersSmallField(t *testing.T) {
+	app := test.NewApp()
+	defer app.Quit()
+
+	grid := container.New(notebookGridLayout{columns: 2, cellSide: 24, lineWidth: 1},
+		newCell(false, func() {}),
+		newCell(false, func() {}),
+		newCell(false, func() {}),
+		newCell(false, func() {}),
+	)
+	boardSide := float32(maxSize) * 28
+	layout := centeredGridLayout{size: boardSide}
+	layout.Layout([]fyne.CanvasObject{grid}, fyne.NewSize(boardSide, boardSide))
+
+	if grid.Position() != (fyne.NewPos(256, 256)) {
+		t.Fatalf("grid position = %v, want (256, 256)", grid.Position())
+	}
+}

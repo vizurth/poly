@@ -1,0 +1,24 @@
+% !TEX program = xelatex
+% !TEX options = -interaction=nonstopmode -synctex=1 -output-directory=build "%DOC%"
+
+\documentclass[a4paper, final]{article}
+\input{settings}
+
+\begin{document}
+
+	\include{title}
+
+    \tableofcontents
+    \newpage
+
+	\include{intro}
+
+	\include{math}
+	\include{implementation}
+	\include{results}
+
+	\include{conclusion}
+	\include{literature}
+	\include{prilog}
+
+\end{document}

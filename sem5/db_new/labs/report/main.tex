@@ -1,5 +1,5 @@
 % !TEX program = xelatex
-% !TEX options = -interaction=nonstopmode -synctex=1 "%DOC%"
+% !TEX options = -interaction=nonstopmode -synctex=1 -output-directory=build "%DOC%"
 
 \documentclass[a4paper, final]{article}
 \input{settings}
@@ -17,7 +17,11 @@
     \include{tasks} 
 	\include{view}
 	\include{trigger}
-    \include{literature}
+	\include{access}
+	\include{func}
+	\include{transaction}
+	\include{conclusion}
+	\include{literature}
 	\include{prilog}
 
 \end{document}

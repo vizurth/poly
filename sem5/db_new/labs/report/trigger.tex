@@ -28,7 +28,7 @@
         № & Название RU & Название EN & Тип атрибута & Def & Тип ключа & Ссылка & Прим. \\
         \hline
         1 & авто\_id & car\_id & SERIAL & - & PK & - & NOT NULL \\
-        2 & гос_номер & reg\_number & VARCHAR(30) & - & - & - & NOT NULL \\
+        2 & гос\_номер & reg\_number & VARCHAR(30) & - & - & - & NOT NULL \\
         3 & кол-во событий & alert\_count & BIGINT & 0 & - & - & NOT NULL \\
         4 & кол-во парковок & parking\_count & BIGINT & 0 & - & - & NOT NULL \\
         \hline
@@ -98,6 +98,7 @@ CREATE TRIGGER car_stats_before_delete
 BEFORE DELETE ON car
 FOR EACH ROW EXECUTE FUNCTION car_stats_change();
 \end{lstlisting}
+\newpage
 
 \subsection{Триггеры для тревожных событий}
 При добавлении тревожного события счётчик \textbf{alert\_count} автомобиля
@@ -128,7 +129,15 @@ FOR EACH ROW EXECUTE FUNCTION alert_event_stats_change();
 CREATE TRIGGER alert_event_after_delete
 AFTER DELETE ON alert_event
 FOR EACH ROW EXECUTE FUNCTION alert_event_stats_change();
+
+-- update
+CREATE TRIGGER alert_event_after_update
+AFTER UPDATE ON alert_event
+FOR EACH ROW
+EXECUTE FUNCTION alert_event_stats_change();
 \end{lstlisting}
+
+\newpage
 
 \subsection{Триггер для парковочных сессий}
 Счётчик \textbf{parking\_count} хранит число различных зон, поэтому при
@@ -269,8 +278,8 @@ WHERE reg_number = 'Т888ТТ78';
 \end{figure}
 
 \subsubsection*{Проверка триггеров тревожных событий}
-Выберите существующий идентификатор автомобиля вместо \texttt{<car\_id>} и
-сначала зафиксируйте его исходное значение \textbf{alert\_count}.
+Выбирем существующий идентификатор автомобиля и
+сначала зафиксируем его исходное значение \textbf{alert\_count}.
 
 \begin{lstlisting}[style=sqlstyle, caption={Исходная статистика тревожных событий}, label={lst:check-alert-before}]
 SELECT car_id, alert_count
@@ -285,7 +294,7 @@ WHERE car_id = 1;
     \label{fig:trigger-4}
 \end{figure}
 
-Для выбранного автомобиля добавляется тестовое тревожное событие. Полученный
+Для выбранного автомобиля добавим тестовое тревожное событие. Полученный
 идентификатор используется в запросе удаления.
 
 \begin{lstlisting}[style=sqlstyle, caption={Добавление тревожного события}, label={lst:check-alert-insert}]
@@ -294,8 +303,8 @@ INSERT INTO alert_event (
 )
 VALUES (
     1,
-    (SELECT alert_event_type_id FROM alert_event_type LIMIT 1),
-    (SELECT status_id FROM alert_event_process_status LIMIT 1),
+    1,
+    1,
     'Тестовое тревожное событие'
 )
 RETURNING alert_event_id;
@@ -323,7 +332,7 @@ WHERE car_id = 1;
 
 \begin{lstlisting}[style=sqlstyle, caption={Удаление тестового тревожного события}, label={lst:check-alert-delete}]
 DELETE FROM alert_event
-WHERE alert_event_id = <alert_event_id>;
+WHERE alert_event_id = 410;
 \end{lstlisting}
 
 \begin{lstlisting}[style=sqlstyle, caption={Проверка статистики после удаления события}, label={lst:check-alert-after-delete}]
@@ -335,13 +344,59 @@ WHERE car_id = 1;
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{myPhoto/trigger-7.png}
-    \caption{Описание изображения}
+    \caption{Таблица \texttt{car\_stats} после удаления тестового тревожного события}
     \label{fig:trigger-7}
 \end{figure}
 
+Также если сделать Update и перекинуть событие на другой автомобиль, то счётчик уменьшится у старого автомобиля и увеличится у нового.
+
+\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+SELECT * FROM car_stats
+WHERE car_id = 200;
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{myPhoto/trigger-19.png}
+    \caption{Таблица \texttt{car\_stats} до переноса тревожного события на другой автомобиль}
+    \label{fig:trigger-19}
+\end{figure}
+
+
+\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+UPDATE alert_event 
+SET car_id = 203 
+WHERE alert_event_id = 408;
+\end{lstlisting}
+
+\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+SELECT * FROM car_stats 
+WHERE car_id = 203;
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{myPhoto/trigger-17.png}
+    \caption{Таблица \texttt{car\_stats} после переноса тревожного события на другой автомобиль}
+    \label{fig:trigger-17}
+\end{figure}
+
+\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+SELECT * FROM car_stats
+WHERE car_id = 200;
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{myPhoto/trigger-18.png}
+    \caption{Таблица \texttt{car\_stats} после	 переноса тревожного события на другой автомобиль}
+    \label{fig:trigger-18}
+\end{figure}
+
+
 \subsubsection*{Проверка триггера парковочных сессий}
-Сначала следует найти автомобиль с двумя или более сессиями в одной зоне.
-Из результата нужно сохранить \texttt{car\_id} и
+Найдем автомобиль с двумя или более сессиями в одной зоне.
+Из результата запомним \texttt{car\_id} и
 \texttt{parking\_zone\_id}.
 
 \begin{lstlisting}[style=sqlstyle, caption={Поиск данных для проверки парковочных сессий}, label={lst:find-parking-session}]
@@ -362,7 +417,7 @@ LIMIT 1;
     \label{fig:trigger-8}
 \end{figure}
 
-После подстановки найденных значений отдельным запросом выводятся
+После подстановки найденных значений отдельным запросом выведем
 идентификаторы сессий. Один из них необходимо оставить для последнего
 удаления.
 
@@ -517,5 +572,30 @@ WHERE car_id = 1;
     \caption{Таблица \texttt{car\_stats} после удаления парковочной зоны: \texttt{parking\_count} уменьшился на 1}
     \label{fig:trigger-16}
 \end{figure}
+
+\subsection{Перечень тестовых примеров}
+
+В таблице приведены все тестовые примеры из подраздела проверки работы
+триггеров. Описание каждого примера включает исходное состояние, выполняемое
+изменение и проверяемый результат. Проверки выполняются внутри транзакции,
+которая завершается командой \texttt{ROLLBACK;}.
+
+\begin{longtable}{|>{\centering\arraybackslash}p{1.2cm}|p{14.5cm}|}
+    \hline
+    \textbf{№} & \textbf{Описание проверяемого состояния} \\ \hline
+    \endfirsthead
+    \hline
+    \textbf{№} & \textbf{Описание проверяемого состояния} \\ \hline
+    \endhead
+    1 & После добавления автомобиля в таблице \texttt{car\_stats} появляется связанная строка с нулевыми счётчиками. \\ \hline
+    2 & После изменения регистрационного номера автомобиля проверяется, что связанная строка статистики сохраняется и остаётся связанной с автомобилем. \\ \hline
+    3 & После удаления автомобиля проверяется, что соответствующая строка статистики также удалена. \\ \hline
+    4 & После добавления тревожного события проверяется что произошло увеличение счётчика значение \texttt{alert\_count} на 1. \\ \hline
+    5 & После удаления добавленного тревожного события проверяется уменьшение \texttt{alert\_count} автомобиля на 1 относительно прошлого значения. \\ \hline
+    6 & При переносе тревожного события с автомобиля с идентификатором A на автомобиль B проверяется, что у первого счётчик \texttt{alert\_count} уменьшился на 1, а у второго увеличился на 1. \\ \hline
+    7 & Для автомобиля, имеющего не менее двух сессий в одной парковочной зоне, удаляются все сессии, кроме одной. Проверяется, что \texttt{parking\_count} не изменился. \\ \hline
+    8 & После удаления оставшейся последней сессии автомобиля в этой зоне проверяется уменьшение \texttt{parking\_count} на 1. \\ \hline
+    9 & Перед удалением парковочной зоны фиксируется статистика автомобиля. После удаления зоны проверяется каскадное удаление связанных сессий и уменьшение \texttt{parking\_count} на число удалённых сессий (в приведённом примере — на 1). \\ \hline
+\end{longtable}
 
 \newpage

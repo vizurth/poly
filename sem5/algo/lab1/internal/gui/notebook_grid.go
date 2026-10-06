@@ -2,11 +2,27 @@ package gui
 
 import "fyne.io/fyne/v2"
 
-// notebookGridLayout puts same-size square cells edge to edge, like graph paper.
+// notebookGridLayout раскладывает квадратные клетки как в тетрадной сетке.
 type notebookGridLayout struct {
 	columns   int
 	cellSide  float32
 	lineWidth float32
+}
+
+type centeredGridLayout struct {
+	size float32
+}
+
+func (layout centeredGridLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, object := range objects {
+		objectSize := object.MinSize()
+		object.Move(fyne.NewPos((size.Width-objectSize.Width)/2, (size.Height-objectSize.Height)/2))
+		object.Resize(objectSize)
+	}
+}
+
+func (layout centeredGridLayout) MinSize([]fyne.CanvasObject) fyne.Size {
+	return fyne.NewSize(layout.size, layout.size)
 }
 
 func (layout notebookGridLayout) Layout(objects []fyne.CanvasObject, _ fyne.Size) {

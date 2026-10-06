@@ -37,8 +37,8 @@ BEGIN
 			alert_count,
 			parking_count
 		) VALUES (
-			NEW.car_id
-			NEW.reg_number
+			NEW.car_id,
+			NEW.reg_number,
 			0,
 			0
 		);
@@ -130,6 +130,21 @@ BEGIN
 
         RETURN OLD;
     END IF;
+
+	IF TG_OP = 'UPDATE' THEN
+		-- Если car_id изменился, уменьшаем счетчик у старого автомобиля и увеличиваем у нового
+		IF OLD.car_id <> NEW.car_id THEN
+			UPDATE car_stats
+			SET alert_count = GREATEST(alert_count - 1, 0)
+			WHERE car_id = OLD.car_id;
+
+			UPDATE car_stats
+			SET alert_count = alert_count + 1
+			WHERE car_id = NEW.car_id;
+		END IF;
+
+		RETURN NEW;
+	END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -142,5 +157,11 @@ EXECUTE FUNCTION alert_event_stats_change();
 -- delete
 CREATE TRIGGER alert_event_after_delete
 AFTER DELETE ON alert_event
+FOR EACH ROW
+EXECUTE FUNCTION alert_event_stats_change();
+
+-- update
+CREATE TRIGGER alert_event_after_update
+AFTER UPDATE ON alert_event
 FOR EACH ROW
 EXECUTE FUNCTION alert_event_stats_change();
