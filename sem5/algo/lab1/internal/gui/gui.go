@@ -14,7 +14,7 @@ import (
 )
 
 const defaultSize = 10
-const maxSize = 20
+const maxSize = 30
 
 const cellSide float32 = 28
 const gridLineWidth float32 = 1
@@ -80,7 +80,7 @@ func (ui *UI) Content() fyne.CanvasObject {
 	run := widget.NewButton("Запустить", ui.run)
 
 	settings := container.NewGridWithColumns(2,
-		widget.NewLabel("Размер поля (5–20):"), ui.size,
+		widget.NewLabel("Размер поля (5–30):"), ui.size,
 		widget.NewLabel("Количество операций (1–1000):"), ui.iterations,
 	)
 	buttons := container.NewGridWithColumns(3, create, randomize, clear, step, run)

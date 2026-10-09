@@ -1,0 +1,10 @@
+# Пример для ~/.bash_profile. Перед использованием выберите локаль,
+# установленную в системе (список можно посмотреть командой locale -a).
+export LANG=ru_RU.UTF-8
+
+# Bash при входе через login shell читает ~/.bash_profile.
+# Подключаем .bashrc, чтобы интерактивные настройки применялись также
+# в login shell.
+if [ -f "$HOME/.bashrc" ]; then
+    . "$HOME/.bashrc"
+fi

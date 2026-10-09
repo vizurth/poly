@@ -25,3 +25,9 @@ ALTER FUNCTION car_stats_change() SECURITY DEFINER  SET search_path = public;
 ALTER FUNCTION alert_event_stats_change() SECURITY DEFINER SET search_path = public;
 
 ALTER FUNCTION parking_session_stats_delete() SECURITY DEFINER SET search_path = public;
+
+INSERT INTO alert_event (
+	car_id, alert_event_type_id, status_id, decsription
+) VALUES (
+	1, 
+)

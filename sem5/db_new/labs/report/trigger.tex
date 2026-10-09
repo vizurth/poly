@@ -350,7 +350,7 @@ WHERE car_id = 1;
 
 Также если сделать Update и перекинуть событие на другой автомобиль, то счётчик уменьшится у старого автомобиля и увеличится у нового.
 
-\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+\begin{lstlisting}[style=sqlstyle, caption={Статистика автомобиля до переноса тревожного события}, label={lst:alert-transfer-before}]
 SELECT * FROM car_stats
 WHERE car_id = 200;
 \end{lstlisting}
@@ -363,13 +363,13 @@ WHERE car_id = 200;
 \end{figure}
 
 
-\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:alert-transfer-update}]
 UPDATE alert_event 
 SET car_id = 203 
 WHERE alert_event_id = 408;
 \end{lstlisting}
 
-\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+\begin{lstlisting}[style=sqlstyle, caption={Проверка статистики нового автомобиля после переноса события}, label={lst:alert-transfer-new-car}]
 SELECT * FROM car_stats 
 WHERE car_id = 203;
 \end{lstlisting}
@@ -381,7 +381,7 @@ WHERE car_id = 203;
     \label{fig:trigger-17}
 \end{figure}
 
-\begin{lstlisting}[style=sqlstyle, caption={Перенос тревожного события на другой автомобиль}, label={lst:check-alert-after-delete}]
+\begin{lstlisting}[style=sqlstyle, caption={Проверка статистики прежнего автомобиля после переноса события}, label={lst:alert-transfer-old-car}]
 SELECT * FROM car_stats
 WHERE car_id = 200;
 \end{lstlisting}

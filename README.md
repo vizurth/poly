@@ -153,10 +153,10 @@ The repository is organized by semesters and courses and may include:
 ### Java
 | Лаба | Сделано | Сдана |
 | ---- | ------- | ----- |
-| 1    | 🔄      | ⬜    |
+| 1    | ✅      | ⬜    |
 | 2    | ⬜      | ⬜    |
 | 3    | ⬜      | ⬜    |
-| 4    | ⬜      | ⬜    |
+| 4    | ✅      | ⬜    |
 | 5    | ⬜      | ⬜    |
 | 6    | ⬜      | ⬜    |
 | 7    | ⬜      | ⬜    |
@@ -167,7 +167,7 @@ The repository is organized by semesters and courses and may include:
 | ---- | ------- | ----- |
 | 1    | ✅      | ⬜    |
 | 2    | ✅      | ⬜    |
-| 3    | ⬜      | ⬜    |
+| 3    | ✅      | ⬜    |
 | 4    | ⬜      | ⬜    |
 | 5    | ⬜      | ⬜    |
 
