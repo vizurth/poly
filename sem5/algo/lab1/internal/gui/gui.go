@@ -29,7 +29,7 @@ type UI struct {
 	message       *widget.Label
 	grid          *fyne.Container
 	board         *fyne.Container
-	runID         int
+	runStop       chan struct{}
 }
 
 // New создаёт интерфейс для указанного правила.
@@ -106,14 +106,29 @@ func (ui *UI) run() {
 		ui.message.SetText(err.Error())
 		return
 	}
+
 	ui.message.SetText("")
 	ui.cancelRun()
-	currentRun := ui.runID
+
+	stop := make(chan struct{})
+	ui.runStop = stop
+
 	go func() {
+		ticker := time.NewTicker(120 * time.Millisecond)
+		defer ticker.Stop()
+
 		for range steps {
-			time.Sleep(120 * time.Millisecond)
+			select {
+			case <-stop:
+				return
+			case <-ticker.C:
+			}
+
 			fyne.Do(func() {
-				if ui.runID == currentRun {
+				select {
+				case <-stop:
+					return
+				default:
 					ui.runSteps(1)
 				}
 			})
@@ -122,7 +137,10 @@ func (ui *UI) run() {
 }
 
 func (ui *UI) cancelRun() {
-	ui.runID++
+	if ui.runStop != nil {
+		close(ui.runStop)
+		ui.runStop = nil
+	}
 }
 
 func (ui *UI) runSteps(steps int) {
