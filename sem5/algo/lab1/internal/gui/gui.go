@@ -13,10 +13,11 @@ import (
 	"github.com/vizurth/poly/sem5/algo/lab1/internal/automation"
 )
 
-const defaultSize = 10
-const maxSize = 30
+const defaultSize = 50
+const minSize = 10
+const maxSize = 100
 
-const cellSide float32 = 28
+const cellSide float32 = 12
 const gridLineWidth float32 = 1
 
 // UI связывает поле автомата с кнопками и настройками.
@@ -44,8 +45,8 @@ func New(rule automation.Rule) *UI {
 		grid:          container.New(notebookGridLayout{columns: defaultSize, cellSide: cellSide, lineWidth: gridLineWidth}),
 	}
 	background := canvas.NewRectangle(gridLineColor)
-	centeredGrid := container.New(centeredGridLayout{size: maxSize * cellSide}, ui.grid)
-	ui.board = container.NewMax(background, centeredGrid)
+	gridAtTopLeft := container.New(topLeftGridLayout{}, ui.grid)
+	ui.board = container.NewMax(background, gridAtTopLeft)
 	ui.size.SetText(strconv.Itoa(defaultSize))
 	ui.iterations.SetText("30")
 	ui.updateRule(rule)
@@ -79,17 +80,17 @@ func (ui *UI) Content() fyne.CanvasObject {
 	})
 	run := widget.NewButton("Запустить", ui.run)
 
-	controls := container.NewGridWithColumns(9,
-		widget.NewLabel("Размер (5–30):"), ui.size,
+	settings := container.NewGridWithColumns(4,
+		widget.NewLabel(fmt.Sprintf("Размер (%d–%d):", minSize, maxSize)), ui.size,
 		widget.NewLabel("Шаги (1–1000):"), ui.iterations,
-		create, randomize, clear, step, run,
 	)
-	header := container.NewVBox(title, ui.rule, controls, ui.message)
-	return container.NewBorder(header, nil, nil, nil, ui.board)
+	buttons := container.NewGridWithColumns(5, create, randomize, clear, step, run)
+	header := container.NewVBox(title, ui.rule, settings, buttons, ui.message)
+	return container.NewBorder(header, nil, nil, nil, container.NewScroll(ui.board))
 }
 
 func (ui *UI) createField() {
-	size, err := positiveNumber(ui.size, 5, maxSize)
+	size, err := positiveNumber(ui.size, minSize, maxSize)
 	if err != nil {
 		ui.message.SetText(err.Error())
 		return

@@ -9,20 +9,21 @@ type notebookGridLayout struct {
 	lineWidth float32
 }
 
-type centeredGridLayout struct {
-	size float32
-}
+type topLeftGridLayout struct{}
 
-func (layout centeredGridLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+func (layout topLeftGridLayout) Layout(objects []fyne.CanvasObject, _ fyne.Size) {
 	for _, object := range objects {
 		objectSize := object.MinSize()
-		object.Move(fyne.NewPos((size.Width-objectSize.Width)/2, (size.Height-objectSize.Height)/2))
+		object.Move(fyne.NewPos(0, 0))
 		object.Resize(objectSize)
 	}
 }
 
-func (layout centeredGridLayout) MinSize([]fyne.CanvasObject) fyne.Size {
-	return fyne.NewSize(layout.size, layout.size)
+func (topLeftGridLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	if len(objects) == 0 {
+		return fyne.NewSize(0, 0)
+	}
+	return objects[0].MinSize()
 }
 
 func (layout notebookGridLayout) Layout(objects []fyne.CanvasObject, _ fyne.Size) {
