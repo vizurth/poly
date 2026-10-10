@@ -9,11 +9,8 @@ import (
 	"github.com/vizurth/poly/sem5/algo/lab1/internal/gui"
 )
 
-// Номер варианта задаётся здесь.
-const variantNumber = 2
-
 func main() {
-	rule, err := automation.RuleFromVariant(variantNumber)
+	rule, err := automation.RuleFromVariant()
 	fmt.Println(rule.Bits())
 	if err != nil {
 		panic(err)

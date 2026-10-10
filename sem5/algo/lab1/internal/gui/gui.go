@@ -17,7 +17,7 @@ const defaultSize = 50
 const minSize = 10
 const maxSize = 100
 
-const cellSide float32 = 12
+const cellSide float32 = 16
 const gridLineWidth float32 = 1
 
 // UI связывает поле автомата с кнопками и настройками.
