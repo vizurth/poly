@@ -60,14 +60,14 @@ func (f *Field) Step() {
 	f.cells = next
 }
 
-// neighbourhoodIndex возвращает позицию правила в таблице истинности (центр, верх, право, низ, лево) -> центр;
+// neighbourhoodIndex кодирует состояния в порядке: (центр, верх, низ, лево, право) -> центр.
 func (f *Field) neighbourhoodIndex(row, col int) int {
 	bits := [5]bool{
 		f.At(row, col),   // центр
 		f.At(row-1, col), // верх
-		f.At(row, col+1), // право
 		f.At(row+1, col), // низ
 		f.At(row, col-1), // лево
+		f.At(row, col+1), // право
 	}
 	index := 0
 	for _, bit := range bits {

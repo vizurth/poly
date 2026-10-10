@@ -79,13 +79,13 @@ func (ui *UI) Content() fyne.CanvasObject {
 	})
 	run := widget.NewButton("Запустить", ui.run)
 
-	settings := container.NewGridWithColumns(2,
-		widget.NewLabel("Размер поля (5–30):"), ui.size,
-		widget.NewLabel("Количество операций (1–1000):"), ui.iterations,
+	controls := container.NewGridWithColumns(9,
+		widget.NewLabel("Размер (5–30):"), ui.size,
+		widget.NewLabel("Шаги (1–1000):"), ui.iterations,
+		create, randomize, clear, step, run,
 	)
-	buttons := container.NewGridWithColumns(3, create, randomize, clear, step, run)
-	header := container.NewVBox(title, ui.rule, settings, buttons, ui.message)
-	return container.NewBorder(header, nil, nil, nil, container.NewScroll(ui.board))
+	header := container.NewVBox(title, ui.rule, controls, ui.message)
+	return container.NewBorder(header, nil, nil, nil, ui.board)
 }
 
 func (ui *UI) createField() {

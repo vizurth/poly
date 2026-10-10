@@ -241,16 +241,16 @@ func (f *Field) Randomize(seed int64) {
 \textbf{Выход:} номер конфигурации от 0 до 31.
 
 \textbf{Описание:} кодирует состояния пяти клеток в порядке: центр, верх,
-право, низ, лево.
+низ, лево, право.
 
 \begin{lstlisting}[style=gostyle,caption={Кодирование конфигурации соседей}]
 func (f *Field) neighbourhoodIndex(row, col int) int {
     bits := [5]bool{
         f.At(row, col),
         f.At(row-1, col),
-        f.At(row, col+1),
         f.At(row+1, col),
         f.At(row, col-1),
+        f.At(row, col+1),
     }
     index := 0
     for _, bit := range bits {

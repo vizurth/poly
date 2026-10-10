@@ -1,0 +1,334 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Courier New}
+\newfontfamily\cyrillicfonttt{Courier New}
+\usepackage{polyglossia}
+\setdefaultlanguage{russian}
+\usepackage[margin=20mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{hyperref}
+
+\definecolor{ink}{HTML}{20354A}
+\definecolor{accent}{HTML}{286A8A}
+\definecolor{softblue}{HTML}{E7F1F6}
+\definecolor{softyellow}{HTML}{FFF4D6}
+\definecolor{codebg}{HTML}{F4F6F8}
+
+\hypersetup{colorlinks=true,linkcolor=accent,urlcolor=accent}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.35em}
+\renewcommand{\arraystretch}{1.15}
+
+\lstdefinestyle{gostyle}{
+  language=Go,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{accent}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!60!black},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{black!15},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=7pt,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4
+}
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\sectiontitle}[1]{\section{\color{ink}#1}}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{ink}Клеточный автомат простыми словами}\\[0.4em]
+  {\large Окрестность фон Неймана и разбор пакета \code{automation}}\\[0.6em]
+  {Разбор проекта лабораторной работы, вариант 2}
+\end{center}
+
+\vspace{0.5em}
+\noindent\colorbox{softblue}{\parbox{\dimexpr\linewidth-2\fboxsep}{
+  \textbf{Идея пособия.} Понять, что происходит с клетками на одном шаге,
+  как пять клеток превращаются в номер от 0 до 31 и как этот номер
+  используется в Go-коде.
+}}
+
+\sectiontitle{Что такое клеточный автомат}
+
+Клеточный автомат --- это сетка клеток, которая меняется шаг за шагом.
+Каждая клетка имеет одно из заранее заданных состояний. В нашей программе
+состояний два: клетка либо живая, либо мёртвая.
+
+Состояние клетки на следующем шаге зависит не от всего поля сразу, а только
+от небольшой группы клеток рядом с ней. Это правило применяется одинаково
+ко всем клеткам поля.
+
+Можно представить поле как фотографию. Чтобы построить следующую фотографию,
+программа смотрит на старое поле, вычисляет новое состояние каждой клетки,
+записывает результаты отдельно и только потом заменяет старое поле новым.
+Поэтому все клетки обновляются одновременно: результат для одной клетки
+не влияет на расчёт другой клетки в том же шаге.
+
+В коде состояние хранится как значение типа \code{bool}:
+\code{true} --- живая клетка, \code{false} --- мёртвая.
+
+\sectiontitle{Окрестность фон Неймана}
+
+Окрестность --- это клетки, чьи состояния учитываются при обновлении одной
+выбранной клетки. В окрестности фон Неймана берутся четыре клетки,
+соприкасающиеся с центральной общей стороной: сверху, снизу, слева и справа.
+В нашем правиле учитывается также сама центральная клетка, поэтому всего
+получается пять значений.
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw=ink, very thick, minimum width=2.2cm, minimum height=0.9cm,
+              align=center, rounded corners=2pt, font=\small},
+  every node/.style={font=\small}
+]
+  \node[box,fill=softblue] (center) at (0,0) {$s_0$\\центр};
+  \node[box,fill=accent!14] (up) at (0,1.35) {$s_1$\\верх};
+  \node[box,fill=accent!14] (right) at (2.8,0) {$s_4$\\право};
+  \node[box,fill=accent!14] (down) at (0,-1.35) {$s_2$\\низ};
+  \node[box,fill=accent!14] (left) at (-2.8,0) {$s_3$\\лево};
+  \draw[-{stealth},thick,accent] (up) -- (center);
+  \draw[-{stealth},thick,accent] (right) -- (center);
+  \draw[-{stealth},thick,accent] (down) -- (center);
+  \draw[-{stealth},thick,accent] (left) -- (center);
+\end{tikzpicture}
+
+Рисунок 1 --- клетки, состояния которых используются для обновления центра
+\end{center}
+
+Диагональные клетки в эту окрестность не входят. Это отличает её, например,
+от окрестности Мура, где учитываются также четыре диагонали.
+
+В программе значения идут в строго заданном порядке:
+
+\[
+\text{центр},\quad \text{верх},\quad \text{низ},\quad
+\text{лево},\quad \text{право}.
+\]
+
+Важно не менять этот порядок только в одном месте: по нему и формируется
+номер конфигурации, и выбирается результат из правила.
+
+\sectiontitle{Как пять состояний превращаются в номер}
+
+У каждой из пяти клеток два возможных состояния: 0 или 1. Поэтому всего
+есть $2^5=32$ разных комбинации. Каждой комбинации соответствует номер
+от 0 до 31.
+
+Пусть $a,b,c,d,e$ --- состояния центра, верхней, нижней, левой и правой
+клеток соответственно. Номер комбинации --- это просто двоичное число,
+составленное из этих пяти значений:
+
+\[
+k = 16a + 8b + 4c + 2d + e.
+\]
+
+Например, для набора $1,0,1,0,0$ получаем двоичную запись $10100_2$,
+а значит номер $k=20$.
+
+В \code{field.go} этот расчёт выполняет \code{neighbourhoodIndex}:
+
+\begin{lstlisting}[style=gostyle]
+bits := [5]bool{
+    f.At(row, col),   // центр
+    f.At(row-1, col), // верх
+    f.At(row+1, col), // низ
+    f.At(row, col-1), // лево
+    f.At(row, col+1), // право
+}
+index := 0
+for _, bit := range bits {
+    index <<= 1
+    if bit {
+        index++
+    }
+}
+\end{lstlisting}
+
+Переменная \code{bits} содержит пять состояний. Цикл каждый раз сдвигает
+накопленный номер влево на один разряд и, если очередное состояние равно
+\code{true}, добавляет единицу.
+
+Для набора $1,0,1,0,0$ это выглядит так:
+
+\begin{center}
+\begin{tabular}{c|ccccc}
+  Прочитано & 1 & 0 & 1 & 0 & 0 \\
+  Номер после шага & 1 & 2 & 5 & 10 & 20 \\
+\end{tabular}
+\end{center}
+
+То есть цикл не ищет комбинацию в списке. Он сам собирает её номер из битов.
+
+\sectiontitle{Что хранится в \code{Rule}}
+
+В Go нет классов в привычном смысле, здесь используются структуры и методы.
+Структура \code{Rule} хранит номер правила:
+
+\begin{lstlisting}[style=gostyle]
+type Rule struct {
+    Number uint32
+}
+\end{lstlisting}
+
+Тип \code{uint32} означает беззнаковое целое из 32 бит. Поскольку у пяти
+клеток 32 комбинации, каждый бит числа хранит ответ для одной комбинации:
+0 --- центр должен стать мёртвым, 1 --- живым.
+
+Для варианта 2 в проекте используется формула:
+
+\[
+R = 2 \cdot 11 \cdot 2006 \cdot 13 \cdot 12
+  = 6\,884\,592
+  = 00000000011010010000110011110000_2.
+\]
+
+Нули слева добавлены, чтобы запись содержала ровно 32 бита. В методе
+\code{Bits} формат \code{\%032b} как раз означает: вывести число в двоичной
+системе и дополнить его нулями слева до 32 символов.
+
+Метод \code{transition} проверяет нужный бит:
+
+\begin{lstlisting}[style=gostyle]
+func (r Rule) transition(configuration int) bool {
+    return r.Number&(1<<uint(31-configuration)) != 0
+}
+\end{lstlisting}
+
+Здесь \code{configuration} --- номер комбинации от 0 до 31. Самый первый
+набор, \code{00000}, соответствует старшему (самому левому) биту. Поэтому
+для перехода к номеру $k$ код сдвигает единицу на $31-k$ позиций, оставляет
+только этот бит операцией \code{\&} и проверяет, не равен ли результат нулю.
+
+\noindent\colorbox{softyellow}{\parbox{\dimexpr\linewidth-2\fboxsep}{
+  \textbf{Пример.} Набор $10100$ имеет номер 20. Для него проверяется бит
+  с номером $31-20=11$ при счёте справа с нуля. В правиле варианта 2 этот
+  бит равен 1, поэтому новая центральная клетка будет живой.
+}}
+
+\sectiontitle{Что хранится в \code{Field}}
+
+\code{Field} хранит всё текущее поле и правило, по которому оно меняется:
+
+\begin{lstlisting}[style=gostyle]
+type Field struct {
+    cells [][]bool
+    rule  Rule
+}
+\end{lstlisting}
+
+\begin{itemize}
+  \item \code{cells} --- квадратная матрица состояний. Первый индекс ---
+        строка, второй --- столбец.
+  \item \code{rule} --- копия правила, которое применяется при каждом шаге.
+\end{itemize}
+
+Основные методы поля:
+
+\begin{itemize}
+  \item \code{New(size, rule)} создаёт квадратное поле. Новые значения
+        \code{bool} изначально равны \code{false}, значит все клетки мёртвые.
+  \item \code{Size()} возвращает размер стороны поля.
+  \item \code{At(row, col)} читает состояние клетки.
+  \item \code{Set(row, col, state)} задаёт клетке состояние.
+  \item \code{Toggle(row, col)} меняет состояние на противоположное.
+  \item \code{Clear()} делает все клетки мёртвыми.
+  \item \code{Randomize(seed)} случайно заполняет поле. Одинаковый \code{seed}
+        даёт одинаковую последовательность случайных состояний.
+\end{itemize}
+
+Чтение и изменение клетки проходят через \code{wrap}. Эта функция реализует
+тороидальные границы: если выйти за край, координата появляется с другой
+стороны поля. При размере 5 координата $-1$ превращается в 4, а координата
+5 --- в 0. В коде используется формула
+
+\[
+\operatorname{wrap}(x)=((x\%N)+N)\%N,
+\]
+
+где $N$ --- размер поля. Добавление $N$ нужно, чтобы результат был
+неотрицательным и оставался допустимым индексом от 0 до $N-1$.
+
+\sectiontitle{Как работает один шаг}
+
+Главный метод обновления --- \code{Step}. Он проходит по каждой клетке,
+находит номер её окрестности, получает ответ из \code{Rule} и записывает
+его во временное поле:
+
+\begin{lstlisting}[style=gostyle]
+func (f *Field) Step() {
+    next := makeCells(f.Size())
+    for row := range f.cells {
+        for col := range f.cells[row] {
+            next[row][col] = f.rule.transition(
+                f.neighbourhoodIndex(row, col),
+            )
+        }
+    }
+    f.cells = next
+}
+\end{lstlisting}
+
+По порядку здесь происходит следующее:
+
+\begin{enumerate}
+  \item \code{makeCells} создаёт пустую матрицу для нового поколения.
+  \item Вложенные циклы перебирают все строки и столбцы.
+  \item \code{neighbourhoodIndex} читает центр и четыре соседние клетки,
+        затем превращает их состояния в число 0--31.
+  \item \code{transition} проверяет соответствующий бит правила.
+  \item Результат записывается в \code{next}, а не в старое поле.
+  \item Когда все клетки рассчитаны, строка \code{f.cells = next} заменяет
+        старое поколение новым.
+\end{enumerate}
+
+Именно временная матрица обеспечивает одновременное обновление: каждая
+клетка нового поколения рассчитывается по одному и тому же старому полю.
+Для поля $N\times N$ один вызов \code{Step} обрабатывает $N^2$ клеток,
+поэтому время работы растёт пропорционально площади поля.
+
+\sectiontitle{Вся цепочка в одном месте}
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=0.65cm,
+  block/.style={draw=ink,rounded corners,fill=softblue,align=center,
+                minimum width=3.3cm,minimum height=0.85cm,font=\small},
+  arrow/.style={-{stealth},very thick,accent}
+]
+  \node[block] (step) {\code{Field.Step()}};
+  \node[block,below=of step] (neighbors) {состояния центра\\и 4 соседей};
+  \node[block,below=of neighbors] (index) {номер комбинации\\от 0 до 31};
+  \node[block,below=of index] (rule) {\code{Rule.transition()}\\бит правила};
+  \node[block,below=of rule] (next) {новое состояние\\в матрице \code{next}};
+  \draw[arrow] (step) -- (neighbors);
+  \draw[arrow] (neighbors) -- (index);
+  \draw[arrow] (index) -- (rule);
+  \draw[arrow] (rule) -- (next);
+\end{tikzpicture}
+\end{center}
+
+Коротко: \textbf{смотрим на пять клеток → кодируем их нулями и единицами →
+получаем номер → читаем бит правила → записываем новое состояние}.
+
+\vfill
+\begin{center}
+  {\small Материал составлен по текущему коду проекта в
+  \code{lab1/internal/automation}.}
+\end{center}
+
+\end{document}
