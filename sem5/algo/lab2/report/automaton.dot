@@ -1,0 +1,94 @@
+digraph ClockAutomaton {
+  graph [
+    layout=neato,
+    splines=true,
+    overlap=false,
+    outputorder=edgesfirst,
+    bgcolor="white",
+    pad=0.25,
+    margin=0.05,
+    sep=0.3,
+    fontname="Times New Roman",
+    fontsize=16,
+    label="Граф управляющего автомата часов",
+    labelloc=t
+  ];
+  node [
+    shape=ellipse,
+    fixedsize=true,
+    width=1.05,
+    height=0.58,
+    style=solid,
+    color=black,
+    penwidth=1.2,
+    fontname="Times New Roman",
+    fontsize=13
+  ];
+  edge [
+    color=black,
+    penwidth=1.0,
+    arrowsize=0.75,
+    fontname="Times New Roman",
+    fontsize=11,
+    labeldistance=1.5
+  ];
+
+  start [shape=point, width=0.08, label="", pos="0,0.9!"];
+  S0 [label="S0", pos="0,0!"];
+  S1 [label="S1", pos="-1.8,2.1!"];
+  S2 [label="S2", pos="-3.6,3.0!"];
+  S3 [label="S3", pos="-4.2,4.6!"];
+  S4 [label="S4", pos="-2.3,5.5!"];
+  S5 [label="S5", pos="0,5.2!"];
+  S6 [label="S6", pos="3.0,0!"];
+  S7 [label="S7", pos="1.9,3.0!"];
+  S8 [label="S8", pos="3.9,2.3!"];
+  S9 [label="S9", pos="3.8,0.9!"];
+  S10 [label="S10", pos="2.8,-1.4!"];
+  S11 [label="S11", pos="4.5,-2.8!"];
+  S12 [label="S12", pos="3.7,-4.5!"];
+  S13 [label="S13", pos="1.8,-5.4!"];
+  S14 [label="S14", pos="-0.3,-5.3!"];
+  S15 [label="S15", pos="-2.3,-4.3!"];
+  S16 [label="S16", pos="-3.5,-2.6!"];
+
+  start -> S0 [label=""];
+
+  S0 -> S1 [label="a/z0"];
+  S0 -> S6 [label="b/z1", tailport=e, headport=w];
+  S6 -> S0 [label="b/z2", tailport=sw, headport=se];
+  S6 -> S6 [label="a/z0", tailport=e, headport=e];
+
+  S1 -> S2 [label="a/z0"];
+  S1 -> S1 [label="b/z3", tailport=n, headport=n];
+  S2 -> S3 [label="a/z0"];
+  S2 -> S2 [label="b/z3", tailport=n, headport=n];
+  S3 -> S4 [label="a/z0"];
+  S3 -> S3 [label="b/z3", tailport=n, headport=n];
+  S4 -> S5 [label="a/z0"];
+  S4 -> S4 [label="b/z3", tailport=n, headport=n];
+  S5 -> S7 [label="a/z4"];
+  S5 -> S5 [label="b/z3", tailport=n, headport=n];
+
+  S7 -> S8 [label="b/z5"];
+  S8 -> S9 [label="b/z6"];
+  S8 -> S8 [label="a/z0", tailport=n, headport=n];
+  S9 -> S7 [label="b/z4", constraint=false];
+  S7 -> S10 [label="a/z0", tailport=se, headport=nw];
+  S9 -> S10 [label="a/z0", tailport=sw, headport=e];
+
+  S10 -> S11 [label="a/z0"];
+  S10 -> S10 [label="b/z7", tailport=s, headport=s];
+  S11 -> S12 [label="a/z0"];
+  S11 -> S11 [label="b/z8", tailport=e, headport=e];
+  S12 -> S13 [label="a/z0"];
+  S12 -> S12 [label="b/z8", tailport=s, headport=s];
+  S13 -> S14 [label="a/z0"];
+  S13 -> S13 [label="b/z8", tailport=s, headport=s];
+  S14 -> S15 [label="a/z0"];
+  S14 -> S14 [label="b/z8", tailport=s, headport=s];
+  S15 -> S16 [label="a/z0"];
+  S15 -> S15 [label="b/z9", tailport=w, headport=w];
+  S16 -> S0 [label="a/z0", constraint=false, tailport=nw, headport=w];
+  S16 -> S16 [label="b/z10", tailport=w, headport=w];
+}
