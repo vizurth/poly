@@ -2,6 +2,20 @@ package gui
 
 import "fyne.io/fyne/v2"
 
+const maxCellSide float32 = 32
+const maxGridSide float32 = 800
+
+func cellSideForColumns(columns int) float32 {
+	if columns <= 0 {
+		return maxCellSide
+	}
+	side := maxGridSide / float32(columns)
+	if side > maxCellSide {
+		return maxCellSide
+	}
+	return side
+}
+
 // notebookGridLayout раскладывает квадратные клетки как в тетрадной сетке.
 type notebookGridLayout struct {
 	columns   int
@@ -9,20 +23,21 @@ type notebookGridLayout struct {
 	lineWidth float32
 }
 
-type centeredGridLayout struct {
-	size float32
-}
+type topLeftGridLayout struct{}
 
-func (layout centeredGridLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+func (layout topLeftGridLayout) Layout(objects []fyne.CanvasObject, _ fyne.Size) {
 	for _, object := range objects {
 		objectSize := object.MinSize()
-		object.Move(fyne.NewPos((size.Width-objectSize.Width)/2, (size.Height-objectSize.Height)/2))
+		object.Move(fyne.NewPos(0, 0))
 		object.Resize(objectSize)
 	}
 }
 
-func (layout centeredGridLayout) MinSize([]fyne.CanvasObject) fyne.Size {
-	return fyne.NewSize(layout.size, layout.size)
+func (topLeftGridLayout) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	if len(objects) == 0 {
+		return fyne.NewSize(0, 0)
+	}
+	return objects[0].MinSize()
 }
 
 func (layout notebookGridLayout) Layout(objects []fyne.CanvasObject, _ fyne.Size) {

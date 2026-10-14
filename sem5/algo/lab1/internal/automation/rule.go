@@ -2,10 +2,10 @@ package automation
 
 import (
 	"fmt"
-	"math"
 )
 
-const ruleMultiplier uint32 = 11 * 2006 * 13 * 12
+const variant = 2
+const rule uint32 = 11 * 2006 * 13 * 12 * variant
 
 // Rule хранит таблицу переходов для клетки и четырёх соседей.
 type Rule struct {
@@ -13,14 +13,8 @@ type Rule struct {
 }
 
 // RuleFromVariant считает номер правила по номеру варианта.
-func RuleFromVariant(variant int) (Rule, error) {
-	if variant < 1 {
-		return Rule{}, fmt.Errorf("variant number must be positive")
-	}
-	number := uint32(variant) * ruleMultiplier
-	if number > math.MaxUint32 {
-		return Rule{}, fmt.Errorf("variant number must not exceed %d", math.MaxUint32/ruleMultiplier)
-	}
+func RuleFromVariant() (Rule, error) {
+	number := rule
 	return Rule{Number: number}, nil
 }
 

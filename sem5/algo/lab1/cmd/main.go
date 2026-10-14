@@ -9,11 +9,8 @@ import (
 	"github.com/vizurth/poly/sem5/algo/lab1/internal/gui"
 )
 
-// Номер варианта задаётся здесь.
-const variantNumber = 2
-
 func main() {
-	rule, err := automation.RuleFromVariant(variantNumber)
+	rule, err := automation.RuleFromVariant()
 	fmt.Println(rule.Bits())
 	if err != nil {
 		panic(err)
@@ -22,6 +19,6 @@ func main() {
 	application := app.New()
 	window := application.NewWindow("Клеточный автомат — лабораторная 1")
 	window.SetContent(gui.New(rule).Content())
-	window.Resize(fyne.NewSize(700, 850))
+	window.Resize(fyne.NewSize(1000, 800))
 	window.ShowAndRun()
 }
