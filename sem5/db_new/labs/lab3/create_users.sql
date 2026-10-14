@@ -5,7 +5,7 @@ GRANT CONNECT ON DATABASE db TO user_a, user_b;
 GRANT USAGE ON SCHEMA public TO user_a, user_b;
 
 -- пользователь А читает только таблицу car_stats
-GRANT SELECT ON car_stats TO user_a;
+GRANT SELECT ON car_stats TO user_a, user_b;
 
 -- пользователь Б читает и изменяет исходные таблицы, но не имеет прямого доступа к car_stats
 GRANT SELECT, INSERT, UPDATE, DELETE 

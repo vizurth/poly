@@ -2,20 +2,20 @@
 
 \subsection{Постановка задачи}
 В работе настроено разграничение доступа для двух пользователей базы данных.
-Пользователь \textbf{А} может читать таблицу \texttt{car\_stats}, но не имеет
-прав на исходные таблицы. Пользователь \textbf{Б} может читать и изменять
-таблицы \texttt{car}, \texttt{alert\_event}, \texttt{parking\_session} и
-\texttt{parking\_zone}, но не имеет прямого доступа к \texttt{car\_stats}.
-Изменение статистики при работе с исходными таблицами выполняется ранее
-созданными триггерами.
+Пользователи \textbf{А} и \textbf{Б} могут читать таблицу
+\texttt{car\_stats}. Пользователь А имеет только это право. Пользователь Б,
+помимо чтения статистики, может читать и изменять исходные таблицы
+\texttt{car}, \texttt{alert\_event}, \texttt{parking\_session} и
+\texttt{parking\_zone}. При изменении этих таблиц связанные счётчики в
+\texttt{car\_stats} обновляются созданными ранее триггерами.
 
 \subsection{Назначение прав доступа}
-Пользователи созданы с правом подключения к базе данных и использования схемы
-\texttt{public}. Пользователю А выдано право чтения таблицы статистики.
-Пользователю Б выданы права чтения и изменения исходных таблиц, а также права
-на использование последовательностей, формирующих идентификаторы. Чтобы
-триггеры могли обновлять \texttt{car\_stats} от имени владельца функции,
-функциям назначен режим \texttt{SECURITY DEFINER} и явно задана схема поиска.
+Пользователям выданы права на подключение к базе данных и использование схемы
+\texttt{public}. Оба пользователя могут читать таблицу \texttt{car\_stats}.
+Пользователю Б также разрешено читать и изменять исходные таблицы и пользоваться
+последовательностями, формирующими идентификаторы. Функции триггеров настроены
+с режимом \texttt{SECURITY DEFINER} и фиксированной схемой поиска, чтобы они
+могли обновлять счётчики в \texttt{car\_stats} при изменении исходных данных.
 SQL-команды настройки приведены в листинге~\ref{lst:user-privileges}.
 
 \begin{lstlisting}[style=sqlstyle, caption={Создание пользователей и назначение прав}, label={lst:user-privileges}]
@@ -25,10 +25,10 @@ CREATE USER user_b WITH PASSWORD '123';
 GRANT CONNECT ON DATABASE db TO user_a, user_b;
 GRANT USAGE ON SCHEMA public TO user_a, user_b;
 
--- пользователь А читает только таблицу car_stats
-GRANT SELECT ON car_stats TO user_a;
+-- Пользователи А и Б могут читать таблицу статистики
+GRANT SELECT ON car_stats TO user_a, user_b;
 
--- пользователь Б читает и изменяет исходные таблицы, но не имеет прямого доступа к car_stats
+-- Пользователь Б читает и изменяет исходные таблицы
 GRANT SELECT, INSERT, UPDATE, DELETE 
 ON TABLE car, alert_event, parking_session, parking_zone
 TO user_b;
@@ -55,17 +55,11 @@ ALTER FUNCTION parking_session_stats_delete() SECURITY DEFINER SET search_path =
 убедиться, что триггеры обновляют статистику при изменении исходных данных.
 
 \paragraph{Чтение таблиц.}
-Пользователь А выполнил запрос к \texttt{car\_stats} и получил строки со
-статистикой автомобилей. Для пользователя Б такой же запрос завершился ошибкой. При этом пользователь Б смог
-прочитать таблицу \texttt{car}. Результаты показаны на
-рисунках~\ref{fig:access-before} и~\ref{fig:b_car}.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\linewidth]{myPhoto/access-before.png}
-    \caption{Пользователь А читает car\_stats, а пользователю Б отказано в доступе}
-    \label{fig:access-before}
-\end{figure}
+Пользователи А и Б выполнили запрос к \texttt{car\_stats} и получили первые
+пять строк со статистикой автомобилей. Пользователь Б также смог прочитать
+таблицу \texttt{car}. Результаты проверки чтения статистики приведены в
+таблице~\ref{tab:users-test-results}, чтения таблицы автомобилей — на
+рисунке~\ref{fig:b_car}.
 
 \begin{figure}[H]
     \centering
@@ -127,31 +121,88 @@ ALTER FUNCTION parking_session_stats_delete() SECURITY DEFINER SET search_path =
 \end{figure}
 
 
-% \subsection{Сводная таблица запросов и результатов}
-% В таблице~\ref{tab:access-query-results} приведены выполненные запросы и
-% полученные ответы в консолях пользователей А и Б. Если запрос не запускался
-% от имени пользователя, это отмечено прочерком.
+\clearpage
+% Шаблон таблицы результатов тестирования. Вместо \screenshotplaceholder
+% можно вставить \shot{имя-файла}{ширина-в-пикселях}{обрезка-сверху}{обрезка-снизу}.
+\newlength{\shotunit}
+\setlength{\shotunit}{0.4pt}
+\newlength{\shotmax}
+\newlength{\shotwidth}
+\newcommand{\shot}[4]{%
+    \setlength{\shotwidth}{#2\shotunit}%
+    \ifdim\shotwidth>\shotmax \setlength{\shotwidth}{\shotmax}\fi%
+    \includegraphics[width=\shotwidth, trim=0 #4bp 0 #3bp, clip]{myPhoto/#1}%
+}
+\newcommand{\screenshotplaceholder}[1]{%
+    \fbox{\parbox[c][2.7cm][c]{\dimexpr\shotmax-2\fboxsep-2\fboxrule\relax}{%
+        \centering\footnotesize Место для скриншота: #1}}%
+}
+\newcommand{\usercell}[1]{%
+    \parbox[t]{\shotmax}{\vspace{0pt}#1\vspace{5pt}}%
+}
+% Скриншоты для таблицы лежат в myPhoto/ как PNG-файлы. Макрос
+% автоматически включает файл; если его нет, печатает имя ожидаемого файла.
+% Пример: \usershot{access-02-a}{отказ во вставке для user\_a}.
+\newcommand{\usershot}[2]{%
+    \IfFileExists{myPhoto/#1.png}{%
+        \shot{#1}{1800}{0.0}{0.0}%
+    }{%
+        \screenshotplaceholder{#2. Файл: \texttt{myPhoto/#1.png}}%
+    }%
+}
+\newcommand{\resultplaceholder}[2]{%
+    \par\vspace{2pt}\textbf{Проверка результата:}\par
+    \vspace{2pt}#1\par\vspace{2pt}
+    \usershot{#2}{скриншот проверки результата}%
+}
+\newcommand{\checksql}[1]{%
+    {\textbf{Проверка результата:}\par #1}%
+}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 
-% \begin{longtable}{|>{\centering\arraybackslash}p{0.7cm}|p{6.5cm}|p{4cm}|p{4cm}|}
-% \caption{SQL-запросы и результаты проверки прав пользователей}\label{tab:access-query-results}\\
-% \hline
-% \textbf{№} & \textbf{Текст SQL-запроса*} & \textbf{Реакция пользователя А} & \textbf{Реакция пользователя Б} \\
-% \hline
-% \endfirsthead
-% \hline
-% \textbf{№} & \textbf{Текст SQL-запроса} & \textbf{Реакция пользователя А} & \textbf{Реакция пользователя Б} \\
-% \hline
-% \endhead
-% 1 & \texttt{SELECT * FROM car\_stats LIMIT 5;} & Запрос выполнен, выведено 5 строк статистики & Отказ: нет права на \texttt{car\_stats} \\
-% \hline
-% 2 & \texttt{SELECT * FROM car;} & Не выполнялся & Запрос выполнен успешно \\
-% \hline
-% 3 & \texttt{INSERT INTO alert\_event (car\_id, alert\_event\_type\_id, status\_id, description) VALUES (1, 1, 1, 'Проверка прав пользователей') RETURNING alert\_event\_id;} & Отказ: нет права на \texttt{alert\_event} & Вставка выполнена; получены ID 412 и 414 в двух проверках \\
-% \hline
-% 4 & \texttt{SELECT car\_id, alert\_count FROM car\_stats WHERE car\_id = 1;} & Запрос выполнен: счётчик изменился с 5 до 6 после вставки и с 6 до 5 после удаления события & Отказ: нет права на \texttt{car\_stats} \\
-% \hline
-% 5 & \texttt{DELETE FROM alert\_event WHERE alert\_event\_id = 414;} & Отказ: нет права на \texttt{alert\_event} & Удаление выполнено, ответ PostgreSQL: \texttt{DELETE 1} \\
-% \hline
-% 6 & \texttt{SELECT * FROM alert\_event\_type;} & Отказ: нет права на \texttt{alert\_event\_}\allowbreak\texttt{type} & Отказ: нет права на \texttt{alert\_event\_}\allowbreak\texttt{type} \\
-% \hline
-% \end{longtable}
+\begin{landscape}
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\extrarowheight}{4pt}
+\setlength{\shotmax}{0.32\linewidth}
+\begin{longtable}{|c|P{0.20\linewidth}|P{0.33\linewidth}|P{0.33\linewidth}|}
+\caption{Результаты выполнения тестовых запросов для пользователей \texttt{user\_a} и \texttt{user\_b}}
+\label{tab:users-test-results} \\
+\hline
+\textbf{№} & \textbf{Текст SQL-запроса} & \textbf{Реакция пользователя \texttt{user\_a}} & \textbf{Реакция пользователя \texttt{user\_b}} \\
+\hline
+\endfirsthead
+\hline
+\textbf{№} & \textbf{Текст SQL-запроса} & \textbf{Реакция пользователя \texttt{user\_a}} & \textbf{Реакция пользователя \texttt{user\_b}} \\
+\hline
+\endhead
+1 & \texttt{SELECT * FROM car\_stats LIMIT 5;} & \usercell{\usershot{access-01-a}{чтение car\_stats пользователем user\_a}} & \usercell{\usershot{access-01-b}{чтение car\_stats пользователем user\_b}} \\
+\hline
+2 & \texttt{INSERT INTO car\_stats (car\_id, reg\_number, alert\_count, parking\_count) VALUES (999999, 'Т999ТТ78', 0, 0);} & \usercell{\usershot{access-02-a}{отказ во вставке}} & \usercell{\usershot{access-02-b}{отказ во вставке}} \\ \cline{2-4}
+ & \checksql{\texttt{SELECT car\_id, reg\_number FROM car\_stats WHERE car\_id = 999999;}} & \usercell{\resultplaceholder{Запись с car\_id = 999999 отсутствует}{access-02-a-check}} & \usercell{\resultplaceholder{Запись с car\_id = 999999 отсутствует}{access-02-b-check}} \\
+\hline
+3 & \texttt{UPDATE car\_stats SET alert\_count = 100 WHERE car\_id = 1;} & \usercell{\usershot{access-03-a}{отказ в изменении}} & \usercell{\usershot{access-03-b}{отказ в изменении}} \\ \cline{2-4}
+ & \checksql{\texttt{SELECT car\_id, alert\_count FROM car\_stats WHERE car\_id = 1;}} & \usercell{\resultplaceholder{alert\_count остался прежним}{access-03-a-check}} & \usercell{\resultplaceholder{alert\_count остался прежним}{access-03-b-check}} \\
+\hline
+4 & \texttt{DELETE FROM car\_stats WHERE car\_id = 1;} & \usercell{\usershot{access-04-a}{отказ в удалении}} & \usercell{\usershot{access-04-b}{отказ в удалении}} \\ \cline{2-4}
+ & \checksql{\texttt{SELECT car\_id FROM car\_stats WHERE car\_id = 1;}} & \usercell{\resultplaceholder{Строка с car\_id = 1 сохранилась}{access-04-a-check}} & \usercell{\resultplaceholder{Строка с car\_id = 1 сохранилась}{access-04-b-check}} \\
+\hline
+5 & \texttt{INSERT INTO alert\_event (car\_id, alert\_event\_type\_id, status\_id, description) VALUES (1, 1, 1, 'Проверка прав') RETURNING alert\_event\_id;} & \usercell{\usershot{access-05-a}{отказ во вставке}} & \usercell{\usershot{access-05-b}{успешная вставка и ID}} \\
+\hline
+6 & \texttt{SELECT car\_id, alert\_count FROM car\_stats WHERE car\_id = 1;} & \usercell{\usershot{access-06-a}{значение счётчика после INSERT}} & \usercell{\usershot{access-06-b}{значение счётчика после INSERT}} \\
+\hline
+7 & \texttt{UPDATE alert\_event SET description = 'Проверка UPDATE прав пользователя Б' WHERE alert\_event\_id = 416;} & \usercell{\usershot{access-07-a}{отказ в изменении}} & \usercell{\usershot{access-07-b}{успешное изменение}} \\ \cline{2-4}
+ & \checksql{\textit{user\_a:} \texttt{SELECT car\_id, alert\_count FROM car\_stats WHERE car\_id = 1;}\par\textit{user\_b:} \texttt{SELECT description FROM alert\_event WHERE alert\_event\_id = 416;}\par\texttt{SELECT car\_id, alert\_count FROM car\_stats WHERE car\_id = 1;}} & \usercell{\resultplaceholder{Счётчик не изменился}{access-07-a-check}} & \usercell{\resultplaceholder{Описание события изменено; счётчик не изменился}{access-07-b-check}} \\
+\hline
+8 & \texttt{DELETE FROM alert\_event WHERE alert\_event\_id = 416;} & \usercell{\usershot{access-08-a}{отказ в удалении}} & \usercell{\usershot{access-08-b}{успешное удаление}} \\ \cline{2-4}
+ & \checksql{\textit{user\_a:} \texttt{SELECT car\_id, alert\_count FROM car\_stats WHERE car\_id = 1;}\par\textit{user\_b:} \texttt{SELECT car\_id, alert\_count FROM car\_stats WHERE car\_id = 1;}\par\texttt{SELECT alert\_event\_id FROM alert\_event WHERE alert\_event\_id = 416;}} & \usercell{\resultplaceholder{Событие и счётчик не изменились}{access-08-a-check}} & \usercell{\resultplaceholder{Событие удалено; счётчик уменьшился на 1}{access-08-b-check}} \\
+\hline
+9 & \texttt{SELECT * FROM car LIMIT 3;} & \usercell{\usershot{access-09-a}{отказ в чтении}} & \usercell{\usershot{access-09-b}{чтение таблицы car}} \\
+\hline
+10 & \texttt{SELECT * FROM alert\_event\_type LIMIT 3;} & \usercell{\usershot{access-10-a}{отказ в чтении}} & \usercell{\usershot{access-10-b}{отказ в чтении}} \\
+\hline
+\end{longtable}
+\endgroup
+\end{landscape}
+\clearpage
