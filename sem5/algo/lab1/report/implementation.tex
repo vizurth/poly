@@ -2,16 +2,16 @@
 
 Программа написана на языке Go. Её основная логика находится в пакете
 \texttt{automation}. В программе есть две главные структуры: \texttt{Rule}
-хранит правило изменения клеток, а \texttt{Field} --- квадратное поле и
+хранит правило изменения клеток, а \texttt{Field} - квадратное поле и
 состояние каждой клетки. Состояние хранится как \texttt{bool}: \texttt{true}
-означает, что клетка жива, а \texttt{false} --- что мертва. При расчёте следующего шага использует правило из \texttt{Rule}.
+означает, что клетка жива, а \texttt{false} - что мертва. При расчёте следующего шага использует правило из \texttt{Rule}.
 \subsection{Структура \texttt{Rule}}
 
 Структура \texttt{Rule} хранит правило, которое программа использует при
 обновлении поля. В ней есть один элемент:
 
 \begin{itemize}
-    \item \texttt{Number} типа \texttt{uint32} --- число, в котором записано
+    \item \texttt{Number} типа \texttt{uint32} - число, в котором записано
     правило. Его биты определяют, должна ли клетка стать живой или мёртвой.
 \end{itemize}
 
@@ -80,9 +80,9 @@ func (r Rule) transition(configuration int) bool {
 В ней есть два элемента:
 
 \begin{itemize}
-    \item \texttt{cells} типа \texttt{[][]bool} --- матрица состояний клеток.
-    Значение \texttt{true} означает живую клетку, \texttt{false} --- мёртвую;
-    \item \texttt{rule} типа \texttt{Rule} --- правило, используемое для
+    \item \texttt{cells} типа \texttt{[][]bool} - матрица состояний клеток.
+    Значение \texttt{true} означает живую клетку, \texttt{false} - мёртвую;
+    \item \texttt{rule} типа \texttt{Rule} - правило, используемое для
     вычисления нового состояния поля.
 \end{itemize}
 
@@ -109,7 +109,7 @@ func New(size int, rule Rule) *Field {
 \subsubsection{Метод \texttt{Size}}
 \textbf{Вход:} объект-получатель \texttt{f} типа \texttt{*Field}.
 
-\textbf{Выход:} целое число --- длина стороны поля.
+\textbf{Выход:} целое число - длина стороны поля.
 
 \textbf{Описание:} возвращает количество строк поля, не изменяя его.
 
@@ -269,7 +269,7 @@ func (f *Field) neighbourhoodIndex(row, col int) int {
 \textbf{Вход:} объект \texttt{f} типа \texttt{*Field} и координата
 \texttt{value}.
 
-\textbf{Выход:} индекс от 0 до \texttt{size - 1}, где \texttt{size} --- размер
+\textbf{Выход:} индекс от 0 до \texttt{size - 1}, где \texttt{size} - размер
 поля.
 
 \textbf{Описание:} приводит координату к полю с учётом перехода через границы.

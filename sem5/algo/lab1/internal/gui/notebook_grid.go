@@ -2,6 +2,20 @@ package gui
 
 import "fyne.io/fyne/v2"
 
+const maxCellSide float32 = 32
+const maxGridSide float32 = 800
+
+func cellSideForColumns(columns int) float32 {
+	if columns <= 0 {
+		return maxCellSide
+	}
+	side := maxGridSide / float32(columns)
+	if side > maxCellSide {
+		return maxCellSide
+	}
+	return side
+}
+
 // notebookGridLayout раскладывает квадратные клетки как в тетрадной сетке.
 type notebookGridLayout struct {
 	columns   int

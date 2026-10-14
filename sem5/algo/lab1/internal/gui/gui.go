@@ -17,7 +17,6 @@ const defaultSize = 50
 const minSize = 10
 const maxSize = 100
 
-const cellSide float32 = 16
 const gridLineWidth float32 = 1
 
 // UI связывает поле автомата с кнопками и настройками.
@@ -27,10 +26,12 @@ type UI struct {
 	size          *widget.Entry
 	iterations    *widget.Entry
 	rule          *widget.Label
+	stats         *widget.Label
 	message       *widget.Label
 	grid          *fyne.Container
 	board         *fyne.Container
 	runStop       chan struct{}
+	stepCount     int
 }
 
 // New создаёт интерфейс для указанного правила.
@@ -41,8 +42,9 @@ func New(rule automation.Rule) *UI {
 		size:          widget.NewEntry(),
 		iterations:    widget.NewEntry(),
 		rule:          widget.NewLabel(""),
+		stats:         widget.NewLabel(""),
 		message:       widget.NewLabel(""),
-		grid:          container.New(notebookGridLayout{columns: defaultSize, cellSide: cellSide, lineWidth: gridLineWidth}),
+		grid:          container.New(notebookGridLayout{columns: defaultSize, cellSide: cellSideForColumns(defaultSize), lineWidth: gridLineWidth}),
 	}
 	background := canvas.NewRectangle(gridLineColor)
 	gridAtTopLeft := container.New(topLeftGridLayout{}, ui.grid)
@@ -67,11 +69,13 @@ func (ui *UI) Content() fyne.CanvasObject {
 	randomize := widget.NewButton("Случайно", func() {
 		ui.cancelRun()
 		ui.field.Randomize(time.Now().UnixNano())
+		ui.stepCount = 0
 		ui.refresh()
 	})
 	clear := widget.NewButton("Очистить", func() {
 		ui.cancelRun()
 		ui.field.Clear()
+		ui.stepCount = 0
 		ui.refresh()
 	})
 	step := widget.NewButton("Один шаг", func() {
@@ -85,7 +89,7 @@ func (ui *UI) Content() fyne.CanvasObject {
 		widget.NewLabel("Шаги (1–1000):"), ui.iterations,
 	)
 	buttons := container.NewGridWithColumns(5, create, randomize, clear, step, run)
-	header := container.NewVBox(title, ui.rule, settings, buttons, ui.message)
+	header := container.NewVBox(title, ui.rule, settings, buttons, ui.stats, ui.message)
 	return container.NewBorder(header, nil, nil, nil, container.NewScroll(ui.board))
 }
 
@@ -97,6 +101,7 @@ func (ui *UI) createField() {
 	}
 	ui.cancelRun()
 	ui.field = automation.New(size, ui.automatonRule)
+	ui.stepCount = 0
 	ui.message.SetText("")
 	ui.refresh()
 }
@@ -148,20 +153,29 @@ func (ui *UI) runSteps(steps int) {
 	for range steps {
 		ui.field.Step()
 	}
+	ui.stepCount += steps
 	ui.refresh()
 }
 
 func (ui *UI) step() {
 	ui.field.Step()
+	ui.stepCount++
 	ui.refresh()
 }
 
 func (ui *UI) refresh() {
 	objects := make([]fyne.CanvasObject, 0, ui.field.Size()*ui.field.Size())
+	black, white := 0, 0
 	for row := 0; row < ui.field.Size(); row++ {
 		for col := 0; col < ui.field.Size(); col++ {
 			clickedRow, clickedCol := row, col
-			cell := newCell(ui.field.At(row, col), func() {
+			live := ui.field.At(row, col)
+			if live {
+				black++
+			} else {
+				white++
+			}
+			cell := newCell(live, func() {
 				ui.cancelRun()
 				ui.field.Toggle(clickedRow, clickedCol)
 				ui.refresh()
@@ -169,9 +183,10 @@ func (ui *UI) refresh() {
 			objects = append(objects, cell)
 		}
 	}
-	ui.grid.Layout = notebookGridLayout{columns: ui.field.Size(), cellSide: cellSide, lineWidth: gridLineWidth}
+	ui.grid.Layout = notebookGridLayout{columns: ui.field.Size(), cellSide: cellSideForColumns(ui.field.Size()), lineWidth: gridLineWidth}
 	ui.grid.Objects = objects
 	ui.grid.Refresh()
+	ui.stats.SetText(fmt.Sprintf("Чёрных клеток: %d   Белых клеток: %d   Шаг: %d", black, white, ui.stepCount))
 }
 
 func (ui *UI) updateRule(rule automation.Rule) {

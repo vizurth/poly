@@ -14,7 +14,7 @@ var (
 	gridLineColor = color.NRGBA{R: 160, G: 160, B: 160, A: 255}
 )
 
-// cell — одна нажимаемая клетка поля.
+// cell - одна нажимаемая клетка поля.
 type cell struct {
 	widget.BaseWidget
 	live  bool
