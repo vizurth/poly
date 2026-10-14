@@ -132,7 +132,7 @@ The repository is organized by semesters and courses and may include:
 | 1    | ✅      | ✅    |
 | 2    | ✅      | ✅    |
 | 3    | ✅      | ⬜    |
-| 4    | ⬜      | ⬜    |
+| 4    | ✅      | ⬜    |
 | 5    | ⬜      | ⬜    |
 
 ### Теория алгоритмов
