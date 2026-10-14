@@ -138,7 +138,7 @@ The repository is organized by semesters and courses and may include:
 ### Теория алгоритмов
 | Лаба | Сделано | Сдана |
 | ---- | ------- | ----- |
-| 1    | 🔄      | ⬜    |
+| 1    | ✅      | ⬜    |
 | 2    | ⬜      | ⬜    |
 
 ### Unix
